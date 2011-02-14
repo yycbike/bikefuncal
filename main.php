@@ -1,123 +1,33 @@
 <?php
 /*
-Plugin Name: Bike fun calendar
-*/
+ * Plugin Name: Bike fun calendar
+ */
 
-# For DB upgrade functions
+# upgrade.php is required for the database upgrade functions
 require_once(ABSPATH . "wp-admin/includes/upgrade.php");
+require_once('print-event-listings.php');
+require_once('repeat.php');
+require_once('daily.php');
+require_once('event-submission.php');
+require_once('event-submission-form.php');
+require_once('event-submission-result.php');
+require_once('vfydates.php');
+require_once('shortcodes.php');
 
 global $wpdb;
 
+# Names of tables in the database.
+# @@@ Variable names should be prefixed with bfc_
 $calevent_table_name =
     $wpdb->prefix . "bfc_calevent";
 $caldaily_table_name =
     $wpdb->prefix . "bfc_caldaily";
 
-
-function bfc_add_to_table($table_name, $fields, $args, $debugging_defaults) {
-
-    # Defaults come first, so they're overridden by $args
-    $full_args = array_merge($debugging_defaults, $args);
-
-    global $wpdb;
-    $wpdb->insert($table_name,
-                  $full_args);
-
-    return $wpdb->insert_id;
-}
-
-function bfc_add_event($event_args, $event_dates) {
-    # @@@ need to add image, imagewidth, and imageheight
-    $event_fields = Array(
-        "name" => "string",
-        "email" => "string",
-        "hideemail" => "int",
-        "emailforum" => "int",
-        "printemail" => "int",
-        "phone" => "string",
-        "hidephone" => "int",
-        "printphone" => "int",
-        "weburl" => "string",
-        "webname" => "string",
-        "printweburl" => "int",
-        "contact" => "string",
-        "hidecontact" => "int",
-        "printcontact" => "int",
-        "title" => "string",
-        "tinytitle" => "string",
-        "audience" => "string",
-        "descr" => "string",
-        "printdescr" => "string",
-        "dates" => "string",
-        "datestype" => "string",
-        "eventtime" => "string",
-        "eventduration" => "string",
-        "timedetails" => "string",
-        "locname" => "string",
-        "address" => "string",
-        "addressverified" => "string",
-        "locdetails" => "string",
-        "review" => "string",
-        );
-
-    # Default values for fields. For when this is used
-    # as a test function.
-    $event_debugging_defaults = Array(
-        "hideemail" => 1,
-        "emailforum" => 0,
-        "printemail" => 0,
-        "hidephone"  => 1,
-        "printphone" => 0,
-        "printweburl" => 0,
-        "hidecontact" => 0,
-        "printcontact" => 0,
-        "audience" => 'G',
-        "datestype" => 'O',
-        "addressverified" => 0,
-        "review" => 'I',
-        );
-
-
-    global $calevent_table_name, $caldaily_table_name;
-    $id = bfc_add_to_table($calevent_table_name,
-                           $event_fields,
-                           $event_args,
-                           $event_debugging_defaults);
-
-
-    foreach ($event_dates as $date) {
-        $caldaily_args = Array(
-            "id" => $id,
-            "eventdate" => $date,
-            "eventstatus" => "A", 
-            );
-
-        $caldaily_debugging_defaults = Array();
-
-        bfc_add_to_table($caldaily_table_name,
-                         Array(), # no fields for now
-                         $caldaily_args,
-                         $caldaily_debugging_defaults);
-    }
-
-}
-
-function bfc_add_test_event() {
-    $event_args = Array(
-        "name" => "Evan",
-        "email" => "hi@hello.com",
-        "title" => "Awesomest Bike Ride Ever!",
-        "tinytitle" => "Awesome Ride",
-        "descr"    => "Stuff stuff stuff",
-        );
-
-    bfc_add_event($event_args, Array("2011-02-14"));
-}
-
+#
+# Create the tables in the WordPress database.
 function bfc_install() {
     global $calevent_table_name;
     global $caldaily_table_name;
-
 
     if($wpdb->get_var("SHOW TABLES LIKE '$calevent_table_name'") != $calevent_table_name) {
 
@@ -202,9 +112,100 @@ function bfc_install() {
 
     return true;
 }
-
-
-
 register_activation_hook(__FILE__,'bfc_install');
+
+# Before a query parameter can be used with WordPress, it needs to be registered.
+# (Otherwise WP will ignore it.) So here we register all the query parameters that
+# we'll use in the plugin.
+#
+# Except that AJAX requests seem to have access to $_POST[], but other requests
+# don't have access to $_GET[] or $_REQUEST[]. Evan isn't sure why that is. But
+# the result is that parameters from AJAX requests don't need to be listed here.
+#
+# We try to prefix the parameters with things like "cal" or "event", to avoid conflicts
+# with any parametrs WordPress may use internally.
+function calendar_queryvars($qvars) {
+    # Query vars for browsing the calendar.
+    $qvars[] = 'calyear';
+    $qvars[] = 'calmonth';
+
+
+    # Query vars for making a new event.
+    # Prefix with "event_" to avoid conflicts with
+    # builtin WP query vars.
+    $qvars[] = "event_name";
+    $qvars[] = "event_email";
+    $qvars[] = "event_hideemail";
+    $qvars[] = "event_emailforum";
+    $qvars[] = "event_printemail";
+    $qvars[] = "event_phone";
+    $qvars[] = "event_hidephone";
+    $qvars[] = "event_printphone";
+    $qvars[] = "event_weburl";
+    $qvars[] = "event_webname";
+    $qvars[] = "event_printweburl";
+    $qvars[] = "event_contact";
+    $qvars[] = "event_hidecontact";
+    $qvars[] = "event_printcontact";
+    $qvars[] = "event_title";
+    $qvars[] = "event_tinytitle";
+    $qvars[] = "event_audience";
+    $qvars[] = "event_descr";
+    $qvars[] = "event_printdescr";
+    $qvars[] = "event_dates";
+    $qvars[] = "event_datestype";
+    $qvars[] = "event_eventtime";
+    $qvars[] = "event_eventduration";
+    $qvars[] = "event_timedetails";
+    $qvars[] = "event_locname";
+    $qvars[] = "event_address";
+    $qvars[] = "event_addressverified";
+    $qvars[] = "event_locdetails";
+    $qvars[] = "event_review";
+
+    # Query vars for managing the form for creating
+    # new events. These get a calform_ prefix because
+    # they don't go into the database.
+    $qvars[] = "calform_action";
+    $qvars[] = "calform_event_id";
+
+    # Tell WordPress about the query vars for an event's newsflash & status.
+    # But because these variables have a suffix with the day of the event
+    # (like Jan19), we have to tell it about every day.
+    for ($day_of_month = 1; $day_of_month <= 366; $day_of_month++) {
+        # Use a leap year, so we get Feb. 29.
+        # It doesn't matter which leap year we use, since we never
+        # print the year.
+        $year = 2008;
+
+        # Iterate through every day in the year.
+        # mktime() does the right thing when passing in
+        # a "day of month" that's out of bounds. (The 366th of
+        # January becomes December 31.)
+        $thisdate = mktime(0, 0, 0, #h:m:s
+                           1, # January
+                           $day_of_month,
+                           $year); 
+        $suffix = date("Mj", $thisdate);
+
+        $qvars[] = "event_newsflash" . $suffix;
+        $qvars[] = "event_status" . $suffix;
+    }
+    
+    return $qvars;
+}
+add_filter('query_vars', 'calendar_queryvars');
+
+
+# Return whether or not to show options for administering the calendar,
+# such as editing other people's events.
+#
+# Right now, this is tied into the ability to edit posts. WordPress lets
+# a plugin define its own set of capability levels. That could be useful
+# if we ever want to have multiple kinds of admins/editors.
+# See: http://codex.wordpress.org/Roles_and_Capabilities
+function bfc_show_admin_options() {
+    return current_user_can('edit_posts');
+}
 
 ?>
