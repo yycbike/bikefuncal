@@ -96,10 +96,6 @@ class BfcEventSubmission {
         global $wp_query;
         $query_vars = $wp_query->query_vars;
 
-        print "<br>";
-        print var_dump($query_vars);
-        print "<br>";
-
         # Query-supplied arguments for the caldaily form
         $daily_args = Array();
 
@@ -129,10 +125,6 @@ class BfcEventSubmission {
             if (preg_match('/event_(newsflash|status)(.*)/',
                 $query_name, $regex_matches)) {
 
-                print "<br>";
-                print var_dump($regex_matches);
-                print "<br>";
-
                 # This is an argument for the caldaily table.
                 # File it separately from the other arguments.
                 $type        = $regex_matches[1];
@@ -151,9 +143,10 @@ class BfcEventSubmission {
             $this->set_defaults();
         }
 
+        $this->convert_data_types();
+
         if ($this->action == "update" || $this->action == "create") {
             $this->fill_in_missing_values($daily_args);
-            $this->fix_data_types();
             $this->check_validity();
 
             if (!$this->is_valid()) {
@@ -230,8 +223,6 @@ class BfcEventSubmission {
             if (isset($field_info['missing_val']) &&
                 !isset($this->event_args[$field_name]) ) {
 
-                print "<p>Filling in missing value for $field_name</p>";
-
                 $this->event_args[$field_name] = $field_info['missing_val'];
             }
         }
@@ -242,17 +233,27 @@ class BfcEventSubmission {
                 if (isset($field_info['missing_val']) &&
                     !isset($this->event_args[$field_name]) ) {
 
-                    print "<p>Filling in missing value for $field_name</p>";
-
                     $day[$field_name] = $field_info['missing_val'];
                 }
             }
         }
     }
 
-    # Convert data types of some fields from the form to the database.
-    protected function fix_data_types() {
+    # Some of the data we get in from the form has to be converted before it's
+    # ready to be stored to the database. Do those conversions.
+    protected function convert_data_types() {
+        # For these fields, convert Y/N to integer
+        $field_names = array('hideemail', 'hidephone', 'emailforum', 'printemail',
+                             'printphone', 'printweburl', 'hidecontact',
+                             'printcontact');
 
+        foreach ($field_names as $field_name) {
+            if (isset($this->event_args[$field_name])) {
+                $old_value = $this->event_args[$field_name];
+                $new_value = $old_value == "Y" ? 1 : 0;
+                $this->event_args[$field_name] = $new_value;
+            }
+        }
     }
     
     # Do an INSERT operation on the table
@@ -333,9 +334,6 @@ class BfcEventSubmission {
                 }
             }
 
-            var_dump($caldaily_args);
-
-            
             # Sometimes we end up with a day that has an eventdate &
             # not a sqldate. Evan thinks the two are interchangable, but
             # he's not sure... See the comments at the top of repeat.php,
@@ -343,10 +341,6 @@ class BfcEventSubmission {
             if (isset($day['sqldate']) && !isset($day['eventdate'])) {
                 $caldaily_args['eventdate'] = $day['sqldate'];
             }
-            
-            #print "<pre>";
-            #var_dump($caldaily_args);
-            #print "</pre>";
 
             # Figure out if we need to to a DB UPDATE or INSERT. 
             # This logic comes from the old calsubmit.php code,
@@ -446,9 +440,6 @@ class BfcEventSubmission {
 
             if (isset($daily_args[$suffix]['newsflash'])) {
                 $day['newsflash'] = $daily_args[$suffix]['newsflash'];
-                print "Changing newsflash:<br>\n";
-                var_dump($day);
-                print "<br>\n";
             }
 
             if (isset($daily_args[$suffix]['status'])) {
@@ -545,7 +536,7 @@ class BfcEventSubmission {
 
     public function print_checked_for_hideemail() {
         if (isset($this->event_args['hideemail']) &&
-            $this->event_args['hideemail'] == 'Y') {
+            $this->event_args['hideemail']) {
 
             print "checked";
         }
@@ -553,21 +544,19 @@ class BfcEventSubmission {
 
     public function print_checked_for_hidephone() {
         if (isset($this->event_args['hidephone']) &&
-            $this->event_args['hidephone'] == 'Y') {
+            $this->event_args['hidephone']) {
 
             print "checked";
         }
     }
 
-
-    public function print_checked_for_hide_contact() {
-        if (isset($this->event_args['hide_contact']) &&
-            $this->event_args['hide_contact'] == 'Y') {
+    public function print_checked_for_hidecontact() {
+        if (isset($this->event_args['hidecontact']) &&
+            $this->event_args['hidecontact']) {
 
             print "checked";
         }
     }
-
 
     public function print_selected_for_eventtime($time) {
         if (!isset($this->event_args['eventtime']) && $time == "") {
@@ -648,18 +637,16 @@ class BfcEventSubmission {
 
     # What kind of page should the caller show?
     #
-    # new-event-form -- Show the form for making/updating an event
+    # edit-event     -- Show the form for making/updating an event
     # event-updated  -- Show the results of making/updating an event
     public function page_to_show() {
         if ($this->action == "new" ||
             $this->action == "edit") {
 
-
             return "edit-event";
         }
         else if ($this->action == "create" ||
                  $this->action == "update") {
-
 
             return "event-updated";
         }

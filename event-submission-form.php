@@ -255,7 +255,7 @@ function bfc_print_event_submission_form($event_submission) {
     <input type="text" name="event_contact" <?php $event_submission->print_contact(); ?>>
     <p>
     <input type=checkbox id=event_hidecontact name=event_hidecontact value=Y
-           <?php $event_submission->print_checked_for_hide_contact() ?>
+           <?php $event_submission->print_checked_for_hidecontact() ?>
            >
 
       <label for=event_hidecontact>
