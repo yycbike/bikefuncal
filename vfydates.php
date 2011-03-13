@@ -74,8 +74,8 @@ function verify_dates() {
             for ($i--; $i >= 1 && $newdates[$i]["status"] == "Added"; $i--) {
             }
             for (; $i >= 1; $i--) {
-                if ($newdates[$i]["eventstatus"] == "Added") {
-                    $newdates[$i]["eventstatus"] = "Deleted";
+                if ($newdates[$i]["status"] == "Added") {
+                    $newdates[$i]["status"] = "Deleted";
                     $newdates[$i]["changed"] = "N";
                     $newdates[$i]["olddate"] = "Y";
                 }
@@ -105,7 +105,7 @@ function verify_dates() {
             print "      <timestamp>".$date["timestamp"]."</timestamp>\n";
             print "      <hrdate>".date("D M j", $date["timestamp"])."</hrdate>\n";
             print "      <suffix>".$date["suffix"]."</suffix>\n";
-            print "      <status>".$date["eventstatus"]."</status>\n";
+            print "      <status>".$date["status"]."</status>\n";
             print "      <exception>";
             if (isset($date["exceptionid"])) {
                 # @@@ todo: obscure this, or add an authentication code or something.

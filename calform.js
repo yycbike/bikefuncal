@@ -396,17 +396,18 @@ function vfydatesnewsflash(value, suffix)
 }
 
 // Generate an option for a daily status field
-function vfydatesoption(optstatus, havestatus)
+function vfydatesoption(select, option_value, current_value)
 {
     var option = jQuery('<option></option>');
-    option.attr('value', optstatus);
-    if (optstatus == havestatus) {
-        //option.attr('selected', 'selected');
-        option.val(optstatus);
-    }
-    option.text(optstatus);
+    option.val(option_value);
+    option.text(option_value);
+    select.append(option);
 
-    return option;
+    // Mark this option as selected in the SELECT
+    // element, if it should be.
+    if (option_value == current_value) {
+        select.val(option_value);
+    }
 }
 
 
@@ -547,22 +548,22 @@ function display_dates(xmlDom)
 
                 if (olddate == "Y") {
                     if (status == "As Scheduled" || newdate == "Y") {
-                        status_select.append(vfydatesoption('As Scheduled', status));
+                        vfydatesoption(status_select, 'As Scheduled', status);
                     }
-                    status_select.append(vfydatesoption('Canceled', status));
-                    status_select.append(vfydatesoption('Deleted', status));
+                    vfydatesoption(status_select, 'Canceled', status);
+                    vfydatesoption(status_select, 'Deleted', status);
 
                     if (newdate == "Y") {
-                        status_select.append(vfydatesoption('Exception', status));
+                        vfydatesoption(status_select, 'Exception', status);
                     }
 
                     if (status == "Skipped") {
-                        status_select.append(vfydatesoption('Skipped', status));
+                        vfydatesoption(status_select, 'Skipped', status);
                     }
                 }
                 else {
-                    status_select.append(vfydatesoption('Added', status));
-                    status_select.append(vfydatesoption('Skipped', status));
+                    vfydatesoption(status_select, 'Added', status);
+                    vfydatesoption(status_select, 'Skipped', status);
                 }
 
                 status_select.change(previewonline);
