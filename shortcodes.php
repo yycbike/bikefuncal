@@ -19,9 +19,8 @@ function bfc_overview_or_event_listings($type, $atts) {
     }
 
     if ($atts['for'] == 'palooza') {
-        # @@@ Get the dates dynamically
-        $startdate = strtotime("2011-06-03");
-        $enddate   = strtotime("2011-06-19");
+        $startdate = strtotime(PSTART);
+        $enddate   = strtotime(PEND);
         $caltype = 'palooza';
     }
     else if ($atts['for'] == 'month') {

@@ -27,7 +27,7 @@ function bfc_print_event_submission_form($event_submission) {
     <?php } # endif -- is valid ?>
 
 
-    <form action="/wordpress/?page_id=18"
+    <form action="<?php print get_permalink(); # go back to this form when submitting ?>"
           method="post"
           enctype="multipart/form-data"
           id="event-submission-form"
