@@ -69,6 +69,7 @@ function calendar_queryvars($qvars) {
     $qvars[] = "event_addressverified";
     $qvars[] = "event_locdetails";
     $qvars[] = "event_review";
+    $qvars[] = "event_editcode";
 
     # Query vars for managing the form for creating
     # new events. These get a calform_ prefix because

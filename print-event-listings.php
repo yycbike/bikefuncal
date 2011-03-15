@@ -557,7 +557,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     # Except if this is a preview; then it's meaningless
     # because they're already editing.
     if (bfc_show_admin_options() && !$for_preview) {
-        $edit_url = bfc_get_edit_url_for_event($id);
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
         print "<a href=\"$edit_url\">Edit</a>";
     }
     
@@ -727,15 +727,14 @@ END_QUERY;
     }
 }
 
-function bfc_get_edit_url_for_event($id) {
+function bfc_get_edit_url_for_event($id, $editcode) {
     $edit_page_title = 'New Event';
     $edit_page = get_page_by_title($edit_page_title);
     $base_url = get_permalink($edit_page->ID); 
-
-    # @@@ Eventually, we should obscure the event ID. Or so some kind of
-    # authentication to avoid URL hacking.
     
-    return $base_url . "&calform_event_id=${id}&calform_action=edit";
+    return $base_url . "&calform_event_id=${id}" .
+        "&calform_action=edit&" .
+        "event_editcode=${editcode}";
 }
 
 

@@ -284,6 +284,16 @@ function bfc_print_event_submission_form($event_submission) {
     ?>
 
 
+    <?php
+    if ($event_submission->has_editcode()) {
+    ?>
+        <input type="hidden" id="event_editcode" name="event_editcode"
+            value="<?php print $event_submission->editcode(); ?>">
+    <?php
+    } # end if
+    ?>
+
+
     <input type="submit" value="Submit" />
 
 

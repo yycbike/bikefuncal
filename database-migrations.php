@@ -106,7 +106,19 @@ function bfc_install_db_1() {
     return true;
 }
 
+function bfc_install_db_2() {
+    global $calevent_table_name;
+    global $wpdb;
 
+    $sql = "ALTER TABLE ${calevent_table_name} ADD editcode CHAR(13);";
+    $result = $wpdb->query($sql);
+    if ($result === false) {
+        $wpdb->print_error();
+        die("Couldn't create ${calevent_table_name}");
+    }
+
+    return true;
+}
 
 function bfc_install() {
     $db_version = get_option('bfc_db_version');
@@ -120,14 +132,22 @@ function bfc_install() {
         $db_version = (int) $db_version;
     }
 
-    $install_functions = array('bfc_install_db_1');
+    #echo "<p> Before install, db version is: ", $db_version, "</p>";
 
-    for ($db_level = 0; $db_level < count($install_functions); $db_level++) {
+    $install_functions = array('bfc_install_db_1',
+                               'bfc_install_db_2');
+
+    for ($db_level = $db_version;
+         $db_level < count($install_functions);
+         $db_level++) {
+        
         $success = $install_functions[$db_level]();
         if (!$success) {
             return false;
         }
-        update_option('bfc_db_version', $db_level);
+        update_option('bfc_db_version', $db_level + 1);
+        #echo "<p>", get_option('bfc_db_version'), "</p>";
+        #die();
     }
 
     return true;

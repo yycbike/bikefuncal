@@ -28,6 +28,16 @@ class BfcEventSubmission {
 
     protected $dayinfo;
 
+    # About editcodes
+    #
+    # In order to modify an existing event, the user needs to
+    # provide both an ID and an editcode. This prvents people from
+    # editing someone else's event through URL hacking.
+    #
+    # An editcode is required for these actions: edit, update,
+    # and delete.
+    protected $user_editcode;
+    protected $db_editcode;
 
     # Information about the database fields we'll be populating.
     # Keys are names of the fields.
@@ -48,6 +58,9 @@ class BfcEventSubmission {
     # integers, but we get them in as a string.
     protected $calevent_field_info = Array(
         "id"              => array("type" => "%d"),
+        # editcode is a special case, it's generated
+        # internally upon create.
+        "editcode"        => array("type" => "%s"),
         "name"            => array("type" => "%s", "missing_val" => ""),
         "email"           => array("type" => "%s", "missing_val" => ""),
         "hideemail"       => array("type" => "%d", "missing_val" => "N"),
@@ -118,8 +131,12 @@ class BfcEventSubmission {
         if ($this->action == "edit") {
             $this->load_from_db();
         }
+        else if ($this->action == "update"   ||
+                 $this->action == "delete") {
+            $this->load_editcode_from_db();
+        }
         
-        # Process $query_vars
+        # Process arguments for caldaily
         foreach ($query_vars as $query_name => $query_value) {
             $regex_matches = array();
             if (preg_match('/event_(newsflash|status)(.*)/',
@@ -132,10 +149,20 @@ class BfcEventSubmission {
 
                 $daily_args[$date_suffix][$type] = $query_value;
             }
-            else if (substr($query_name, 0, 6) == "event_") {
-                $arg_name = substr($query_name, 6);
+        }
+        
+        # Process arguments for calevent
+        foreach ($this->calevent_field_info as $field_name => $info) {
+            $query_field_name = 'event_' . $field_name;
 
-                $this->event_args[$arg_name] = $query_value;
+            if (isset($query_vars[$query_field_name])) {
+                if ($field_name == 'editcode') {
+                    $this->user_editcode = $query_vars[$query_field_name];
+                }
+                else {
+                    $this->event_args[$field_name] = 
+                        $query_vars[$query_field_name];
+                }
             }
         }
 
@@ -181,7 +208,8 @@ class BfcEventSubmission {
             die();
         }
 
-        $sql = $wpdb->prepare("SELECT * FROM ${calevent_table_name} WHERE id=%d",
+        $sql = $wpdb->prepare("SELECT * FROM ${calevent_table_name} " .
+                              "WHERE id=%d",
                               $this->event_id);
         $results = $wpdb->get_results($sql, ARRAY_A);
         
@@ -191,13 +219,42 @@ class BfcEventSubmission {
         else {
             $result = $results[0];
             foreach ($result as $db_key => $db_value) {
-                $this->event_args[$db_key] = $db_value;
+
+                if ($db_key == 'editcode') {
+                    $this->db_editcode = $db_value;
+                }
+                else {
+                    $this->event_args[$db_key] = $db_value;
+                }
             }
         }
 
         # We don't have to load caldaily here. The fields get loaded
         # by the AJAX request in the submission form, and then passed
         # in as part of the form.
+    }
+
+    # Load just the editcode from the database.
+    protected function load_editcode_from_db() {
+        global $calevent_table_name;
+        global $wpdb;
+
+        if (!isset($this->event_id)) {
+            die();
+        }
+
+        $sql = $wpdb->prepare("SELECT editcode FROM ${calevent_table_name} " .
+                              "WHERE id=%d",
+                              $this->event_id);
+        $results = $wpdb->get_results($sql, ARRAY_A);
+        
+        if (count($results) != 1) {
+            die("Wront number of DB results...");
+        }
+        else {
+            $result = $results[0];
+            $this->db_editcode = $result['editcode'];
+        }
     }
 
     # Set some values to their defaults.
@@ -300,12 +357,22 @@ class BfcEventSubmission {
         global $calevent_table_name, $caldaily_table_name;
 
         if ($this->action == "create") {
+            # Create the editcode
+            $event_args['editcode'] = uniqid();
+            $this->user_editcode = $event_args['editcode'];
+            $this->db_editcode = $event_args['editcode'];
+
             $this->event_id =
                 $this->insert_into_table($calevent_table_name,
                                     $this->calevent_field_info,
                                     $event_args);
         }
         else if ($this->action == "update") {
+            # Do one last check on the editcode, for good measure.
+            if (!$this->is_editcode_valid()) {
+                die("Bad editcode");
+            }
+
             $where = Array('id' => $this->event_id);
 
             $this->update_table($calevent_table_name,
@@ -388,10 +455,36 @@ class BfcEventSubmission {
         }
     }
 
+    protected function is_editcode_valid() {
+        if ($this->action == "edit"   ||
+            $this->action == "update" ||
+            $this->action == "delete") {
+
+            if (!isset($this->db_editcode)) {
+                # This shouldn't happen.
+                die("Missing DB edit code");
+            }
+
+            if (!isset($this->user_editcode) ||
+                $this->user_editcode != $this->db_editcode) {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
     # @@@ check for more invalid values
     protected function check_validity() {
+        # @@@ Validate the dates more carefully
         if (! isset($this->event_args['dates']) ) {
             $this->errors[] = "Date is missing";
+        }
+
+        # Validate the edit code
+        if (!$this->is_editcode_valid()) {
+            $this->errors[] = "You don't have authorization to edit this event";
         }
     }
 
@@ -602,6 +695,18 @@ class BfcEventSubmission {
 
     public function event_id() {
         return $this->event_id;
+    }
+
+    public function has_editcode() {
+        return isset($this->db_editcode);
+    }
+
+    public function editcode() {
+        if (!$this->is_editcode_valid()) {
+            die("Missing authorization to edit this entry");
+        }
+
+        return $this->user_editcode;
     }
 
     public function has_next_action() {
