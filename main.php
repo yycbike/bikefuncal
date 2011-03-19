@@ -5,7 +5,6 @@
 
 # upgrade.php is required for the database upgrade functions
 require_once(ABSPATH . "wp-admin/includes/upgrade.php");
-require_once('admin-menu.php');
 require_once('print-event-listings.php');
 require_once('repeat.php');
 require_once('daily.php');
@@ -14,8 +13,9 @@ require_once('event-submission.php');
 require_once('event-submission-form.php');
 require_once('event-submission-result.php');
 require_once('event-delete-result.php');
-require_once('vfydates.php');
 require_once('shortcodes.php');
+require_once('venue.php');
+require_once('vfydates.php');
 
 # bfc_install() lives in database-migrations.php,
 # but __FILE__ has to be this file -- the main
@@ -115,5 +115,29 @@ add_filter('query_vars', 'calendar_queryvars');
 function bfc_show_admin_options() {
     return current_user_can('edit_posts');
 }
+
+# Add options to the WordPress admin menu
+add_action('admin_menu', 'bfc_plugin_menu');
+function bfc_plugin_menu() {
+    add_menu_page('Bike Fun Cal', # Page title
+                     'Bike Fun Cal', # Menu title
+                     'manage_options', # capability
+                     'bfc-top',   # menu slug
+                     'bfc_options');  # function callback
+
+    add_submenu_page('bfc-top', # parent
+                     'Edit Known Venues', # title
+                     'Venues',
+                     'manage_options', # capability
+                     'bfc-venues',   # menu slug
+                     'bfc_venues');  # function callback
+
+}
+
+function bfc_options() {
+    echo "<p>More options will go here someday</p>";
+}
+
+
 
 ?>

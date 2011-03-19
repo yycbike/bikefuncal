@@ -1,26 +1,6 @@
 <?php
-# Functions for showing an admin menu.
+# Functions related to the known-venues list
 
-add_action('admin_menu', 'bfc_plugin_menu');
-function bfc_plugin_menu() {
-    add_menu_page('Bike Fun Cal', # Page title
-                     'Bike Fun Cal', # Menu title
-                     'manage_options', # capability
-                     'bfc-top',   # menu slug
-                     'bfc_options');  # function callback
-
-    add_submenu_page('bfc-top', # parent
-                     'Edit Known Venues', # title
-                     'Venues',
-                     'manage_options', # capability
-                     'bfc-venues',   # menu slug
-                     'bfc_venues');  # function callback
-
-}
-
-function bfc_options() {
-    echo "<p>More options will go here someday</p>";
-}
 
 # Display the known-venues list for editing
 function bfc_venues() {
@@ -206,6 +186,25 @@ function bfc_load_venue_list_javascript() {
     wp_print_scripts('venue');
 }
 
+# Convert text entered by the user into a format that is easy to compare.
+# Specifically, this converts to lowercase and strips out meaningless chars.
+# For example, "Col. Summer's Park" is converted to "col. summers park"
+function canonize($guess)
+{
+    # Convert to lowercase
+    $guess = strtolower($guess);
+
+    # Remove anything other than letters, digits, periods, or spaces
+    $guess = preg_replace("/[^a-z0-9. ]/", "", $guess);
+
+    # Reduce multiple spaces to single spaces
+    $guess = preg_replace("/   */", " ", $guess);
+
+    # Reduce multiple periods or spaces with a single period and space.
+    $guess = preg_replace("/[. ][. ][. ]*/", ". ", $guess);
+
+    return $guess;
+}
 
 
 ?>

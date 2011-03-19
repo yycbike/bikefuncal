@@ -182,27 +182,6 @@ function htmldescription($descr)
     return $html;
 }
 
-# Convert text entered by the user into a format that is easy to compare.
-# Specifically, this converts to lowercase and strips out meaningless chars.
-# For example, "Col. Summer's Park" is converted to "col. summers park"
-function canonize($guess)
-{
-    # Convert to lowercase
-    $guess = strtolower($guess);
-
-    # Remove anything other than letters, digits, periods, or spaces
-    $guess = preg_replace("/[^a-z0-9. ]/", "", $guess);
-
-    # Reduce multiple spaces to single spaces
-    $guess = preg_replace("/   */", " ", $guess);
-
-    # Reduce multiple periods or spaces with a single period and space.
-    $guess = preg_replace("/[. ][. ][. ]*/", ". ", $guess);
-
-    return $guess;
-}
-
-
 # Return the URL for a calendar view that includes a given date.  The $date
 # should be supplied in MySQL's "YYYY-MM-DD" format.  The $id indicate which
 # event on that date we want to see.

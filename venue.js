@@ -132,7 +132,6 @@ function load_known_venues() {
         );    
 }
 
-
 // Initialize event handlers
 //
 // Have to use jQuery(), not $(), because WordPress loads jQuery
