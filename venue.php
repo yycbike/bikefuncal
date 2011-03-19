@@ -47,7 +47,7 @@ function bfc_venues() {
 </td>
 
 <td>
-<!-- @@@ todo: add locked -->
+<input type=checkbox id=venue_locked checked>
 </td>
 
 <td>
@@ -73,6 +73,11 @@ function bfc_get_known_venues() {
     $sql = "select * from ${caladdress_table_name} order by locname ASC";
     $venues = $wpdb->get_results($sql, ARRAY_A);
 
+    # Convert locked to a boolean
+    foreach ($venues as &$venue) {
+        $venue['locked'] = ($venue['locked'] == 1);
+    }
+    
     $json = json_encode($venues);
 
     echo $json, "\n";
@@ -161,6 +166,9 @@ function bfc_edit_venue() {
 
     # @@@ Turn off printing of errors, and instead return
     # errors as part of the JSON.
+
+    # debugging:
+    #$result['query'] = $wpdb->last_query;
 
     print json_encode($result);
     exit;
