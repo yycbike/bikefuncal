@@ -5,6 +5,7 @@
 
 # upgrade.php is required for the database upgrade functions
 require_once(ABSPATH . "wp-admin/includes/upgrade.php");
+require_once('admin-menu.php');
 require_once('print-event-listings.php');
 require_once('repeat.php');
 require_once('daily.php');

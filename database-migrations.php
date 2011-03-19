@@ -1,9 +1,6 @@
 <?php
 # Functions related to installing the datbase, and migrating between versions.
 
-global $bfc_db_version;
-$bfc_db_version = 1;
-
 # Names of tables in the database.
 # @@@ Variable names should be prefixed with bfc_
 global $calevent_table_name;
@@ -12,8 +9,9 @@ $calevent_table_name =
 global $caldaily_table_name;
 $caldaily_table_name =
     $wpdb->prefix . "bfc_caldaily";
-
-
+global $caladdress_table_name;
+$caladdress_table_name =
+    $wpdb->prefix . "bfc_caladdress";
 
 #
 # Create the tables in the WordPress database.
@@ -120,6 +118,27 @@ function bfc_install_db_2() {
     return true;
 }
 
+function bfc_install_db_3() {
+    global $caladdress_table_name;
+    global $wpdb;
+
+    $sql = "CREATE TABLE IF NOT EXISTS ${caladdress_table_name} (";
+    $sql .= "canon VARCHAR(255) PRIMARY KEY NOT NULL,"; # simplified locname
+    $sql .= "address VARCHAR(255),";	# address of the venue
+    $sql .= "locname VARCHAR(255),";	# name of the venue
+    $sql .= "locked INT(1)";		# 1=locked, 0=automatic updates allowed
+    $sql .= ");";
+
+    $result = $wpdb->query($sql);
+    if ($result === false) {
+        $wpdb->print_error();
+        die("Couldn't create ${caladdress_table_name}");
+    }
+
+    return true;
+}
+
+
 function bfc_install() {
     $db_version = get_option('bfc_db_version');
 
@@ -135,7 +154,8 @@ function bfc_install() {
     #echo "<p> Before install, db version is: ", $db_version, "</p>";
 
     $install_functions = array('bfc_install_db_1',
-                               'bfc_install_db_2');
+                               'bfc_install_db_2',
+                               'bfc_install_db_3');
 
     for ($db_level = $db_version;
          $db_level < count($install_functions);
