@@ -1,7 +1,40 @@
-function save_edits(type, canon, name, address, locked, result_cell) {
+function add_venue(name_input, address_input, locked, error_result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
-          'type'    : type,
+          'type'    : 'create',
+          'locname' : name_input.val(),          
+          'address' : address_input.val(),       
+          'locked'  : locked,          
+    };
+
+    var show_result = function(result) {
+        if (result.status == 1) {
+            // @@@ It would be nice to flash the new
+            // venue somehow...
+            load_known_venues();
+
+            // Clear out the inputs
+            name_input.val('');
+            address_input.val('');
+        }
+        else {
+            error_result_cell.text("Oops! This couldn't be saved");
+        }
+    }
+    
+    jQuery.post(
+        BikeFunAjax.ajaxurl,
+        ajax_params,
+        show_result,
+        'json'
+        );    
+
+}
+
+function save_edits(canon, name, address, locked, result_cell) {
+    var ajax_params = {
+          'action'  : 'edit-venue',
+          'type'    : 'update',
           'canon'   : canon,         
           'locname' : name,          
           'address' : address,       
@@ -72,7 +105,7 @@ function display_known_venues(known_venues) {
                                 canon_copy, result_cell_copy) {
 
             return function() {
-                save_edits('update', canon_copy, name_input_copy.val(),
+                save_edits(canon_copy, name_input_copy.val(),
                            address_input_copy.val(), false,
                            result_cell_copy);
             }
@@ -112,13 +145,6 @@ jQuery(document).ready(function() {
         var address = jQuery('#venue_address');
         var result = jQuery('#new_venue_result');
 
-        // @@@ do something for canon
-        save_edits('create', name.val(), name.val(), address.val(),
-                   true, result);
-
-        // @@@ we should wait until the save succeeds to
-        // clear out the old values.
-        name.val('');
-        address.val('');
+        add_venue(name, address, true, result);
     });
 });

@@ -42,11 +42,12 @@ function bfc_venues() {
 <th>Address</th>
 <th>Lock</th>
 <th>Edit</th>
-<th><!-- save results go here --></th>
+<th><!-- results of save go here --></th>
 </tr>
 <thead>
 
 <tbody>
+<!-- this gets filled in via ajax -->
 </tbody>
 
 <tfoot>
@@ -86,9 +87,6 @@ function bfc_venues() {
 }
 
 function bfc_get_known_venues() {
-    # This sends a plain-text response, so no
-    # header is needed.
-
     global $wpdb;
     global $caladdress_table_name;
 
@@ -104,14 +102,34 @@ function bfc_get_known_venues() {
 add_action('wp_ajax_get-known-venues',
            'bfc_get_known_venues');
 
-
 function bfc_edit_venue() {
     $result = array();
 
     $args = array();
+
+    if (!isset($_POST['type'])) {
+        $result['status'] = 0;
+        print json_encode($result);
+        exit;
+    }
+
+    if ($_POST['type'] == 'create') {
+        $mandatory_fields = array('address',
+            'locname', 'locked');
+        $arg_types = array('%s', '%s', '%d');
+    }
+    else if ($_POST['type'] == 'update') {
+        $mandatory_fields = array('canon', 'address',
+            'locname', 'locked');
+        $arg_types = array('%s', '%s', '%s', '%d');
+    }
+    else {
+        $result['status'] = 0;
+        print json_encode($result);
+        exit;
+    }
     
     # Make sure we have all the data we need
-    $mandatory_fields = array('canon', 'address', 'locname', 'locked');
     foreach ($mandatory_fields as $field) {
         if (!isset($_POST[$field])) {
             $result['status'] = 0;
@@ -126,18 +144,23 @@ function bfc_edit_venue() {
     # convert boolean from string to int
     $args['locked'] = $args['locked'] == 'true' ? 1 : 0;
 
+    # Find canonical name, if needed
+    if ($_POST['type'] == 'create') {
+        $args['canon'] = canonize($args['locname']);
+        $arg_types[] = '%s';
+    }
+
+    # @@@ If this is an update, do we need to change
+    # canon?
+
+    # Do the database update
     global $wpdb;
     global $caladdress_table_name;
 
-    $where = array('canon' => $args['canon']);
-    $arg_types = array('canon' => '%s',
-                       'address' => '%s',
-                       'locname' => '%s',
-                       'locked'  => '%d');
-    $where_types = array('canon' => '%s');
-
-
     if ($_POST['type'] == 'update') {
+        $where = array('canon' => $args['canon']);
+        $where_types = array('%s');
+
         $wpdb->update($caladdress_table_name,
                       $args,
                       $where,
@@ -155,6 +178,10 @@ function bfc_edit_venue() {
     else {
         $result['status'] = 0;
     }
+
+    # @@@ Turn off printing of errors, and instead return
+    # errors as part of the JSON.
+
     print json_encode($result);
     exit;
 }
