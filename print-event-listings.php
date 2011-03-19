@@ -510,11 +510,10 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     # get the image info
     $image = "";
     if ($include_images && !$for_preview && $record["image"]) {
-	$t = pathinfo($record["image"]);
-	$t = $t["extension"];
-        # OK to use $id here, because we only show the preview
-        # when not previewing -- $id will always be set here.
-	$image = "eventimages/$id.$t";
+        # The image field has the path relative to the uploads dir.
+        $upload_dirinfo = wp_upload_dir();
+        $image = $upload_dirinfo['baseurl'] . $record["image"];
+        
 	$imageheight = $record["imageheight"];
 	$imagewidth = $record["imagewidth"];
     }

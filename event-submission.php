@@ -53,7 +53,6 @@ class BfcEventSubmission {
     #   web browser doesn't even send over form data. We have to notice
     #   it's unchecked by the lack of a value. 
     #
-    # @@@ need to add image, imagewidth, and imageheight
     # @@@ in the database hidecontact, printcontact, etc. are
     # integers, but we get them in as a string.
     protected $calevent_field_info = Array(
@@ -92,6 +91,13 @@ class BfcEventSubmission {
         # Unlike other booleans, addressverified has type char(1)
         "addressverified" => array("type" => "%s", "missing_val" => "N"),
         "locdetails"      => array("type" => "%s", "missing_val" => ""),
+
+        # No missing_vals for image fields, because they come through the
+        # file upload process.
+        "image"           => array("type" => "%s"),
+        "imagewidth"      => array("type" => "%d"),
+        "imageheight"     => array("type" => "%d"),
+
         # Evan isn't sure yet what the right missing_val is for review,
         # so leave it alone for now.
         "review"          => array("type" => "%s"),
@@ -133,7 +139,7 @@ class BfcEventSubmission {
         }
         else if ($this->action == "update"   ||
                  $this->action == "delete") {
-            $this->load_editcode_from_db();
+            $this->load_modification_fields_from_db();
         }
         
         # Process arguments for caldaily
@@ -153,6 +159,15 @@ class BfcEventSubmission {
         
         # Process arguments for calevent
         foreach ($this->calevent_field_info as $field_name => $info) {
+            # These come through the file upload mechanism, so don't
+            # let them come in through the normal query process.
+            if ($field_name == 'image' ||
+                $field_name == 'imagheight' ||
+                $field_name == 'imagewidth') {
+
+                continue;
+            }
+
             $query_field_name = 'event_' . $field_name;
 
             if (isset($query_vars[$query_field_name])) {
@@ -189,10 +204,8 @@ class BfcEventSubmission {
                 $this->action = "edit";
             }
             else {
-                # For updates (not creates), add these actions:
-                # @@@ need to track changes to images
-
                 $this->calculate_days($daily_args);
+                $this->attach_images();
                 $this->add_event_to_db($this->event_args,
                                        $this->dayinfo['daylist']);
             }
@@ -244,8 +257,9 @@ class BfcEventSubmission {
         # in as part of the form.
     }
 
-    # Load just the editcode from the database.
-    protected function load_editcode_from_db() {
+    # Load just the fields that are needed for editing this
+    # event.
+    protected function load_modification_fields_from_db() {
         global $calevent_table_name;
         global $wpdb;
 
@@ -253,7 +267,7 @@ class BfcEventSubmission {
             die();
         }
 
-        $sql = $wpdb->prepare("SELECT editcode FROM ${calevent_table_name} " .
+        $sql = $wpdb->prepare("SELECT editcode, image FROM ${calevent_table_name} " .
                               "WHERE id=%d",
                               $this->event_id);
         $results = $wpdb->get_results($sql, ARRAY_A);
@@ -264,6 +278,7 @@ class BfcEventSubmission {
         else {
             $result = $results[0];
             $this->db_editcode = $result['editcode'];
+            $this->event_args['image'] = $result['image'];
         }
     }
 
@@ -486,9 +501,77 @@ class BfcEventSubmission {
             die("Failed to delete from caldaily");
         }
 
-        # @@@ Todo: Delete any image that might be associated with the event.
+        $this->delete_image();
     }
 
+    protected function attach_images() {
+        if (!isset($_FILES['event_image']['tmp_name'])) {
+            # Nothing to do...
+
+            # @@@ Check the error code; could be a problem on the user's
+            # end.
+            return;
+        }
+
+        # Copy the file to the uploads directory.
+
+        # @@@ If we wanted to get fancy, we could pass in the date of the
+        # first event, so the upload dir would correspond to the event date,
+        # not the creation date (today's date).
+        $upload_dirinfo = wp_upload_dir();
+
+        var_dump($upload_dirinfo);
+        
+        # This trusts that the file extension is OK on the user's machine...
+        $extension = pathinfo($_FILES['event_image']['name'],
+                              PATHINFO_EXTENSION);
+        var_dump($extension);
+
+        $filename = $upload_dirinfo['path'] . '/' .
+            uniqid() . '.' . $extension;
+
+        move_uploaded_file($_FILES['event_image']['tmp_name'],
+                           $filename);
+        list($imagewidth, $imageheight) = getimagesize($filename);
+
+        # Delete the old image (if any)
+        $this->delete_image();
+
+        # Make a filename that's relative to the uploads dir.
+        # We can use this later to construct a URL.
+        $relative_filename =
+            str_replace($upload_dirinfo['basedir'], '', $filename);
+        
+        # Update the event_args
+        $this->event_args['image'] = $relative_filename;
+        $this->event_args['imageheight'] = $imageheight;
+        $this->event_args['imagewidth'] = $imagewidth;
+
+        var_dump($this->event_args);
+        
+        # (We could make a WordPress attachment out of this. But what would
+        # the benefit be?)
+    }
+
+    # Delete the image file for this event, if it has one.
+    protected function delete_image() {
+        print "<p>Image:</p>";
+        var_dump($this->event_args['image']);
+
+        if (isset($this->event_args['image']) &&
+            $this->event_args['image'] != '') {
+
+            $upload_dirinfo = wp_upload_dir();
+            $old_filename = $upload_dirinfo['basedir'] .
+                $this->event_args['image'];
+            
+            $success = unlink($old_filename);
+            if (!$success) {
+                die("Can't delete image: $old_filename");
+            }
+        }
+    }
+    
     protected function is_editcode_valid() {
         if ($this->action == "edit"   ||
             $this->action == "update" ||

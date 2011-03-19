@@ -265,6 +265,13 @@ function bfc_print_event_submission_form($event_submission) {
 
     </div>
 
+    <h3>Image</h3>
+    <div class="new-event-category">
+    Image file:
+    <input type="file" name="event_image">
+    </div>
+
+
     <?php
     if ($event_submission->has_event_id()) {
     ?>
