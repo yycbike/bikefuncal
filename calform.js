@@ -1059,6 +1059,15 @@ jQuery(document).ready(function() {
 
     jQuery('#event_eventtime').focus(tweaktime);
     jQuery('#event_eventtime').change(tweakdurations);
+    
+    // If there's a delete button, confirm deletion.
+    var delete_button = jQuery('#delete_button');
+    if (delete_button) {
+        delete_button.click(function(event) {
+            message = "Are you sure you want to delete this event?";
+            return confirm(message);
+        });
+    }
 });
 
 

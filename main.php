@@ -12,9 +12,9 @@ require_once('database-migrations.php');
 require_once('event-submission.php');
 require_once('event-submission-form.php');
 require_once('event-submission-result.php');
+require_once('event-delete-result.php');
 require_once('vfydates.php');
 require_once('shortcodes.php');
-
 
 # bfc_install() lives in database-migrations.php,
 # but __FILE__ has to be this file -- the main
@@ -35,7 +35,6 @@ function calendar_queryvars($qvars) {
     # Query vars for browsing the calendar.
     $qvars[] = 'calyear';
     $qvars[] = 'calmonth';
-
 
     # Query vars for making a new event.
     # Prefix with "event_" to avoid conflicts with

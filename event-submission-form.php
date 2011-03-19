@@ -266,15 +266,6 @@ function bfc_print_event_submission_form($event_submission) {
     </div>
 
     <?php
-    if ($event_submission->has_next_action()) {
-    ?>
-        <input type="hidden" id="calform_action" name="calform_action"
-            value="<?php print $event_submission->next_action(); ?>">
-    <?php
-    } # end if
-    ?>
-
-    <?php
     if ($event_submission->has_event_id()) {
     ?>
         <input type="hidden" id="calform_event_id" name="calform_event_id"
@@ -294,7 +285,17 @@ function bfc_print_event_submission_form($event_submission) {
     ?>
 
 
-    <input type="submit" value="Submit" />
+    <input type="submit" name="calform_action"
+         value="<?php print $event_submission->next_action(); ?>">
+
+    <?php
+    if ($event_submission->has_delete()) {
+    ?>
+        <input type="submit" id="delete_button" name="calform_action"
+            value="delete">
+    <?php
+    } # end if
+    ?>    
 
 
     <h2>Preview</h2>

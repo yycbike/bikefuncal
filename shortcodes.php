@@ -118,6 +118,9 @@ function bfc_event_submission_tag($atts) {
     else if ($event_submission->page_to_show() == "event-updated") {
         bfc_print_event_submission_result($event_submission);
     }
+    else if ($event_submission->page_to_show() == "event-deleted") {
+        bfc_print_event_deletion_result($event_submission);
+    }
     else {
         die();
     }

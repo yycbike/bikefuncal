@@ -21,7 +21,7 @@ class BfcEventSubmission {
     # create = commit the results from a new 
     # edit   = show filled-in form for editing the event
     # update = commit the results from an edit
-    # delete = TBD...
+    # delete = delete the event (with no confirmation)
     protected $action;
 
     protected $errors = Array();
@@ -111,7 +111,7 @@ class BfcEventSubmission {
 
         # Query-supplied arguments for the caldaily form
         $daily_args = Array();
-
+        
         if (isset($query_vars['calform_event_id'])) {
             $this->event_id = (int) $query_vars['calform_event_id'];
         }
@@ -195,6 +195,16 @@ class BfcEventSubmission {
                 $this->calculate_days($daily_args);
                 $this->add_event_to_db($this->event_args,
                                        $this->dayinfo['daylist']);
+            }
+        }
+        else if ($this->action == "delete") {
+            
+            if ($this->is_editcode_valid()) {
+                $this->delete();
+            }
+            else {
+                $this->errors[] = "You don't have permission to delete this event.";
+                $this->action = "edit";
             }
         }
     }
@@ -455,6 +465,30 @@ class BfcEventSubmission {
         }
     }
 
+    protected function delete() {
+        global $calevent_table_name;
+        global $caldaily_table_name;
+        global $wpdb;
+
+        $caldaily_query = $wpdb->prepare("DELETE FROM ${caldaily_table_name} " .
+                                         "WHERE id=%d OR exceptionid=%d",
+                                         $this->event_id, $this->event_id);
+        $result = $wpdb->query($caldaily_query);
+        if ($result === false) {
+            die("Failed to delete from caldaily");
+        }
+
+        $calevent_query = $wpdb->prepare("DELETE FROM ${calevent_table_name} " .
+                                         "WHERE id=%d",
+                                         $this->event_id);
+        $result = $wpdb->query($calevent_query);
+        if ($result === false) {
+            die("Failed to delete from caldaily");
+        }
+
+        # @@@ Todo: Delete any image that might be associated with the event.
+    }
+
     protected function is_editcode_valid() {
         if ($this->action == "edit"   ||
             $this->action == "update" ||
@@ -709,11 +743,13 @@ class BfcEventSubmission {
         return $this->user_editcode;
     }
 
-    public function has_next_action() {
-        return $this->action == "new" ||
-            $this->action == "edit";
+    public function has_delete() {
+        return $this->action == "edit";
     }
 
+    # Return the action to perform next.
+    # This should only be called from the edit-event
+    # page.
     public function next_action() {
         if ($this->action == "new") {
             return "create";
@@ -744,6 +780,7 @@ class BfcEventSubmission {
     #
     # edit-event     -- Show the form for making/updating an event
     # event-updated  -- Show the results of making/updating an event
+    # event-deleted  -- Show the results of deleting an event
     public function page_to_show() {
         if ($this->action == "new" ||
             $this->action == "edit") {
@@ -754,6 +791,9 @@ class BfcEventSubmission {
                  $this->action == "update") {
 
             return "event-updated";
+        }
+        else if ($this->action == "delete") {
+            return "event-deleted";
         }
         else {
             die("Bad action: $this->action");
