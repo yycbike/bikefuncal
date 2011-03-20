@@ -153,7 +153,7 @@ class BfcEventSubmission {
                 $type        = $regex_matches[1];
                 $date_suffix = $regex_matches[2];
 
-                $daily_args[$date_suffix][$type] = $query_value;
+                $daily_args[$date_suffix][$type] = stripslashes($query_value);
             }
         }
         
@@ -176,7 +176,7 @@ class BfcEventSubmission {
                 }
                 else {
                     $this->event_args[$field_name] = 
-                        $query_vars[$query_field_name];
+                        stripslashes($query_vars[$query_field_name]);
                 }
             }
         }

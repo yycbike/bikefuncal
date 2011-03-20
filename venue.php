@@ -122,7 +122,7 @@ function bfc_edit_venue() {
             exit;
         }
         else {
-            $args[$field] = $_POST[$field];
+            $args[$field] = stripslashes($_POST[$field]);
         }
     }
 

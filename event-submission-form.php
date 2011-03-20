@@ -294,7 +294,7 @@ function bfc_print_event_submission_form($event_submission) {
     ?>
 
 
-    <input type="submit" name="calform_action"
+    <input type="submit" id="calform_action" name="calform_action"
          value="<?php print $event_submission->next_action(); ?>">
 
     <?php

@@ -750,7 +750,7 @@ function preview_event_submission() {
         if (substr($query_name, 0, 6) == "event_") {
             $arg_name = substr($query_name, 6);
             
-            $record[$arg_name] = $query_value;
+            $record[$arg_name] = stripslashes($query_value);
         }
     }
 
