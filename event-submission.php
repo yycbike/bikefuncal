@@ -505,7 +505,8 @@ class BfcEventSubmission {
     }
 
     protected function attach_images() {
-        if (!isset($_FILES['event_image']['tmp_name'])) {
+        if (!isset($_FILES['event_image']['tmp_name']) ||
+            $_FILES['event_image']['tmp_name'] == '') {
             # Nothing to do...
 
             # @@@ Check the error code; could be a problem on the user's
@@ -519,14 +520,13 @@ class BfcEventSubmission {
         # first event, so the upload dir would correspond to the event date,
         # not the creation date (today's date).
         $upload_dirinfo = wp_upload_dir();
-
-        #var_dump($upload_dirinfo);
         
         # This trusts that the file extension is OK on the user's machine...
         $extension = pathinfo($_FILES['event_image']['name'],
                               PATHINFO_EXTENSION);
-        var_dump($extension);
 
+        # Use uniqid() for the filename because, when this runs, the event ID
+        # may not have been set yet.
         $filename = $upload_dirinfo['path'] . '/' .
             uniqid() . '.' . $extension;
 
@@ -547,7 +547,7 @@ class BfcEventSubmission {
         $this->event_args['imageheight'] = $imageheight;
         $this->event_args['imagewidth'] = $imagewidth;
 
-        var_dump($this->event_args);
+        #var_dump($this->event_args);
         
         # (We could make a WordPress attachment out of this. But what would
         # the benefit be?)
@@ -555,9 +555,6 @@ class BfcEventSubmission {
 
     # Delete the image file for this event, if it has one.
     protected function delete_image() {
-        print "<p>Image:</p>";
-        var_dump($this->event_args['image']);
-
         if (isset($this->event_args['image']) &&
             $this->event_args['image'] != '') {
 
@@ -569,6 +566,9 @@ class BfcEventSubmission {
             if (!$success) {
                 die("Can't delete image: $old_filename");
             }
+
+            # @@@ Should we clear out the values for image, imagewidth, and imagheight
+            # here?
         }
     }
     
