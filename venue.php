@@ -176,6 +176,37 @@ function bfc_edit_venue() {
 add_action('wp_ajax_edit-venue',
            'bfc_edit_venue');
 
+function bfc_delete_venue() {
+    $result = array();
+
+    if (!isset($_POST['canon'])) {
+        $result['status'] = 0;
+        print json_encode($result);
+        exit;
+    }
+
+    global $wpdb;
+    global $caladdress_table_name;
+    $sql = $wpdb->prepare("DELETE FROM ${caladdress_table_name} " .
+                          "WHERE canon = %s", $_POST['canon']);
+
+    $query_result = $wpdb->query($sql);
+
+    $result['status'] = ($query_result !== false);
+
+    # @@@ Turn off printing of errors, and instead return
+    # errors as part of the JSON.
+
+    # debugging:
+    #$result['query'] = $wpdb->last_query;
+
+    print json_encode($result);
+    exit;
+}
+add_action('wp_ajax_delete-venue',
+           'bfc_delete_venue');
+
+
 
 #
 # Load the JavaScript code that the event submission page needs.

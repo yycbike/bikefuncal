@@ -71,6 +71,34 @@ function save_edits(canon, name, address, locked, result_cell) {
         );    
 }
 
+function delete_venue(canon, table_row, result_cell) {
+    var ajax_params = {
+          'action'  : 'delete-venue',
+          'canon'   : canon,
+    };
+
+    var show_result = function(result) {
+        if (result.status == 1) {
+            result_cell.
+                text('deleted!').
+                fadeOut('slow', function() {
+                    table_row.remove();
+                });
+        }
+        else {
+            result_cell.text("Oops! An error occurred");
+        }
+    }
+
+    jQuery.post(
+        BikeFunAjax.ajaxurl,
+        ajax_params,
+        show_result,
+        'json'
+        );    
+}
+
+
 function display_known_venues(known_venues) {
     var table = jQuery('#known-venues tbody');
     table.empty();
@@ -98,6 +126,10 @@ function display_known_venues(known_venues) {
         var edit_cell = jQuery('<td></td>');
         var save_button = jQuery('<input type=submit value=save>');
         edit_cell.append(save_button);
+
+        var delete_button = jQuery('<input type=submit value=delete>');
+        edit_cell.append(delete_button);
+        
         tr.append(edit_cell);
 
         // blank for now. results will go there later.
@@ -119,6 +151,16 @@ function display_known_venues(known_venues) {
            result_cell); 
         save_button.click(do_save);
         
+        var do_delete = (function(canon_copy, table_row_copy,
+                                  result_cell_copy) {
+
+            return function() {
+                delete_venue(canon_copy,
+                             table_row_copy, result_cell_copy);
+            }
+        })(known_venues[idx].canon, tr, result_cell);
+        delete_button.click(do_delete);
+
         table.append(tr);
     }
 }
