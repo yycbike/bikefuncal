@@ -6,5 +6,8 @@ syntax: glob
 # Ignore fuse files
 .fuse_hidden*
 
+# Ignore Mac volumes
+.DS_Store
+
 syntax: regexp
 /RCS/

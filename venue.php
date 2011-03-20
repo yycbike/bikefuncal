@@ -245,5 +245,21 @@ function canonize($guess)
     return $guess;
 }
 
+# Return an associative array of location names (full names, not canon)
+# mapped to addresses.
+function bfc_venue_list() {
+    global $wpdb;
+    global $caladdress_table_name;
+
+    $sql = "select locname, address from ${caladdress_table_name}";
+    $venues = $wpdb->get_results($sql, ARRAY_A);
+
+    $assoc_venues = Array();
+    foreach ($venues as $venue) {
+        $assoc_venues[$venue['locname']] = $venue['address'];
+    }
+
+    return $assoc_venues;
+}
 
 ?>

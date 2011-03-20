@@ -133,15 +133,37 @@ add_shortcode('bfc_event_submission', 'bfc_event_submission_tag');
 #
 # This is designed to be run in the wp_footer action.
 function bfc_load_event_submission_form_javascript() {
+    # First, register jquery UI (the custom version)
+    $jquery_js_url = 
+        plugins_url('bikefuncal/jquery-ui/js/jquery-ui-1.8.11.custom.min.js');
+    wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
+
+
+    $jquery_css_url =
+        plugins_url('bikefuncal/jquery-ui/css/ui-lightness/jquery-ui-1.8.11.custom.css');
+    wp_register_style('bfc-jquery-ui-style', $jquery_css_url, null);
+
+    
+    # Second, register the JS for bikefuncal
+                       
     # @@@ Evan isn't sure how to do this without hard-coding
     # 'bikefuncal' into the URL.
-    $js_url = plugins_url('bikefuncal/calform.js');
-
-    wp_register_script('calform', $js_url, array('jquery'));
-    wp_localize_script('calform',
-                       'BikeFunAjax',
-                       array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
-
-    wp_print_scripts('calform');                       
+    $calform_js_url = plugins_url('bikefuncal/calform.js');
     
+    $required_scripts = array('jquery', 'bfc-jquery-ui');
+    wp_register_script('calform', $calform_js_url, $required_scripts);
+
+    # Create the BikeFunAjax object in the page, to send data from
+    # PHP to JavaScript.
+    $ajax_options = array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        # We have to use l10n_print_after to pass JSON-encoded data.
+        # See: http://wordpress.stackexchange.com/q/8655
+        'l10n_print_after' =>
+            'BikeFunAjax.venues = ' . json_encode(bfc_venue_list()) . ';',
+        );
+    wp_localize_script('calform', 'BikeFunAjax', $ajax_options);
+                       
+    wp_print_styles('bfc-jquery-ui-style');
+    wp_print_scripts('calform');                       
 }

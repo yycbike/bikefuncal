@@ -1027,6 +1027,29 @@ function previewonline() {
         );    
 }
 
+// Return a list of venues, for use in autocomplete
+function venue_names() {
+    var venue_names = [];
+    for (var key in BikeFunAjax.venues) {
+        if (BikeFunAjax.venues.hasOwnProperty(key)) {
+            venue_names.push(key);
+        }
+    }
+
+    return venue_names;
+}
+
+// An event handler that gets called to (possibly) fill in
+// the address based on the venue.
+function autocomplete_address(event, ui) {
+    var locname = jQuery('#event_locname').val();
+
+    if (BikeFunAjax.venues.hasOwnProperty(locname)) {
+        var address = BikeFunAjax.venues[locname];
+        jQuery('#event_address').val(address);
+    }
+}
+
 // Initialize event handlers
 //
 // Have to use jQuery(), not $(), because WordPress loads jQuery
@@ -1068,6 +1091,26 @@ jQuery(document).ready(function() {
             return confirm(message);
         });
     }
+
+    var locname_field = jQuery('#event_locname');
+    locname_field.autocomplete({
+            source: venue_names(),
+
+            // Ideally, we'd use the select event, but Evan couldn't
+            // get that to work. Close also works, but it fires when
+            // the user selects or cancels, so don't assume it's
+            // always a selection.
+            //
+            // Also, note that we're using the autocomplete widget
+            // distributed as part of jquery-ui, and not the older
+            // autocomplete plugin (which has a radically different
+            // API).
+            //
+            // See:
+            // http://jqueryui.com/demos/autocomplete/#event-change
+            close: autocomplete_address,
+        });
+
 });
 
 

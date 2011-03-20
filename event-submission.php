@@ -520,7 +520,7 @@ class BfcEventSubmission {
         # not the creation date (today's date).
         $upload_dirinfo = wp_upload_dir();
 
-        var_dump($upload_dirinfo);
+        #var_dump($upload_dirinfo);
         
         # This trusts that the file extension is OK on the user's machine...
         $extension = pathinfo($_FILES['event_image']['name'],

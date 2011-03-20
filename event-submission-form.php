@@ -70,10 +70,12 @@ function bfc_print_event_submission_form($event_submission) {
     <h3>Where</h3>
     <div class="new-event-category">
     <h4>Venue Name</h4>
-      <input type="text" name="event_locname" <?php $event_submission->print_locname()?>>
+      <input type="text" id="event_locname" name="event_locname"
+             <?php $event_submission->print_locname()?>>
 
     <h4>Address</h4>
-    <input type="text" name="event_address" <?php $event_submission->print_address()?>>
+    <input type="text" id="event_address" name="event_address" 
+           <?php $event_submission->print_address()?>>
 
     <h4>Location Details</h4>
     <input type="text" name="event_locdetails" <?php $event_submission->print_locdetails()?>>
