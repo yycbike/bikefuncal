@@ -659,10 +659,12 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 
     # Forum
     if (!$for_printer) {
-	print "&nbsp;&nbsp;";
-        print "<a href=\"calforum.php?id=$id\" title=\"$forumtitle\">";
-        print "<img border=0 src=\"$forumimg\" alt=\"[forum]\">";
-        print "</a>\n";
+        # Don't show the forum, because it's not working yet.
+
+	#print "&nbsp;&nbsp;";
+        #print "<a href=\"calforum.php?id=$id\" title=\"$forumtitle\">";
+        #print "<img border=0 src=\"$forumimg\" alt=\"[forum]\">";
+        #print "</a>\n";
     }
     print "</div></dd>\n";
 
