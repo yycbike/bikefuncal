@@ -112,7 +112,7 @@ function bfc_install_db_2() {
     $result = $wpdb->query($sql);
     if ($result === false) {
         $wpdb->print_error();
-        die("Couldn't create ${calevent_table_name}");
+        die("Couldn't alter ${calevent_table_name}");
     }
 
     return true;
@@ -138,24 +138,39 @@ function bfc_install_db_3() {
     return true;
 }
 
+function bfc_install_db_4() {
+    global $calevent_table_name;
+    global $wpdb;
+
+    # This column associates a cal event with a WordPress post.
+    # The post type is bfc-event (the custom type that this 
+    # plugin adds).
+    $sql = "ALTER TABLE ${calevent_table_name} ADD wordpress_id INT;";
+    $result = $wpdb->query($sql);
+    if ($result === false) {
+        $wpdb->print_error();
+        die("Couldn't alter ${calevent_table_name}");
+    }
+
+    return true;
+}
 
 function bfc_install() {
     $db_version = get_option('bfc_db_version');
 
     if ($db_version === false) {
         # Database isn't installed yet
-
         $db_version = 0;
     }
     else {
         $db_version = (int) $db_version;
     }
 
-    #echo "<p> Before install, db version is: ", $db_version, "</p>";
-
     $install_functions = array('bfc_install_db_1',
                                'bfc_install_db_2',
-                               'bfc_install_db_3');
+                               'bfc_install_db_3',
+                               'bfc_install_db_4',
+                               );
 
     for ($db_level = $db_version;
          $db_level < count($install_functions);
@@ -166,8 +181,6 @@ function bfc_install() {
             return false;
         }
         update_option('bfc_db_version', $db_level + 1);
-        #echo "<p>", get_option('bfc_db_version'), "</p>";
-        #die();
     }
 
     return true;

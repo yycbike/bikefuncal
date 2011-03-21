@@ -427,6 +427,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
         # lookups.
         $id = 'PREVIEW';
     }
+    $wordpress_id = $record["wordpress_id"];
     $title = htmlspecialchars(strtoupper($record["title"]));
     if ($record["eventstatus"] == "C") {
 	$eventtime = "CANCELED";
@@ -476,33 +477,6 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 	$webname = $weburl;
     }
     $webname = htmlspecialchars($webname);
-
-    # No forums, for now
-    $forumqty = 0;
-
-    $forumimg = plugins_url("bikefuncal/images/forum.gif");
-    $forumtitle = "$forumqty message".($forumqty == 1 ? "" : "s");
-
-    if ($forumqty > 0)
-    {
-	$msg = mysql_fetch_array($forum);
-	$msgmod = $msg["modified"];
-	# Format the timestamp -- varies with SQL ver.
-	if (strlen($msgmod) == 14) {
-	    # older MySQL uses YYYYMMDDhhmmss format
-	    $msgmod = substr($msgmod, 0, 4) . "-"
-		    . substr($msgmod, 4, 2) . "-"
-		    . substr($msgmod, 6, 2) . " "
-		    . substr($msgmod, 8, 2) . ":"
-		    . substr($msgmod, 10, 2) . ":"
-		    . substr($msgmod, 12, 2);
-	}
-	$forumtitle = "$forumtitle, newest ".substr($msgmod, 0, 10);
-
-	if (strcmp($msgmod, $yesterday) > 0) {
-	    $forumimg = plugins_url("bikefuncal/images/forumflash.gif");
-        }
-    }
 
     # get the image info
     $image = "";
@@ -657,14 +631,25 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     }
     print "</div>\n";
 
-    # Forum
-    if (!$for_printer) {
-        # Don't show the forum, because it's not working yet.
+    # Print forum link
+    if (!$for_printer && $wordpress_id > 0) {
+        # No forums, for now
+        $comment_counts = wp_count_comments($wordpress_id);
 
-	#print "&nbsp;&nbsp;";
-        #print "<a href=\"calforum.php?id=$id\" title=\"$forumtitle\">";
-        #print "<img border=0 src=\"$forumimg\" alt=\"[forum]\">";
-        #print "</a>\n";
+        $forumimg = plugins_url("bikefuncal/images/forum.gif");
+        $forumtitle =
+            $comment_counts->approved .
+            " message" .
+            ($comment_counts->approved == 1 ? "" : "s");
+        $forumurl   = get_permalink($wordpress_id);
+
+        # @@@ If there's been recent activity in the forum,
+        # show forumflash.gif instead. (The old code did this,
+        # but it's not ported to WP yet.)
+        
+        print "<a href='$forumurl' title='$forumtitle'>";
+        print "<img border=0 src='$forumimg' alt='forum'>";
+        print "</a>\n";
     }
     print "</div></dd>\n";
 

@@ -53,13 +53,15 @@ class BfcEventSubmission {
     #   web browser doesn't even send over form data. We have to notice
     #   it's unchecked by the lack of a value. 
     #
-    # @@@ in the database hidecontact, printcontact, etc. are
-    # integers, but we get them in as a string.
     protected $calevent_field_info = Array(
         "id"              => array("type" => "%d"),
         # editcode is a special case, it's generated
         # internally upon create.
         "editcode"        => array("type" => "%s"),
+
+        # wordpress_id is generated upon create
+        "wordpress_id"    => array("type" => "%d"),
+        
         "name"            => array("type" => "%s", "missing_val" => ""),
         "email"           => array("type" => "%s", "missing_val" => ""),
         "hideemail"       => array("type" => "%d", "missing_val" => "N"),
@@ -206,6 +208,9 @@ class BfcEventSubmission {
             else {
                 $this->calculate_days($daily_args);
                 $this->attach_images();
+                $this->save_wordpress_post();
+
+                
                 $this->add_event_to_db($this->event_args,
                                        $this->dayinfo['daylist']);
             }
@@ -335,6 +340,36 @@ class BfcEventSubmission {
                 $new_value = $old_value == "Y" ? 1 : 0;
                 $this->event_args[$field_name] = $new_value;
             }
+        }
+    }
+
+    protected function save_wordpress_post() {
+        $post_props = array(
+            'post_title' => $this->event_args['title'],
+        );
+
+        if (!isset($this->event_args['wordpress_id'])) {
+            # Make a new post
+
+            # Additional properties for making a new post.
+            $post_props['comment_status'] = 'open';
+            $post_props['post_type'] = 'bfc-event';
+            $post_props['post_status'] = 'publish';
+
+            $post_id = wp_insert_post($post_props);
+
+            if ($post_id != 0) {
+                $this->event_args['wordpress_id'] = $post_id;
+            }
+            else {
+                die("Could not create a WordPress post");
+            }
+        }
+        else {
+            # Update the existing post
+            $post_props['ID'] = $this->event_args['wordpress_id'];
+
+            wp_update_post($post_props);
         }
     }
     

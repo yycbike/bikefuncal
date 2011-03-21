@@ -104,6 +104,29 @@ function calendar_queryvars($qvars) {
 }
 add_filter('query_vars', 'calendar_queryvars');
 
+function bfc_create_post_types() {
+    register_post_type('bfc-event', array(
+        'description' => 'Events in the bike fun calendar',
+        'public' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'supports' => array('title', 'comments'),
+        'labels' => array(
+            'name' => 'Bike Events',
+            'singular_name' => 'Bike Event',
+            'add_new' => 'Add New (Don\'t Do This!)',
+            'add_new_item' => 'Add events through the calendar, not here!',
+            'edit_item' => 'Edit Event',
+            'new_item'  => 'New Event',
+            'view_item' => 'View Event',
+            'search_items' => 'Search for Event',
+            'not_found' => 'No events found',
+            'not_found_in_trash' => 'No events found in trash',
+            'menu_name' => 'Bike Events',
+        ),
+        ));
+}
+add_action('init', 'bfc_create_post_types');
 
 # Return whether or not to show options for administering the calendar,
 # such as editing other people's events.
