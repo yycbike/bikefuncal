@@ -23,6 +23,17 @@ function bfc_overview_or_event_listings($type, $atts) {
         $enddate   = strtotime(PEND);
         $caltype = 'palooza';
     }
+    else if ($atts['for'] == 'current') {
+        # Choose the starting date.  This is always the Sunday at or before
+        # today.  We'll move forward from there.
+        $now = getdate();
+        $noon = $now[0] + (12 - $now["hours"]) * 3600; # approximately noon today
+        $startdate = $noon - 86400 * $now["wday"];
+
+        $numweeks = 3;
+        $enddate = $startdate + ($numweeks * 7 - 1) * 86400;
+        $caltype = 'cal';
+    }
     else if ($atts['for'] == 'month') {
         global $wp_query;
 
