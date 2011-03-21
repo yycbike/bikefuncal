@@ -4,24 +4,11 @@
 #
 # Reference: http://codex.wordpress.org/Shortcode_API
 
-
-
-# Print either an overview calendar or event listings.
-# (The code for either is largely the same, so there's
-# one function for both.)
-#
-# Parameters:
-# $type -- What to print. Either 'overview' or 'listings'
-# $atts -- The attributes passed in to the shortcode handler.
-function bfc_overview_or_event_listings($type, $atts) {
-    if (!isset($atts['for'])) {
-        die("Did an overview calendar or event listing without specifying 'for'");
-    }
-
+# Return the dates a calendar covers
+function bfc_get_cal_dates($atts) {
     if ($atts['for'] == 'palooza') {
         $startdate = strtotime(PSTART);
         $enddate   = strtotime(PEND);
-        $caltype = 'palooza';
     }
     else if ($atts['for'] == 'current') {
         # Choose the starting date.  This is always the Sunday at or before
@@ -32,7 +19,6 @@ function bfc_overview_or_event_listings($type, $atts) {
 
         $numweeks = 3;
         $enddate = $startdate + ($numweeks * 7 - 1) * 86400;
-        $caltype = 'cal';
     }
     else if ($atts['for'] == 'month') {
         global $wp_query;
@@ -61,12 +47,40 @@ function bfc_overview_or_event_listings($type, $atts) {
                             $month + 1,  
                             0,
                             $year);
+    }
+    else {
+        die("Bad value of for: " . $atts['for']);
+    }
 
+    return array($startdate, $enddate);
+}
+
+# Print either an overview calendar or event listings.
+# (The code for either is largely the same, so there's
+# one function for both.)
+#
+# Parameters:
+# $type -- What to print. Either 'overview' or 'listings'
+# $atts -- The attributes passed in to the shortcode handler.
+function bfc_overview_or_event_listings($type, $atts) {
+    if (!isset($atts['for'])) {
+        die("Did an overview calendar or event listing without specifying 'for'");
+    }
+
+    if ($atts['for'] == 'palooza') {
+        $caltype = 'palooza';
+    }
+    else if ($atts['for'] == 'current') {
+        $caltype = 'cal';
+    }
+    else if ($atts['for'] == 'month') {
         $caltype = 'cal';
     }
     else {
         die("Bad value of for: " . $atts['for']);
     }
+
+    list($startdate, $enddate) = bfc_get_cal_dates($atts);
 
     # WordPress wants shortcodes to return their content as a string,
     # not output it with print statements. But all of the existing code
@@ -116,6 +130,107 @@ function bfc_event_listings_tag($atts) {
 add_shortcode('bfc_event_listings', 'bfc_event_listings_tag');
 
 #
+# Print the button to navigate to the previous set of dates
+# in the calendar. 
+function bfc_cal_date_navigation_tag($atts) {
+    if ($atts['for'] == 'current') {
+        list($startdate, $enddate) = bfc_get_cal_dates($atts);
+        
+        if (date("F", $startdate) != date("F", $enddate)) {
+            # start & end dates are on different months
+
+            $prev_url = bfc_get_month_cal_url(date("m", $startdate), date("y", $startdate));
+            $next_url = bfc_get_month_cal_url(date("m", $enddate), date("y", $enddate));
+
+            $prev_month_name = date("F", $startdate);
+            $next_month_name = date("F", $enddate);
+
+            return "<div class=cal-link>
+                    <a href='${prev_url}'>&lt;-- All of ${prev_month_name}</a>
+                    </div>
+
+                    <div class=cal-link>
+                    <a href='${next_url}'>All of ${next_month_name} --&gt;</a>
+                    </div>";
+        }
+        else {
+            # Start and end dates are on the same month
+
+            $prev_month = $startdate - (86400 * 28);
+            $next_month = $enddate   + (86400 * 28);
+
+            $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
+            $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
+            $curr_url = bfc_get_month_cal_url(date("m", $startdate),  date("y", $startdate));
+
+            $prev_month_name = date("F", $prev_month);
+            $next_month_name = date("F", $next_month);
+            $curr_month_name = date("F", $start_date);
+
+            return "<div class=cal-link>
+                    <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
+                    </div>
+                    
+                    <div class=cal-link>
+                    <a href='${curr_url}'>All of ${curr_month_name}</a>
+                    </div>
+
+                    <div class=cal-link>
+                    <a href='${next_url}'>${next_month_name} --&gt;</a>
+                    </div>";
+        }
+    }
+    else if ($atts['for'] == 'month') {
+        list($startdate, $enddate) = bfc_get_cal_dates($atts);
+
+        $prev_month = mktime(0, 0, 0,
+                             date('m', $startdate) - 1,
+                             1,
+                             date('Y', $startdate));
+        $next_month = mktime(0, 0, 0,
+                             date('m', $startdate) + 1,
+                             1,
+                             date('Y', $startdate));
+
+        $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
+        $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
+                                     
+        $prev_month_name = date("F", $prev_month);
+        $next_month_name = date("F", $next_month);
+
+        return "<div class=cal-link>
+                <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
+                </div>
+
+                <div class=cal-link>
+                <a href='${next_url}'>${next_month_name} --&gt;</a>
+                </div>";
+    }
+    else {
+        die("Can't have a previous date for: " . $atts['for']);
+    }
+}
+add_shortcode('bfc_cal_date_navigation', 'bfc_cal_date_navigation_tag');
+
+
+function bfc_get_month_cal_url($month = null, $year = null) {
+    $edit_page_title = 'Monthly Calendar';
+    $edit_page = get_page_by_title($edit_page_title);
+    $url = get_permalink($edit_page->ID); 
+
+    if ($month !== null) {
+        $url .= '&calmonth=' . $month;
+    }
+
+    if ($year !== null) {
+        $url .= '&calyear=' . $year;
+    }
+
+    return $url;
+}
+
+
+#
 # Print the event sumission form (or the results)
 function bfc_event_submission_tag($atts) {
     $event_submission = new BfcEventSubmission();
@@ -149,12 +264,10 @@ function bfc_load_event_submission_form_javascript() {
         plugins_url('bikefuncal/jquery-ui/js/jquery-ui-1.8.11.custom.min.js');
     wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
 
-
     $jquery_css_url =
         plugins_url('bikefuncal/jquery-ui/css/ui-lightness/jquery-ui-1.8.11.custom.css');
     wp_register_style('bfc-jquery-ui-style', $jquery_css_url, null);
 
-    
     # Second, register the JS for bikefuncal
                        
     # @@@ Evan isn't sure how to do this without hard-coding
