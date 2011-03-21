@@ -476,14 +476,11 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 	$webname = $weburl;
     }
     $webname = htmlspecialchars($webname);
-    
-#    $forum = mysql_query("SELECT modified FROM calforum WHERE id=${id} ORDER BY modified DESC", $conn) or die(mysql_error());
 
     # No forums, for now
     $forumqty = 0;
 
-    $forumimg = "images/forum.gif";
-#    $forumqty = mysql_num_rows($forum);
+    $forumimg = plugins_url("bikefuncal/images/forum.gif");
     $forumtitle = "$forumqty message".($forumqty == 1 ? "" : "s");
 
     if ($forumqty > 0)
@@ -503,7 +500,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 	$forumtitle = "$forumtitle, newest ".substr($msgmod, 0, 10);
 
 	if (strcmp($msgmod, $yesterday) > 0) {
-	    $forumimg = "images/forumflash.gif";
+	    $forumimg = plugins_url("bikefuncal/images/forumflash.gif");
         }
     }
 
@@ -548,7 +545,8 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     print "</a>\n";
     
     print "<a href=\"#${dayofmonth}-{$id}\"> \n";
-    print "<img border=0 src=\"images/chain.gif\" " .
+    $chain_url = plugins_url('bikefuncal/images/chain.gif');
+    print "<img border=0 src=\"${chain_url}\" " .
         "alt=\"Link\" title=\"Link to this event\">\n";
     print "</a>\n";
     
@@ -560,8 +558,9 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
         print "<a href=\"$edit_url\">Edit</a>";
     }
     
-    if (isset($badge)) {
-        print "<img align=left src=\"".IMAGES."/$badge\" " .
+    if ($badge != "") {
+        $badgeurl = plugins_url('bikefuncal/images/') . $badge;
+        print "<img align=left src=\"$badgeurl\" " .
             "alt=\"$badgealt\" title=\"$badgehint\">\n";
     }
 
@@ -595,7 +594,8 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 	if ($transit_url) {
 	    print " <a href=\"$transit_url\" target=\"_BLANK\" " .
                 "title=\"Transit Trip Planner\">\n";
-            print "<img alt=\"By Bus\" src=\"images/bus.gif\" border=0>\n";
+            $bus_url = plugins_url('bikefuncal/images/bus.gif');
+            print "<img alt=\"By Bus\" src=\"${bus_url}\" border=0>\n";
             print "</a>";
         }
     }

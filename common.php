@@ -149,14 +149,18 @@ function endtime($eventtime, $eventduration)
 # to harvest, but it still looks fairly normal on the screen.
 function mangleemail($email)
 {
-    if ($email == "")
+    if ($email == "") {
 	return "";
-    $mangle = str_replace("@", "<img border=0 src=\"".IMAGES."/at.gif\" alt=\" at \">", $email);
-    $mangle = str_replace(".com", "<img border=0 src=\"".IMAGES."/dotcom.gif\" alt=\" daht comm\">", $mangle);
-    $mangle = str_replace(".org", "<img border=0 src=\"".IMAGES."/dotorg.gif\" alt=\" daht oh are gee\">", $mangle);
-    $mangle = str_replace(".net", "<img border=0 src=\"".IMAGES."/dotnet.gif\" alt=\" daht nett\">", $mangle);
-    $mangle = str_replace(".edu", "<img border=0 src=\"".IMAGES."/dotedu.gif\" alt=\" daht eedee you\">", $mangle);
-    $mangle = str_replace(".us", "<img border=0 src=\"".IMAGES."/dotus.gif\" alt=\" daht you ess\">", $mangle);
+    }
+
+    $image_dir = plugins_url('bikefuncal/images');
+
+    $mangle = str_replace("@", "<img border=0 src='${image_dir}/at.gif' alt=' at '>", $email);
+    $mangle = str_replace(".com", "<img border=0 src='${image_dir}/dotcom.gif' alt=' daht comm'>", $mangle);
+    $mangle = str_replace(".org", "<img border=0 src='${image_dir}/dotorg.gif' alt=' daht oh are gee'>", $mangle);
+    $mangle = str_replace(".net", "<img border=0 src='${image_dir}/dotnet.gif' alt=' daht nett'>", $mangle);
+    $mangle = str_replace(".edu", "<img border=0 src='${image_dir}/dotedu.gif' alt=' daht eedee you'>", $mangle);
+    $mangle = str_replace(".us", "<img border=0 src='${image_dir}/dotus.gif' alt=' daht you ess'>", $mangle);
     $mangle = substr($mangle,0,1)."<span>".substr($mangle,1)."</span>";
     return $mangle;
 }

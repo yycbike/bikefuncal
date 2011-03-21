@@ -595,7 +595,7 @@ class BfcEventSubmission {
     # @@@ check for more invalid values
     protected function check_validity() {
         # @@@ Validate the dates more carefully
-        if (! isset($this->event_args['dates']) ) {
+        if ($this->event_args['dates'] == '') {
             $this->errors[] = "Date is missing";
         }
 
