@@ -284,18 +284,6 @@ function bfc_print_event_submission_form($event_submission) {
     ?>
 
     <?php
-    if ($event_submission->has_wordpress_id()) {
-    ?>
-        <input type="hidden" id="event_wordpress_id"
-            name="event_wordpress_id"
-            value="<?php print $event_submission->wordpress_id(); ?>">
-    <?php
-    } # end if
-    ?>
-
-
-
-    <?php
     if ($event_submission->has_editcode()) {
     ?>
         <input type="hidden" id="event_editcode" name="event_editcode"

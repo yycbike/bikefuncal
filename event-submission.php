@@ -262,7 +262,7 @@ class BfcEventSubmission {
         # in as part of the form.
     }
 
-    # Load just the fields that are needed for editing this
+    # Load just the fields that are needed for editing or deleting this
     # event.
     protected function load_modification_fields_from_db() {
         global $calevent_table_name;
@@ -272,7 +272,8 @@ class BfcEventSubmission {
             die();
         }
 
-        $sql = $wpdb->prepare("SELECT editcode, image FROM ${calevent_table_name} " .
+        $sql = $wpdb->prepare("SELECT editcode, image, wordpress_id " .
+                              "FROM ${calevent_table_name} " .
                               "WHERE id=%d",
                               $this->event_id);
         $results = $wpdb->get_results($sql, ARRAY_A);
@@ -284,6 +285,7 @@ class BfcEventSubmission {
             $result = $results[0];
             $this->db_editcode = $result['editcode'];
             $this->event_args['image'] = $result['image'];
+            $this->event_args['wordpress_id'] = $result['wordpress_id'];
         }
     }
 
@@ -847,14 +849,6 @@ class BfcEventSubmission {
 
     public function event_id() {
         return $this->event_id;
-    }
-
-    public function has_wordpress_id() {
-        return isset($this->event_args['wordpress_id']);
-    }
-
-    public function wordpress_id() {
-        return $this->event_args['wordpress_id'];
     }
 
     public function has_editcode() {
