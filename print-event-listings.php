@@ -749,6 +749,7 @@ function preview_event_submission() {
     $record['newsflash'] = '';
     $record["eventstatus"] = "A";
     $record["datestype"] = "O"; # one-time
+    $record["wordpress_id"] = 0;
 
     fullentry($record,
               FALSE, # for printer
