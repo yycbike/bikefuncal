@@ -539,6 +539,17 @@ class BfcEventSubmission {
         }
 
         $this->delete_image();
+
+        # Delete the associated WordPres Bike Event.
+        #
+        # The get_post_type() test is there to prevent a bug from
+        # accidentally deleting an important post (like the front
+        # page).
+        if (isset($this->event_args['wordpress_id']) &&
+            get_post_type($this->event_args['wordpress_id']) == 'bfc-event') {
+
+            wp_delete_post($this->event_args['wordpress_id']);
+        }
     }
 
     protected function attach_images() {
