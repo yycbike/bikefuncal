@@ -70,6 +70,7 @@ function calendar_queryvars($qvars) {
     $qvars[] = "event_locdetails";
     $qvars[] = "event_review";
     $qvars[] = "event_editcode";
+    $qvars[] = "event_wordpress_id"; 
 
     # Query vars for managing the form for creating
     # new events. These get a submission_ prefix because

@@ -849,6 +849,14 @@ class BfcEventSubmission {
         return $this->event_id;
     }
 
+    public function has_wordpress_id() {
+        return isset($this->event_args['wordpress_id']);
+    }
+
+    public function wordpress_id() {
+        return $this->event_args['wordpress_id'];
+    }
+
     public function has_editcode() {
         return isset($this->db_editcode);
     }

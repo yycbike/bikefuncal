@@ -2,6 +2,8 @@ syntax: glob
 
 # Ignore emacs backups
 *~
+\#*\#
+.\#*
 
 # Ignore fuse files
 .fuse_hidden*

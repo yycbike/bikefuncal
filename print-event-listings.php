@@ -743,12 +743,17 @@ function preview_event_submission() {
     }
 
     # These fields are not passed in, because
-    # the event submission page doesn't have them
-    # totally working yet.
+    # they go along with caldaily (not calevent) and we
+    # haven't yet worked out how the preview works with
+    # repeating events.
     $record['eventdate'] = '';
     $record['newsflash'] = '';
     $record["eventstatus"] = "A";
     $record["datestype"] = "O"; # one-time
+
+    # Keep the code from barfing because wordpress_id
+    # is undefined. It also supresses the link to the
+    # forum, which is OK in the preview.
     $record["wordpress_id"] = 0;
 
     fullentry($record,
