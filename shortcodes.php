@@ -272,10 +272,12 @@ function bfc_load_event_submission_form_javascript() {
                        
     # @@@ Evan isn't sure how to do this without hard-coding
     # 'bikefuncal' into the URL.
-    $calform_js_url = plugins_url('bikefuncal/calform.js');
+    $event_submission_js_url = plugins_url('bikefuncal/event-submission.js');
     
     $required_scripts = array('jquery', 'bfc-jquery-ui');
-    wp_register_script('calform', $calform_js_url, $required_scripts);
+    wp_register_script('event-submission',
+                       $event_submission_js_url,
+                       $required_scripts);
 
     # Create the BikeFunAjax object in the page, to send data from
     # PHP to JavaScript.
@@ -286,8 +288,8 @@ function bfc_load_event_submission_form_javascript() {
         'l10n_print_after' =>
             'BikeFunAjax.venues = ' . json_encode(bfc_venue_list()) . ';',
         );
-    wp_localize_script('calform', 'BikeFunAjax', $ajax_options);
+    wp_localize_script('event-submission', 'BikeFunAjax', $ajax_options);
                        
     wp_print_styles('bfc-jquery-ui-style');
-    wp_print_scripts('calform');                       
+    wp_print_scripts('event-submission');                       
 }

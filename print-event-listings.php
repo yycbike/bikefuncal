@@ -718,8 +718,9 @@ function bfc_get_edit_url_for_event($id, $editcode) {
     $edit_page = get_page_by_title($edit_page_title);
     $base_url = get_permalink($edit_page->ID); 
     
-    return $base_url . "&calform_event_id=${id}" .
-        "&calform_action=edit&" .
+    return $base_url .
+        "&submission_event_id=${id}" .
+        "&submission_action=edit&" .
         "event_editcode=${editcode}";
 }
 

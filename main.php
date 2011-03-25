@@ -72,10 +72,10 @@ function calendar_queryvars($qvars) {
     $qvars[] = "event_editcode";
 
     # Query vars for managing the form for creating
-    # new events. These get a calform_ prefix because
+    # new events. These get a submission_ prefix because
     # they don't go into the database.
-    $qvars[] = "calform_action";
-    $qvars[] = "calform_event_id";
+    $qvars[] = "submission_action";
+    $qvars[] = "submission_event_id";
 
     # Tell WordPress about the query vars for an event's newsflash & status.
     # But because these variables have a suffix with the day of the event

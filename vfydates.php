@@ -11,7 +11,7 @@
 #
 # reload=	Optional.  If "true" then any dates that match dates= but
 #		aren't already booked for id= will be marked as "Deleted"
-#		instead of "Added".  calform.php will pass reload=true when
+#		instead of "Added".  event-submission.js will pass reload=true when
 #		you start editing an existing event, but not when change the
 #		"dates" input field.
 

@@ -120,12 +120,12 @@ class BfcEventSubmission {
         # Query-supplied arguments for the caldaily form
         $daily_args = Array();
         
-        if (isset($query_vars['calform_event_id'])) {
-            $this->event_id = (int) $query_vars['calform_event_id'];
+        if (isset($query_vars['submission_event_id'])) {
+            $this->event_id = (int) $query_vars['submission_event_id'];
         }
 
-        if (isset($query_vars['calform_action'])) {
-            $this->action = $query_vars['calform_action'];
+        if (isset($query_vars['submission_action'])) {
+            $this->action = $query_vars['submission_action'];
         }
 
         # If we haven't set an action, default to new.
