@@ -165,7 +165,7 @@ function bfc_cal_date_navigation_tag($atts) {
 
             $prev_month_name = date("F", $prev_month);
             $next_month_name = date("F", $next_month);
-            $curr_month_name = date("F", $start_date);
+            $curr_month_name = date("F", $startdate);
 
             return "<div class=cal-link>
                     <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
