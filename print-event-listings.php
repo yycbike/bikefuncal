@@ -518,7 +518,13 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     print $title;
     print "</a>\n";
     
-    print "<a href=\"#${dayofmonth}-{$id}\"> \n";
+    if ($for_preview) {
+        $permalink = '#';
+    }
+    else {
+        $permalink = get_permalink($record['wordpress_id']);
+    }
+    print "<a href=\"${permalink}\"> \n";
     $chain_url = plugins_url('bikefuncal/images/chain.gif');
     print "<img border=0 src=\"${chain_url}\" " .
         "alt=\"Link\" title=\"Link to this event\">\n";
