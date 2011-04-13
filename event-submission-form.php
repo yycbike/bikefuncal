@@ -269,8 +269,31 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h3>Image</h3>
     <div class="new-event-category">
-    Image file:
-    <input type="file" name="event_image">
+
+    <?php if ($event_submission->has_image()) { ?>            
+        <div>
+        <input type='radio' name='submission_image_action'
+            id='submission_image_action_keep' value='keep' checked>
+        <label for='change_image_keep'>Keep current image</label>
+        </div>
+
+        <div>
+        <input type='radio' name='submission_image_action'
+            id='submission_image_action_change' value='change'>
+        <label for='change_image_change'>Change to</label>
+        <input type='file' size='60' name='event_image' id='event_image'>
+        </div>
+
+        <div>
+        <input type='radio' name='submission_image_action'
+            id='submission_image_action_delete' value='delete'>
+        <label for='change_image_delete'>Remove the image</label>
+        </div>
+    <?php } else { ?>
+        Image file:
+        <input type="file" name="event_image">
+    <?php } ?>
+
     </div>
 
 

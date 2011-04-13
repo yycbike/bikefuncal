@@ -491,7 +491,16 @@ jQuery(document).ready(function() {
 
     jQuery('#event_eventtime').focus(tweaktime);
     jQuery('#event_eventtime').change(tweakdurations);
-    
+
+    // If we're showing the radio button for changing images,
+    // select it when selecting a new file.
+    var change_image_radio = jQuery('#submission_image_action_change');
+    if (change_image_radio) {
+        jQuery('#event_image').change(function() {
+            change_image_radio.attr('checked', true);
+        });
+    }
+
     // If there's a delete button, confirm deletion.
     var delete_button = jQuery('#delete_button');
     if (delete_button) {

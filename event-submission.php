@@ -24,6 +24,16 @@ class BfcEventSubmission {
     # delete = delete the event (with no confirmation)
     protected $action;
 
+
+    # Action to take on the image. This is only used
+    # when $action is create or update.
+    # 
+    # keep   = do nothing
+    # create = create a new image for this event
+    # change = change from an old image to a new image
+    # delete = delete the image
+    protected $image_action;
+
     protected $errors = Array();
 
     protected $dayinfo;
@@ -127,6 +137,21 @@ class BfcEventSubmission {
         if (isset($query_vars['submission_action'])) {
             $this->action = $query_vars['submission_action'];
         }
+        
+        if (isset($query_vars['submission_image_action'])) {
+            $this->image_action = $query_vars['submission_image_action'];
+        }
+        else if (isset($_FILES['event_image']['error']) &&
+                 $_FILES['event_image']['error'] == UPLOAD_ERR_OK) {
+            # This happens the first time an image is attached.
+            # (submission_image_action is only passed in when editing an
+            # event with an existing image.)
+            $this->image_action = 'create';
+        }
+        else {
+            # keep does nothing (and is safe to use if there's no image)
+            $this->image_action = 'keep'; 
+        }
 
         # If we haven't set an action, default to new.
         if (!isset($this->action)) {
@@ -191,8 +216,8 @@ class BfcEventSubmission {
 
         if ($this->action == "update" || $this->action == "create") {
             $this->fill_in_missing_values($daily_args);
-            $this->check_validity();
 
+            $this->check_validity();
             if (!$this->is_valid()) {
                 # Can't create or update because the event wasn't valid.
                 # Go back to editing.
@@ -207,9 +232,8 @@ class BfcEventSubmission {
             }
             else {
                 $this->calculate_days($daily_args);
-                $this->attach_images();
+                $this->do_image_action();
                 $this->save_wordpress_post();
-
                 
                 $this->add_event_to_db($this->event_args,
                                        $this->dayinfo['daylist']);
@@ -224,6 +248,12 @@ class BfcEventSubmission {
                 $this->errors[] = "You don't have permission to delete this event.";
                 $this->action = "edit";
             }
+        }
+        else if ($this->action == 'new' || $this->action == 'edit') {
+            # No actions to do; these just show a form.
+        }
+        else {
+            die("Bad action");
         }
     }
 
@@ -552,14 +582,31 @@ class BfcEventSubmission {
         }
     }
 
-    protected function attach_images() {
+    protected function do_image_action() {
+        if ($this->image_action == 'keep') {
+            # Do nothing
+        }
+        else if ($this->image_action == 'create') {
+            $this->attach_image();
+        }
+        else if ($this->image_action == 'change') {
+            $this->delete_image();
+            $this->attach_image();
+        }
+        else if ($this->image_action == 'delete') {
+            $this->delete_image();
+        }
+        else {
+            die("Bad image action");
+        }
+    }
+
+    protected function attach_image() {
         if (!isset($_FILES['event_image']['tmp_name']) ||
             $_FILES['event_image']['tmp_name'] == '') {
-            # Nothing to do...
 
-            # @@@ Check the error code; could be a problem on the user's
-            # end.
-            return;
+            # This shouldn't have been called
+            die(); 
         }
 
         # Copy the file to the uploads directory.
@@ -581,9 +628,6 @@ class BfcEventSubmission {
         move_uploaded_file($_FILES['event_image']['tmp_name'],
                            $filename);
         list($imagewidth, $imageheight) = getimagesize($filename);
-
-        # Delete the old image (if any)
-        $this->delete_image();
 
         # Make a filename that's relative to the uploads dir.
         # We can use this later to construct a URL.
@@ -615,8 +659,12 @@ class BfcEventSubmission {
                 die("Can't delete image: $old_filename");
             }
 
-            # @@@ Should we clear out the values for image, imagewidth, and imagheight
-            # here?
+            # Because $wpdb->insert() can't handle nulls,
+            # we have to set these to empty values to update
+            # the database.
+            $this->event_args['image'] = '';
+            $this->event_args['imagewidth'] = 0;
+            $this->event_args['imageheight'] = 0;
         }
     }
     
@@ -876,6 +924,11 @@ class BfcEventSubmission {
 
     public function has_delete() {
         return $this->action == "edit";
+    }
+
+    public function has_image() {
+        return isset($this->event_args['image']) &&
+                $this->event_args['image'] != '';
     }
 
     # Return the action to perform next.

@@ -76,6 +76,7 @@ function calendar_queryvars($qvars) {
     # they don't go into the database.
     $qvars[] = "submission_action";
     $qvars[] = "submission_event_id";
+    $qvars[] = "submission_image_action";
 
     # Tell WordPress about the query vars for an event's newsflash & status.
     # But because these variables have a suffix with the day of the event
