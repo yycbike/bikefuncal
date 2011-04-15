@@ -162,6 +162,55 @@ function bfc_options() {
     echo "<p>More options will go here someday</p>";
 }
 
+function bfc_event_content_filter($content) {
+    if (get_post_type() == 'bfc-event') {
+        # This is a calendar event.
+        # Show the event listing in the body.
+
+        global $calevent_table_name;
+        global $caldaily_table_name;
+        global $wpdb;
+        global $wp_query;
+
+        $sql = <<<END_QUERY
+SELECT *
+FROM ${calevent_table_name}, ${caldaily_table_name}
+WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
+      ${calevent_table_name}.wordpress_id = %d
+END_QUERY;
+        $sql = $wpdb->prepare($sql, $wp_query->post->ID);
+        $records = $wpdb->get_results($sql, ARRAY_A);
+        $num_records = count($records);
+
+        if ($num_records == 1) {
+            # WordPress wants filters to return their content as a string,
+            # not output it with print statements. But all of the existing code
+            # uses print statements, and changing it to use strings would be a
+            # hassle. Fortunately, PHP's output buffering (OB) functions can capture
+            # print statements into a string.
+            ob_start();
+            ob_implicit_flush(0);
+            fullentry($records[0],
+                      'event-page',
+                      TRUE);    # include images
+            $listing = ob_get_contents();
+            ob_end_clean();
+
+            # For bfc-event posts, there is no content, so we
+            # don't need to do anything with the $content
+            # variable.
+            return $listing;
+        }
+        else {
+            die("Couldn't load event listing");
+        }
+    }
+    else {
+        # This is some other kind of page. Don't mess with it.
+        return $content;
+    }
+}
+add_filter('the_content', 'bfc_event_content_filter');
 
 
 ?>

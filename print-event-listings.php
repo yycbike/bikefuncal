@@ -406,8 +406,21 @@ function event_listings($startdate,
 }
 
 # Generate the HTML entry for a single event
-function fullentry($record, $for_printer, $include_images, $for_preview)
+#
+# $for is one of:
+#   'listing'         -- The event listings on the calendar
+#   'printer'         -- The event listings on a printer
+#   'preview'         -- The preview when creating/editing an event
+#   'event-page'      -- The page for the event
+#
+# $include_images -- TRUE to include images, FALSE to leave them out
+function fullentry($record, $for, $include_images)
 {
+    # Check arguments
+    if (!in_array($for, Array('listing', 'printer', 'preview', 'event-page'))) {
+        die("Bad entry 'for': $for");
+    }
+
     global $imageover;
 
     # 24 hours ago.  We compare timestamps to this in order to
@@ -415,7 +428,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     $yesterday = date("Y-m-d H:i:s", strtotime("yesterday"));
 
     # extract info from the record
-    if (!$for_preview) {
+    if ($for != 'preview') {
         $id = $record["id"];
     }
     else {
@@ -470,7 +483,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     $contact = $record["hidecontact"] ? "" : htmlspecialchars($record["contact"]);
     $weburl = $record["weburl"];
     $webname = $record["webname"];
-    if ($webname == "" || $for_printer) {
+    if ($webname == "" || $for == 'printer') {
         # If they left out the name for their web site, or if
         # this is being shown for printing, show the URL insetad of the
         # site name.
@@ -480,7 +493,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 
     # get the image info
     $image = "";
-    if ($include_images && !$for_preview && $record["image"]) {
+    if ($include_images && $for != 'preview' && $record["image"]) {
         # The image field has the path relative to the uploads dir.
         $upload_dirinfo = wp_upload_dir();
         $image = $upload_dirinfo['baseurl'] . $record["image"];
@@ -498,7 +511,9 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     
     print "<dt class=\"${class}\">";
 
-    # If the image should be right-aligned, do that.
+    #####################
+    # Image (if right-aligned)
+    #
     if ($image && $imageover <= 0 && $imageheight > RIGHTHEIGHT / 2) {
         # Put the image's width & height in bounds
 	if ($imageheight > RIGHTHEIGHT) {
@@ -513,31 +528,48 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
         print "\n";
     }
     
-    print "<a name=\"${dayofmonth}-${id}\" " .
-        "class=\"eventhdr $class\">";
-    print $title;
-    print "</a>\n";
-    
-    if ($for_preview) {
-        $permalink = '#';
+    # Don't show title & permalink on the
+    # event page.
+    if ($for != 'event-page') {
+        #####################
+        # Title
+        #
+        print "<a name=\"${dayofmonth}-${id}\" " .
+            "class=\"eventhdr $class\">";
+        print $title;
+        print "</a>\n";
+
+
+        #####################
+        # Permalink
+        #
+        if ($for == 'preview') {
+            $permalink = '#';
+        }
+        else {
+            $permalink = get_permalink($record['wordpress_id']);
+        }
+        print "<a href=\"${permalink}\"> \n";
+        $chain_url = plugins_url('bikefuncal/images/chain.gif');
+        print "<img border=0 src=\"${chain_url}\" " .
+            "alt=\"Link\" title=\"Link to this event\">\n";
+        print "</a>\n";
+
+        #####################
+        # Edit link
+        #
+        # Show the edit link to admin users.
+        # Except if this is a preview; then it's meaningless
+        # because they're already editing.
+        if (bfc_show_admin_options() && $for != 'preview') {
+            $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+            print "<a href=\"$edit_url\">Edit</a>";
+        }
     }
-    else {
-        $permalink = get_permalink($record['wordpress_id']);
-    }
-    print "<a href=\"${permalink}\"> \n";
-    $chain_url = plugins_url('bikefuncal/images/chain.gif');
-    print "<img border=0 src=\"${chain_url}\" " .
-        "alt=\"Link\" title=\"Link to this event\">\n";
-    print "</a>\n";
     
-    # Show the edit link to admin users.
-    # Except if this is a preview; then it's meaningless
-    # because they're already editing.
-    if (bfc_show_admin_options() && !$for_preview) {
-        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        print "<a href=\"$edit_url\">Edit</a>";
-    }
-    
+    #####################
+    # Audience badge
+    #
     if ($badge != "") {
         $badgeurl = plugins_url('bikefuncal/images/') . $badge;
         print "<img align=left src=\"$badgeurl\" " .
@@ -547,7 +579,9 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     print "</dt>\n";
     print "<dd>";
 
-    # If the image should be left-aligned, do that.
+    #####################
+    # Image (if left-aligned)
+    #
     if ($image && ($imageover > 0 || $imageheight <= RIGHTHEIGHT / 2)) {
         # Put the image's width & height in bounds
 	if ($imageheight > LEFTHEIGHT) {
@@ -560,14 +594,19 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
             "class=\"ride-image\">\n";
     }
 
-    
+    #####################
+    # Location
+    #
+    # (This div contains the location)
     print "<div class=\"$class\">";
 
+    # Street address
     $address_url = "http://maps.google.com/?q=" .
         urlencode(addrparseprep($record["address"]));
     print "<a href=\"$address_url\" target=\"_BLANK\">".$address.'</a>';
     
-    if (! $for_printer) {
+    # Transit directions
+    if ($for != 'printer') {
 	$transit_url = transiturl($record["eventdate"],
                                   $record["eventtime"],
                                   $record["address"]);
@@ -580,12 +619,17 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
         }
     }
     
+    # Location details
     if ($locdetails != "") {
         print " ($locdetails)";
     }
     print "</div>\n";
 
     
+    #####################
+    # Time
+    #
+    print "<div>";
     print "$eventtime";
     if ($eventtime == "CANCELED" && $newsflash != "") {
 	print " <span class=newsflash>$newsflash</span>";
@@ -607,15 +651,20 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
 	    print ", " . $record['dates'];
         }
     }
+    print "</div>";
 
-    # Event description
+    #####################
+    # Description
+    #
     print "<div class=\"$class\">\n";
     print "<em>$descr</em>\n";
     if ($newsflash != "" && $eventtime != "CANCELED") {
 	print "<span class=newsflash>$newsflash</span>";
     }
 
-    # Ride leader contact info
+    #####################
+    # Contact info
+    #
     print "<div class='contact-info'>\n";
     print $name;
     if (!strpbrk(substr(trim($name),strlen(trim($name))-1),".,:;-")) {
@@ -637,8 +686,10 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
     }
     print "</div>\n";
 
-    # Print forum link
-    if (!$for_printer && $wordpress_id > 0) {
+    #####################
+    # Forum link
+    #
+    if ($for != 'printer' && $for != 'event-page' && $wordpress_id > 0) {
         # No forums, for now
         $comment_counts = wp_count_comments($wordpress_id);
 
@@ -657,7 +708,7 @@ function fullentry($record, $for_printer, $include_images, $for_preview)
         print "<img border=0 src='$forumimg' alt='forum'>";
         print "</a>\n";
     }
-    print "</div></dd>\n";
+    print "</dd>\n";
 
     # if this event has no image, then the next event's
     # image can be left-aligned.
@@ -708,10 +759,10 @@ END_QUERY;
 
         foreach ($records as $record) {
             if (!$exclude || $record["review"] != "E") {
+                $for = $for_printer ? 'printer' : 'listing';
                 fullentry($record,
-                          $for_printer,
-                          $include_images,
-                          FALSE); # for preview
+                          $for,
+                          $include_images);
             }
         }
 
@@ -763,10 +814,8 @@ function preview_event_submission() {
     $record["wordpress_id"] = 0;
 
     fullentry($record,
-              FALSE, # for printer
-              FALSE, # include images,
-              TRUE); # for preview
-
+              'preview',
+              FALSE); # include images,
     exit;
 }
 # Add this to WordPress' registry of AJAX actions.
