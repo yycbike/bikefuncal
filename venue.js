@@ -150,6 +150,8 @@ function display_known_venues(known_venues) {
         })(name_input, address_input, locked_input, known_venues[idx].canon,
            result_cell); 
         save_button.click(do_save);
+        name_input.bind('keyup', 'return', do_save);
+        address_input.bind('keyup', 'return', do_save);
         
         var do_delete = (function(canon_copy, table_row_copy,
                                   result_cell_copy) {
@@ -179,6 +181,15 @@ function load_known_venues() {
         );    
 }
 
+function save_new_venue() {
+    var name = jQuery('#venue_name');
+    var address = jQuery('#venue_address');
+    var locked = jQuery('#venue_locked');
+    var result = jQuery('#new_venue_result');
+
+    add_venue(name, address, locked, result);
+}
+
 // Initialize event handlers
 //
 // Have to use jQuery(), not $(), because WordPress loads jQuery
@@ -186,12 +197,8 @@ function load_known_venues() {
 jQuery(document).ready(function() {
     load_known_venues();
 
-    jQuery('#add_venue').click(function() {
-        var name = jQuery('#venue_name');
-        var address = jQuery('#venue_address');
-        var locked = jQuery('#venue_locked');
-        var result = jQuery('#new_venue_result');
-        
-        add_venue(name, address, locked, result);
-    });
+    jQuery('#add_venue').click(save_new_venue);
+    jQuery('#venue_name').bind('keyup', 'return', save_new_venue);
+    jQuery('#venue_address').bind('keyup', 'return', save_new_venue);
+
 });

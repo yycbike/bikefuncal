@@ -213,11 +213,16 @@ add_action('wp_ajax_delete-venue',
 #
 # This is designed to be run in the wp_footer action.
 function bfc_load_venue_list_javascript() {
+    # WordPress ships with a crappy old version of jquery hotkeys. It breaks
+    # when binding return. Use the newer version.
+    $hotkeys_js_url = plugins_url('bikefuncal/jquery.hotkeys/jquery.hotkeys.js');
+    wp_register_script('non-broken-hotkeys', $hotkeys_js_url, array('jquery'));
+
     # @@@ Evan isn't sure how to do this without hard-coding
     # 'bikefuncal' into the URL.
-    $js_url = plugins_url('bikefuncal/venue.js');
-
-    wp_register_script('venue', $js_url, array('jquery'));
+    $venue_js_url = plugins_url('bikefuncal/venue.js');
+    
+    wp_register_script('venue', $venue_js_url, array('jquery', 'non-broken-hotkeys'));
     wp_localize_script('venue',
                        'BikeFunAjax',
                        array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
