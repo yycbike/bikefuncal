@@ -14,6 +14,14 @@ class BfcEventSubmission {
     # Arguments for events (to pass on to the database)
     protected $event_args = Array();
 
+    # Arguments for caldaily (to pass on to the database)
+    protected $daily_args = Array();
+
+    # A locally-cached copy of the $_FILES variable.
+    # Create our own copy because this object isn't always created
+    # in a POST request.
+    protected $post_files;
+
     # DB id of the event. Unset when action is new.
     protected $event_id;
     
@@ -123,12 +131,8 @@ class BfcEventSubmission {
         "exceptionid" => array("type" => "%d"),
         );
     
-    public function __construct() {
-        global $wp_query;
-        $query_vars = $wp_query->query_vars;
-
-        # Query-supplied arguments for the caldaily form
-        $daily_args = Array();
+    public function __construct($query_vars, $post_files) {
+        $this->post_files = $post_files || Array();
         
         if (isset($query_vars['submission_event_id'])) {
             $this->event_id = (int) $query_vars['submission_event_id'];
@@ -137,12 +141,17 @@ class BfcEventSubmission {
         if (isset($query_vars['submission_action'])) {
             $this->action = $query_vars['submission_action'];
         }
+
+        # If we haven't set an action, default to new.
+        if (!isset($this->action)) {
+            $this->action = 'new';
+        }
         
         if (isset($query_vars['submission_image_action'])) {
             $this->image_action = $query_vars['submission_image_action'];
         }
-        else if (isset($_FILES['event_image']['error']) &&
-                 $_FILES['event_image']['error'] == UPLOAD_ERR_OK) {
+        else if (isset($this->post_files['event_image']['error']) &&
+                 $this->post_files['event_image']['error'] == UPLOAD_ERR_OK) {
             # This happens the first time an image is attached.
             # (submission_image_action is only passed in when editing an
             # event with an existing image.)
@@ -151,11 +160,6 @@ class BfcEventSubmission {
         else {
             # keep does nothing (and is safe to use if there's no image)
             $this->image_action = 'keep'; 
-        }
-
-        # If we haven't set an action, default to new.
-        if (!isset($this->action)) {
-            $this->action = 'new';
         }
 
         # If we're editing an existing object, grab it from the db.
@@ -180,7 +184,7 @@ class BfcEventSubmission {
                 $type        = $regex_matches[1];
                 $date_suffix = $regex_matches[2];
 
-                $daily_args[$date_suffix][$type] = stripslashes($query_value);
+                $this->daily_args[$date_suffix][$type] = stripslashes($query_value);
             }
         }
         
@@ -213,10 +217,11 @@ class BfcEventSubmission {
         }
 
         $this->convert_data_types();
+    }
 
+    public function do_action() {
         if ($this->action == "update" || $this->action == "create") {
-            $this->fill_in_missing_values($daily_args);
-
+            $this->fill_in_missing_values();
             $this->check_validity();
             if (!$this->is_valid()) {
                 # Can't create or update because the event wasn't valid.
@@ -231,7 +236,7 @@ class BfcEventSubmission {
                 $this->action = "edit";
             }
             else {
-                $this->calculate_days($daily_args);
+                $this->calculate_days();
                 $this->do_image_action();
                 $this->save_wordpress_post();
                 
@@ -332,7 +337,7 @@ class BfcEventSubmission {
     # Create values for fields that are missing because the web browser
     # didn't send them over, or because WordPress isn't reporting them
     # in the query.
-    protected function fill_in_missing_values($daily_args) {
+    protected function fill_in_missing_values() {
         if ($this->action != 'update' && $this->action != 'create') {
             die();
         }
@@ -347,10 +352,10 @@ class BfcEventSubmission {
         }
 
         # Do missing values for daily_args
-        foreach ($daily_args as $date_suffix => &$day) {
+        foreach ($this->daily_args as $date_suffix => &$day) {
             foreach ($this->caldaily_field_info as $field_name => $field_info) {
                 if (isset($field_info['missing_val']) &&
-                    !isset($this->event_args[$field_name]) ) {
+                    !isset($day[$field_name]) ) {
 
                     $day[$field_name] = $field_info['missing_val'];
                 }
@@ -602,8 +607,8 @@ class BfcEventSubmission {
     }
 
     protected function attach_image() {
-        if (!isset($_FILES['event_image']['tmp_name']) ||
-            $_FILES['event_image']['tmp_name'] == '') {
+        if (!isset($this->post_files['event_image']['error']) ||
+                 $this->post_files['event_image']['error'] != UPLOAD_ERR_OK) {
 
             # This shouldn't have been called
             die(); 
@@ -617,7 +622,7 @@ class BfcEventSubmission {
         $upload_dirinfo = wp_upload_dir();
         
         # This trusts that the file extension is OK on the user's machine...
-        $extension = pathinfo($_FILES['event_image']['name'],
+        $extension = pathinfo($this->post_files['event_image']['name'],
                               PATHINFO_EXTENSION);
 
         # Use uniqid() for the filename because, when this runs, the event ID
@@ -625,7 +630,7 @@ class BfcEventSubmission {
         $filename = $upload_dirinfo['path'] . '/' .
             uniqid() . '.' . $extension;
 
-        move_uploaded_file($_FILES['event_image']['tmp_name'],
+        move_uploaded_file($this->post_files['event_image']['tmp_name'],
                            $filename);
         list($imagewidth, $imageheight) = getimagesize($filename);
 
@@ -706,7 +711,7 @@ class BfcEventSubmission {
     }
     
     # Calculate the recurring event stuff.
-    protected function calculate_days($daily_args) {
+    protected function calculate_days() {
         if (!isset($this->event_args['dates'])) {
             die();
         }
@@ -744,15 +749,39 @@ class BfcEventSubmission {
         foreach ($this->dayinfo['daylist'] as &$day) {
             $suffix = $day['suffix'];
 
-            if (isset($daily_args[$suffix]['newsflash'])) {
-                $day['newsflash'] = $daily_args[$suffix]['newsflash'];
+            if (isset($this->daily_args[$suffix]['newsflash'])) {
+                $day['newsflash'] = $this->daily_args[$suffix]['newsflash'];
             }
 
-            if (isset($daily_args[$suffix]['status'])) {
-                $day['status'] = $daily_args[$suffix]['status'];
+            if (isset($this->daily_args[$suffix]['status'])) {
+                $day['status'] = $this->daily_args[$suffix]['status'];
                 $day['eventstatus'] = statusname($day['status']);
             }
         }
+    }
+
+    protected function make_exception($date) {
+        # @@@ todo:
+        
+        # Make a set of event args that are a clone of
+        # this one.
+        # - Change the date
+        # - Set the submission_action to be 'create'
+        # - Copy the image. Need to make a new copy of the file, because
+        #   if they share we'd run into problems when one event (but not the other) is
+        #   deleted and the file gets deleted along with it.
+        # - @@@ Figure out what needs to happen w/ the edit code (hopefully nothing)
+        # - Do we create a new WordPress post for the exception? I'm leaning towards no.
+        
+
+        # Make a list of caldaily args that
+        # only includes the one date.
+
+        
+
+        # Make a new event_submission object.
+
+        # Save the object.
     }
 
     # @@@ Sanitize these outputs
