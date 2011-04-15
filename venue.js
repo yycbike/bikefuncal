@@ -1,3 +1,7 @@
+// When adding a new venue, we want to show a "Saved" message by the new location.
+// Remember the name of the new venue in this variable.
+var locname_to_flash;
+
 function add_venue(name_input, address_input, locked_input, error_result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
@@ -7,11 +11,10 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
           'address' : address_input.val(),       
           'locked'  : locked_input.attr('checked'),          
     };
+    locname_to_flash = name_input.val();
 
     var show_result = function(result) {
         if (result.status == 1) {
-            // @@@ It would be nice to flash the new
-            // venue somehow...
             load_known_venues();
 
             // Clear out the inputs
@@ -57,12 +60,6 @@ function save_edits(canon, name, address, locked, result_cell) {
                     result_cell.text('');
                     result_cell.fadeIn(0);
                 });
-
-            // if we made a new event, re-show the list of
-            // known venues
-            if (type == 'create') {
-                load_known_venues();
-            }
         }
         else {
             result_cell.text("Oops! This couldn't be saved");
@@ -118,7 +115,9 @@ function delete_venue(canon, table_row, result_cell) {
 
 function display_known_venues(known_venues) {
     var table = jQuery('#known-venues tbody');
-    table.empty();
+    var result_cell_to_flash;
+
+    var rows = [];
     for (var idx = 0; idx < known_venues.length; idx++) {
         var tr = jQuery('<tr></tr>');
 
@@ -152,6 +151,9 @@ function display_known_venues(known_venues) {
         // blank for now. results will go there later.
         var result_cell = jQuery('<td></td>');
         tr.append(result_cell);
+        if (known_venues[idx].locname == locname_to_flash) {
+           result_cell_to_flash = result_cell; 
+        }
 
         var do_save = (function(name_input_copy, address_input_copy,
                                 locked_input_copy,
@@ -180,8 +182,25 @@ function display_known_venues(known_venues) {
         })(known_venues[idx].canon, tr, result_cell);
         delete_button.click(do_delete);
 
-        table.append(tr);
+        rows.push(tr);
     }
+
+    table.empty();
+    for (var idx = 0; idx < rows.length; idx++) {
+        table.append(rows[idx]);
+    }
+
+    if (result_cell_to_flash) {
+        result_cell_to_flash.
+            text('saved!').
+            fadeOut(3000, function() {
+                // when done, reset to visible & empty
+                result_cell_to_flash.text('').fadeIn(0);
+            });
+         locname_to_flash = null;
+    }
+
+    return;
 }
 
 function load_known_venues() {
