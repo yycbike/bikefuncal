@@ -24,9 +24,7 @@ function statusname($dateinfo)
 	}
 }
 
-# Return an array of daily status records for a given event.  It is assumed
-# that a connection to the database is already established, and its connection
-# resource is stored in $conn
+# Return an array of daily status records for a given event.  
 function dailystatus($id)
 {
     # start with an empty list

@@ -124,8 +124,8 @@ function display_dates(xmlDom)
             var hrdate = dates[i].getElementsByTagName("hrdate")[0].firstChild.nodeValue;
             var status = dates[i].getElementsByTagName("status")[0].firstChild.nodeValue;
             var suffix = dates[i].getElementsByTagName("suffix")[0].firstChild.nodeValue;
-            var exception = dates[i].getElementsByTagName("exception")[0].firstChild
-                ? dates[i].getElementsByTagName("exception")[0].firstChild.nodeValue
+            var exception_url = dates[i].getElementsByTagName("exception-url")[0].firstChild
+                ? dates[i].getElementsByTagName("exception-url")[0].firstChild.nodeValue
                 : "";
             var newsflash = dates[i].getElementsByTagName("newsflash")[0].firstChild
                 ? dates[i].getElementsByTagName("newsflash")[0].firstChild.nodeValue
@@ -155,7 +155,7 @@ function display_dates(xmlDom)
 
                 var editlink = jQuery("<a></a>");
                 editlink.text('Exception');
-                editlink.attr('href', '#'); // @@@ Make a real edit link
+                editlink.attr('href', exception_url);
                 editlink.click(function() {
                     var message = "You are currently editing your normal event. " +
                         "This link takes you to a page where you can edit the " +

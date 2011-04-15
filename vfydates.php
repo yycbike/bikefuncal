@@ -109,12 +109,12 @@ function verify_dates() {
             print "      <hrdate>".date("D M j", $date["timestamp"])."</hrdate>\n";
             print "      <suffix>".$date["suffix"]."</suffix>\n";
             print "      <status>".$date["status"]."</status>\n";
-            print "      <exception>";
+            print "      <exception-url>";
             if (isset($date["exceptionid"])) {
-                # @@@ todo: obscure this, or add an authentication code or something.
-                print $date["exceptionid"];
+                $url = bfc_get_edit_url_for_event($date["exceptionid"]);
+                print htmlentities($url);
             }
-            print "</exception>\n";
+            print "</exception-url>\n";
 
             
             print "      <newsflash>";

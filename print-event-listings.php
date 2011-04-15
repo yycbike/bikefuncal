@@ -770,11 +770,26 @@ END_QUERY;
     }
 }
 
-function bfc_get_edit_url_for_event($id, $editcode) {
+function bfc_get_edit_url_for_event($id, $editcode = null) {
     $edit_page_title = 'New Event';
     $edit_page = get_page_by_title($edit_page_title);
     $base_url = get_permalink($edit_page->ID); 
     
+    # No editcode provided; look it up in the database
+    if ($editcode === null) {
+        global $wpdb;
+        global $calevent_table_name;
+        $sql = $wpdb->prepare("SELECT editcode FROM ${calevent_table_name} " .
+                              "WHERE id=%d",
+                              $id);
+
+        $records = $wpdb->get_results($sql, ARRAY_A);
+        if ($wpdb->num_rows != 1) {
+            die();
+        }
+        $editcode = $records[0]['editcode'];
+    }
+
     return $base_url .
         "&submission_event_id=${id}" .
         "&submission_action=edit&" .
