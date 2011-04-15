@@ -16,7 +16,7 @@
 #     suffix        - @@@ Used somehow for updating & stuff?
 #     newsflash+    - The text of the newsflash.
 #     exceptionid+  - If this date is an exception, the exception's event ID.
-#                     @@@ If not an exception, then what value? Unset?
+#                     If this is not an exception, then it's null.
 #     olddate       - @@@ How is this different than newdate?
 #     changed       - "Y" if we're updating an existing caldate, and this
 #                     has changed. "N" if this is new or unchanged.

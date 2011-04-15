@@ -771,6 +771,10 @@ END_QUERY;
 }
 
 function bfc_get_edit_url_for_event($id, $editcode = null) {
+    if (!isset($id)) {
+        die("bfc_get_edit_url_for_event: id is unset");
+    }
+
     $edit_page_title = 'New Event';
     $edit_page = get_page_by_title($edit_page_title);
     $base_url = get_permalink($edit_page->ID); 

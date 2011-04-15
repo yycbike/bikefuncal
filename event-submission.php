@@ -32,7 +32,6 @@ class BfcEventSubmission {
     # delete = delete the event (with no confirmation)
     protected $action;
 
-
     # Action to take on the image. This is only used
     # when $action is create or update.
     # 
@@ -244,8 +243,7 @@ class BfcEventSubmission {
                 $this->do_image_action();
                 $this->save_wordpress_post();
                 
-                $this->add_event_to_db($this->event_args,
-                                       $this->dayinfo['daylist']);
+                $this->add_event_to_db($this->event_args);
             }
         }
         else if ($this->action == "delete") {
@@ -272,7 +270,7 @@ class BfcEventSubmission {
         global $wpdb;
 
         if (!isset($this->event_id)) {
-            die();
+            die("Event ID is not set");
         }
 
         $sql = $wpdb->prepare("SELECT * FROM ${calevent_table_name} " .
@@ -281,7 +279,7 @@ class BfcEventSubmission {
         $results = $wpdb->get_results($sql, ARRAY_A);
         
         if (count($results) != 1) {
-            die("Wront number of DB results...");
+            die("Wrong number of DB results: " . count($results));
         }
         else {
             $result = $results[0];
@@ -327,8 +325,6 @@ class BfcEventSubmission {
             $this->event_args['image'] = $result['image'];
             $this->event_args['wordpress_id'] = $result['wordpress_id'];
         }
-
-
 
         $sql = $wpdb->prepare("SELECT eventdate, exceptionid " .
                               "FROM ${caldaily_table_name} " .
@@ -473,7 +469,7 @@ class BfcEventSubmission {
         return;       
     }
 
-    protected function add_event_to_db($event_args, $daylist) {
+    protected function add_event_to_db($event_args) {
         global $calevent_table_name, $caldaily_table_name;
 
         if ($this->action == "create") {
@@ -504,7 +500,7 @@ class BfcEventSubmission {
             die("Bad value for action");
         }
 
-        foreach ($daylist as $day) {
+        foreach ($this->dayinfo['daylist'] as &$day) {
             $caldaily_args = Array();
 
             # associate caldaily with calevent
@@ -556,12 +552,13 @@ class BfcEventSubmission {
                         # the database. But we also have to check for null
                         # because that's what comes *out* of the database,
                         # before anything else has been set.
-                        if (!isset($caldaily_args['exceptionid']) ||
-                            $caldaily_args['exceptionid'] == null ||
-                            $caldaily_args['exceptionid'] == -1) {
+                        if (!isset($day['exceptionid']) ||
+                            $day['exceptionid'] == null ||
+                            $day['exceptionid'] == -1) {
 
                             $exception = $this->make_exception($day['sqldate']);
                             $caldaily_args['exceptionid'] = $exception->event_id;
+                            $day['exceptionid'] = $exception->event_id;
                         }
 
                         # @@@ Store a list of exceptions, so we can show edit links to the user.
@@ -825,6 +822,23 @@ class BfcEventSubmission {
         # - Copy the image. Need to make a new copy of the file, because
         #   if they share we'd run into problems when one event (but not the other) is
         #   deleted and the file gets deleted along with it.
+    }
+
+    # Return a list of exceptions. Something like this:
+    # Array( Array('date' => '2011-06-04', 'exceptionid' => 42), ... );
+    public function get_exceptions() {
+        $exceptions = array();
+
+        foreach ($this->dayinfo['daylist'] as $day) {
+            if ($day['status'] == 'Exception') {
+                $exceptions[] = Array(
+                    'sqldate' => $day['sqldate'],
+                    'exceptionid'   => $day['exceptionid'],
+                );
+            }
+        }
+
+        return $exceptions;
     }
 
     # @@@ Sanitize these outputs
