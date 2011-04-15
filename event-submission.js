@@ -477,6 +477,12 @@ jQuery(document).ready(function() {
     jQuery('#event-submission-form input[type=radio]').change(update_preview);
     jQuery('#event-submission-form input[type=checkbox]').change(update_preview);
 
+    // Update the preview now. But only if this is an existing event,
+    // otherwise there's nothing to show.
+    if (document.getElementById('submission_event_id')) {
+        update_preview();
+    }
+
     // If an event date has been specified, run verifydates() now.
     var dates = jQuery('#event_dates').val();
     if (dates != "") {
