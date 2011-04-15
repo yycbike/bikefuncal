@@ -23,6 +23,9 @@ add_action('wp_ajax_nopriv_verify-dates', 'verify_dates');
 add_action('wp_ajax_verify-dates', 'verify_dates');
 
 function verify_dates() {
+    # Turn on plain text PHP errors for the remainder of the AJAX request
+    ini_set('html_errors', 'Off');
+
     # This sends an XML response
     header("Content-type: text/xml");
     print "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n";

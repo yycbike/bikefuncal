@@ -131,7 +131,11 @@ class BfcEventSubmission {
         "exceptionid" => array("type" => "%d"),
         );
     
-    public function __construct($query_vars, $post_files) {
+    public function __construct() {
+
+    }
+
+    public function populate_from_query($query_vars, $post_files) {
         $this->post_files = $post_files || Array();
         
         if (isset($query_vars['submission_event_id'])) {
@@ -301,6 +305,7 @@ class BfcEventSubmission {
     # event.
     protected function load_modification_fields_from_db() {
         global $calevent_table_name;
+        global $caldaily_table_name;
         global $wpdb;
 
         if (!isset($this->event_id)) {
@@ -321,6 +326,24 @@ class BfcEventSubmission {
             $this->db_editcode = $result['editcode'];
             $this->event_args['image'] = $result['image'];
             $this->event_args['wordpress_id'] = $result['wordpress_id'];
+        }
+
+
+
+        $sql = $wpdb->prepare("SELECT eventdate, exceptionid " .
+                              "FROM ${caldaily_table_name} " .
+                              "WHERE id=%d",
+                              $this->event_id);
+        $results = $wpdb->get_results($sql, ARRAY_A);
+        foreach ($results as $result) {
+            # @@@ This will break if the event ever recurs past one year.
+            # I think the suffix should change to include a four-digit year...
+            #
+            # And, while we're at it, encapsulate the making of suffixes into
+            # a function.
+            $suffix = date("Mj", strtotime($result['eventdate']));
+
+            $this->daily_args[$suffix]['exceptionid'] = $result['exceptionid'];
         }
     }
 
@@ -506,30 +529,7 @@ class BfcEventSubmission {
                 $caldaily_args['eventdate'] = $day['sqldate'];
             }
 
-            # Figure out if we need to to a DB UPDATE or INSERT. 
-            # This logic comes from the old calsubmit.php code,
-            # and I don't entirely understand it. (See that file,
-            # lines 425 or 270.)
-            #
-            # @@@ We also need to do a delete, when the
-            # status is deleted?
-            $event_exists = $this->action == "update";
-            $day_exists   = isset($day['status']) && 
-                ($day['status'] == "Added" ||
-                 $day['status'] == "Skipped" ||
-                 $day['status'] == "Canceled" ||
-                 $day['status'] == "As Scheduled");
-
-            if ($event_exists && $day_exists) {
-                $where = Array('id' => $this->event_id,
-                               'eventdate' => $day['sqldate']);
-
-                $this->update_table($caldaily_table_name,
-                                    $this->caldaily_field_info,
-                                    $caldaily_args,
-                                    $where);
-            }
-            else if ($day['status'] == 'Deleted') {
+            if ($day['status'] == 'Deleted') {
                 global $wpdb;
                 # We have to put $caldaily_table_name into the string,
                 # because if we put it in with %s, prepare() will put
@@ -545,10 +545,44 @@ class BfcEventSubmission {
                 }
             }
             else {
-                $this->insert_into_table($caldaily_table_name,
-                                    $this->caldaily_field_info,
-                                    $caldaily_args);
-            }                                        
+                if ($day['olddate'] == 'Y') {
+                    # This caldaily entry already exists; do an update
+
+                    if ($day['status'] == 'Exception') {
+                        # Do we need to make a new exception?
+                        #
+                        # Use -1 as a flag for 'no exception' because
+                        # stupid WordPress won't let us insert null into
+                        # the database. But we also have to check for null
+                        # because that's what comes *out* of the database,
+                        # before anything else has been set.
+                        if (!isset($caldaily_args['exceptionid']) ||
+                            $caldaily_args['exceptionid'] == null ||
+                            $caldaily_args['exceptionid'] == -1) {
+
+                            $exception = $this->make_exception($day['sqldate']);
+                            $caldaily_args['exceptionid'] = $exception->event_id;
+                        }
+
+                        # @@@ Store a list of exceptions, so we can show edit links to the user.
+                    }
+
+                    $where = Array('id' => $this->event_id,
+                                   'eventdate' => $day['sqldate']);
+
+                    $this->update_table($caldaily_table_name,
+                                        $this->caldaily_field_info,
+                                        $caldaily_args,
+                                        $where);
+                }
+                else {
+                    # this caldaily entry doesn't exist yet;
+                    # do an insert.
+                    $this->insert_into_table($caldaily_table_name,
+                                        $this->caldaily_field_info,
+                                        $caldaily_args);
+                }
+            }
         }
     }
 
@@ -734,7 +768,7 @@ class BfcEventSubmission {
         }
         else if ($this->action == "create") {
             # all dates will be added
-            foreach ($this->dayinfo['daylist'] as $day) {
+            foreach ($this->dayinfo['daylist'] as &$day) {
                 $day['changed'] = 'Y';
                 $day['olddate'] = 'N';
             }
@@ -761,27 +795,36 @@ class BfcEventSubmission {
     }
 
     protected function make_exception($date) {
+        $exception = new BfcEventSubmission();
+
+        # Copy most (but not all) fields from this event to the exception.
+        $do_not_copy = Array('dates', 'datestype',
+                             'wordpress_id',
+                             'image', 'imagewidth', 'imageheight');
+        foreach ($this->event_args as $arg_name => $arg_value) {
+            if (!in_array($arg_name, $do_not_copy)) {
+                $exception->event_args[$arg_name] = $arg_value;
+            }
+        }
+
+        # Don't need to set an edit code; that will happen when creating
+        # the event.
+
+        $exception->action = 'create';
+        $exception->image_action = 'keep';
+        $exception->event_args['dates'] = date("l, F j", strtotime($date));
+
+        $suffix = date("Mj", strtotime($date));
+        $exception->daily_args[$suffix]['status'] = 'As Scheduled';
+
+        $exception->do_action();
+     
+        return $exception;
+   
         # @@@ todo:
-        
-        # Make a set of event args that are a clone of
-        # this one.
-        # - Change the date
-        # - Set the submission_action to be 'create'
         # - Copy the image. Need to make a new copy of the file, because
         #   if they share we'd run into problems when one event (but not the other) is
         #   deleted and the file gets deleted along with it.
-        # - @@@ Figure out what needs to happen w/ the edit code (hopefully nothing)
-        # - Do we create a new WordPress post for the exception? I'm leaning towards no.
-        
-
-        # Make a list of caldaily args that
-        # only includes the one date.
-
-        
-
-        # Make a new event_submission object.
-
-        # Save the object.
     }
 
     # @@@ Sanitize these outputs

@@ -234,7 +234,8 @@ function bfc_get_month_cal_url($month = null, $year = null) {
 # Print the event sumission form (or the results)
 function bfc_event_submission_tag($atts) {
     global $wp_query;
-    $event_submission = new BfcEventSubmission($wp_query->query_vars, $_FILES);
+    $event_submission = new BfcEventSubmission();
+    $event_submission->populate_from_query($wp_query->query_vars, $_FILES);
     $event_submission->do_action();
 
     if ($event_submission->page_to_show() == "edit-event") {

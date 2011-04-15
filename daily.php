@@ -150,11 +150,15 @@ function mergedates($newdates, $olddates)
     # and if its newflash is empty then change it to "Moved to ...".
     for ($m = 1; isset($mergeddates[$m]); $m++)
     {
-	if ($mergeddates[$m]["status"] == "Canceled" && $mergeddates[$m]["newsflash"] == "") {
-	    if ($mergeddates[$m + 1]["status"] == "Added")
+	if ($mergeddates[$m]["status"] == "Canceled" &&
+            $mergeddates[$m]["newsflash"] == "") {
+	    if (isset($mergeddates[$m + 1]["status"]) &&
+                $mergeddates[$m + 1]["status"] == "Added") {
 		$mergeddates[$m]["newsflash"] = "Moved to ".date("F j", $mergeddates[$m + 1]["timestamp"]);
-	    else if ($mergeddates[$m - 1]["status"] == "Added")
+            }
+	    else if ($mergeddates[$m - 1]["status"] == "Added") {
 		$mergeddates[$m]["newsflash"] = "Moved to ".date("F j", $mergeddates[$m - 1]["timestamp"]);
+            }
 	}
     }
 
