@@ -285,8 +285,8 @@ function verifydates(value, reload)
           'dates': value,          
     };
 
-    if (jQuery('#calform_event_id')) {
-        id = jQuery('#calform_event_id').val();
+    if (jQuery('#submission_event_id')) {
+        id = jQuery('#submission_event_id').val();
         ajax_params['id'] = id;
     }
 
@@ -479,7 +479,7 @@ jQuery(document).ready(function() {
 
     // Update the preview now. But only if this is an existing event,
     // otherwise there's nothing to show.
-    if (document.getElementById('submission_event_id')) {
+    if (is_existing_event()) {
         update_preview();
     }
 
