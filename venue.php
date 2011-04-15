@@ -67,6 +67,9 @@ function bfc_venues() {
 }
 
 function bfc_get_known_venues() {
+    # Don't bother checking a nonce, because this is a nondestructive
+    # action.
+
     global $wpdb;
     global $caladdress_table_name;
 
@@ -89,8 +92,14 @@ add_action('wp_ajax_get-known-venues',
 
 function bfc_edit_venue() {
     $result = array();
-
     $args = array();
+
+    if (!wp_verify_nonce($_POST['nonce'], 'bfc-venue')) {
+        $result['status'] = 0;
+        print json_encode($result);
+        exit;
+    }
+    $result['nonce'] = wp_create_nonce('bfc-venue');
 
     if (!isset($_POST['type'])) {
         $result['status'] = 0;
@@ -179,6 +188,13 @@ add_action('wp_ajax_edit-venue',
 function bfc_delete_venue() {
     $result = array();
 
+    if (!wp_verify_nonce($_POST['nonce'], 'bfc-venue')) {
+        $result['status'] = 0;
+        print json_encode($result);
+        exit;
+    }
+    $result['nonce'] = wp_create_nonce('bfc-venue');
+
     if (!isset($_POST['canon'])) {
         $result['status'] = 0;
         print json_encode($result);
@@ -225,7 +241,9 @@ function bfc_load_venue_list_javascript() {
     wp_register_script('venue', $venue_js_url, array('jquery', 'non-broken-hotkeys'));
     wp_localize_script('venue',
                        'BikeFunAjax',
-                       array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
+                       array( 'ajaxurl' => admin_url( 'admin-ajax.php' ),
+                              'nonce'   => wp_create_nonce('bfc-venue'),
+                       ) );
 
     wp_print_scripts('venue');
 }

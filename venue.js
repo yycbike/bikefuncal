@@ -2,6 +2,7 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
           'type'    : 'create',
+          'nonce'   : BikeFunAjax.nonce,
           'locname' : name_input.val(),          
           'address' : address_input.val(),       
           'locked'  : locked_input.attr('checked'),          
@@ -21,6 +22,11 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
         else {
             error_result_cell.text("Oops! This couldn't be saved");
         }
+
+        // If we got a new nonce, use it.
+        if (result.hasOwnProperty('nonce')) {
+            BikeFunAjax.nonce = result.nonce
+        }
     }
     
     jQuery.post(
@@ -29,13 +35,13 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
         show_result,
         'json'
         );    
-
 }
 
 function save_edits(canon, name, address, locked, result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
           'type'    : 'update',
+          'nonce'   : BikeFunAjax.nonce,
           'canon'   : canon,         
           'locname' : name,          
           'address' : address,       
@@ -61,6 +67,11 @@ function save_edits(canon, name, address, locked, result_cell) {
         else {
             result_cell.text("Oops! This couldn't be saved");
         }
+
+        // If we got a new nonce, use it.
+        if (result.hasOwnProperty('nonce')) {
+            BikeFunAjax.nonce = result.nonce
+        }
     }
     
     jQuery.post(
@@ -74,6 +85,7 @@ function save_edits(canon, name, address, locked, result_cell) {
 function delete_venue(canon, table_row, result_cell) {
     var ajax_params = {
           'action'  : 'delete-venue',
+          'nonce'   : BikeFunAjax.nonce,
           'canon'   : canon,
     };
 
@@ -88,6 +100,11 @@ function delete_venue(canon, table_row, result_cell) {
         else {
             result_cell.text("Oops! An error occurred");
         }
+
+        // If we got a new nonce, use it.
+        if (result.hasOwnProperty('nonce')) {
+            BikeFunAjax.nonce = result.nonce
+        }
     }
 
     jQuery.post(
@@ -95,7 +112,7 @@ function delete_venue(canon, table_row, result_cell) {
         ajax_params,
         show_result,
         'json'
-        );    
+        );
 }
 
 
