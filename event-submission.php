@@ -841,10 +841,10 @@ class BfcEventSubmission {
         return $exceptions;
     }
 
-    # @@@ Sanitize these outputs
     private function print_value_for_text_input($argname) {
         if (isset($this->event_args[$argname])) {
-            printf("value=\"%s\"", $this->event_args[$argname]);
+            $value = htmlspecialchars($this->event_args[$argname], ENT_QUOTES);
+            printf("value=\"%s\"", $value);
         }
     }
 
@@ -902,7 +902,7 @@ class BfcEventSubmission {
     
     public function print_descr() {
         if (isset($this->event_args['descr'])) {
-            print $this->event_args['descr'];
+            print htmlspecialchars($this->event_args['descr'], ENT_QUOTES);
         }
     }
 
