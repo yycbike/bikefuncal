@@ -210,7 +210,7 @@ function display_dates(xmlDom)
             }
             row.append(statuscell);
 
-            if (is_existing_event()) {
+            if (is_existing_event() && status != "Exception") {
                 var newsflash_cell = jQuery("<td></td>");
 
                 var newsflash_input = jQuery("<input></input>");
