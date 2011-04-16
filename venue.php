@@ -132,6 +132,20 @@ function bfc_edit_venue() {
         }
         else {
             $args[$field] = stripslashes($_POST[$field]);
+
+            # Data validation & whitespace cleanup
+            $args[$field] = trim($args[$field]);
+            if ($args[$field] == '') {
+                $result['status'] = 0;
+                if ($field == 'address') {
+                    $result['error'] = "Can't save: Address is blank.";
+                }
+                else if ($field == 'locname') {
+                    $result['error'] = "Can't save: Name is blank.";
+                }
+                print json_encode($result);
+                exit;
+            }
         }
     }
 

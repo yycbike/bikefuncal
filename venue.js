@@ -23,7 +23,15 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
             locked_input.attr('checked', true);
         }
         else {
-            error_result_cell.text("Oops! This couldn't be saved");
+            var error_message;
+            if (result.hasOwnProperty('error')) {
+                error_message = result.error;
+            }
+            else {
+                error_message = "Oops! This couldn't be saved";
+            }
+
+            error_result_cell.text(error_message);
         }
 
         // If we got a new nonce, use it.
@@ -62,7 +70,15 @@ function save_edits(id, name, address, locked, result_cell) {
                 });
         }
         else {
-            result_cell.text("Oops! This couldn't be saved");
+            var error_message;
+            if (result.hasOwnProperty('error')) {
+                error_message = result.error;
+            }
+            else {
+                error_message = "Oops! This couldn't be saved";
+            }
+
+            result_cell.text(error_message);
         }
 
         // If we got a new nonce, use it.
