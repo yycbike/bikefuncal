@@ -7,8 +7,12 @@
 # Return the dates a calendar covers
 function bfc_get_cal_dates($atts) {
     if ($atts['for'] == 'palooza') {
-        $startdate = strtotime(PSTART);
-        $enddate   = strtotime(PEND);
+        # Start and End can be specified to show archived Paloozas
+        $start = isset($atts['start']) ? $atts['start'] : PSTART;
+        $end   = isset($atts['end'])   ? $atts['end']   : PEND;
+
+        $startdate = strtotime($start);
+        $enddate   = strtotime($end);
     }
     else if ($atts['for'] == 'current') {
         # Choose the starting date.  This is always the Sunday at or before
