@@ -40,12 +40,12 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
         );    
 }
 
-function save_edits(canon, name, address, locked, result_cell) {
+function save_edits(id, name, address, locked, result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
           'type'    : 'update',
           'nonce'   : BikeFunAjax.nonce,
-          'canon'   : canon,         
+          'id'      : id,         
           'locname' : name,          
           'address' : address,       
           'locked'  : locked,          
@@ -79,11 +79,11 @@ function save_edits(canon, name, address, locked, result_cell) {
         );    
 }
 
-function delete_venue(canon, table_row, result_cell) {
+function delete_venue(id, table_row, result_cell) {
     var ajax_params = {
           'action'  : 'delete-venue',
           'nonce'   : BikeFunAjax.nonce,
-          'canon'   : canon,
+          'id'      : id,
     };
 
     var show_result = function(result) {
@@ -157,29 +157,29 @@ function display_known_venues(known_venues) {
 
         var do_save = (function(name_input_copy, address_input_copy,
                                 locked_input_copy,
-                                canon_copy, result_cell_copy) {
+                                id_copy, result_cell_copy) {
 
             return function() {
-                save_edits(canon_copy, name_input_copy.val(),
+                save_edits(id_copy, name_input_copy.val(),
                            address_input_copy.val(),
                            locked_input_copy.attr('checked'),
                            result_cell_copy);
             }
 
-        })(name_input, address_input, locked_input, known_venues[idx].canon,
+        })(name_input, address_input, locked_input, known_venues[idx].id,
            result_cell); 
         save_button.click(do_save);
         name_input.bind('keyup', 'return', do_save);
         address_input.bind('keyup', 'return', do_save);
         
-        var do_delete = (function(canon_copy, table_row_copy,
+        var do_delete = (function(id_copy, table_row_copy,
                                   result_cell_copy) {
 
             return function() {
-                delete_venue(canon_copy,
+                delete_venue(id_copy,
                              table_row_copy, result_cell_copy);
             }
-        })(known_venues[idx].canon, tr, result_cell);
+        })(known_venues[idx].id, tr, result_cell);
         delete_button.click(do_delete);
 
         rows.push(tr);

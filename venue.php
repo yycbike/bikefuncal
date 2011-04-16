@@ -113,9 +113,9 @@ function bfc_edit_venue() {
         $arg_types = array('%s', '%s', '%d');
     }
     else if ($_POST['type'] == 'update') {
-        $mandatory_fields = array('canon', 'address',
+        $mandatory_fields = array('id', 'address',
             'locname', 'locked');
-        $arg_types = array('%s', '%s', '%s', '%d');
+        $arg_types = array('%d', '%s', '%s', '%d');
     }
     else {
         $result['status'] = 0;
@@ -138,22 +138,13 @@ function bfc_edit_venue() {
     # convert boolean from string to int
     $args['locked'] = $args['locked'] == 'true' ? 1 : 0;
 
-    # Find canonical name, if needed
-    if ($_POST['type'] == 'create') {
-        $args['canon'] = canonize($args['locname']);
-        $arg_types[] = '%s';
-    }
-
-    # @@@ If this is an update, do we need to change
-    # canon?
-
     # Do the database update
     global $wpdb;
     global $caladdress_table_name;
 
     if ($_POST['type'] == 'update') {
-        $where = array('canon' => $args['canon']);
-        $where_types = array('%s');
+        $where = array('id' => $args['id']);
+        $where_types = array('%d');
 
         $wpdb->update($caladdress_table_name,
                       $args,
@@ -195,7 +186,7 @@ function bfc_delete_venue() {
     }
     $result['nonce'] = wp_create_nonce('bfc-venue');
 
-    if (!isset($_POST['canon'])) {
+    if (!isset($_POST['id'])) {
         $result['status'] = 0;
         print json_encode($result);
         exit;
@@ -204,7 +195,7 @@ function bfc_delete_venue() {
     global $wpdb;
     global $caladdress_table_name;
     $sql = $wpdb->prepare("DELETE FROM ${caladdress_table_name} " .
-                          "WHERE canon = %s", $_POST['canon']);
+                          "WHERE id = %d", $_POST['id']);
 
     $query_result = $wpdb->query($sql);
 
@@ -248,27 +239,7 @@ function bfc_load_venue_list_javascript() {
     wp_print_scripts('venue');
 }
 
-# Convert text entered by the user into a format that is easy to compare.
-# Specifically, this converts to lowercase and strips out meaningless chars.
-# For example, "Col. Summer's Park" is converted to "col. summers park"
-function canonize($guess)
-{
-    # Convert to lowercase
-    $guess = strtolower($guess);
-
-    # Remove anything other than letters, digits, periods, or spaces
-    $guess = preg_replace("/[^a-z0-9. ]/", "", $guess);
-
-    # Reduce multiple spaces to single spaces
-    $guess = preg_replace("/   */", " ", $guess);
-
-    # Reduce multiple periods or spaces with a single period and space.
-    $guess = preg_replace("/[. ][. ][. ]*/", ". ", $guess);
-
-    return $guess;
-}
-
-# Return an associative array of location names (full names, not canon)
+# Return an associative array of location names 
 # mapped to addresses.
 function bfc_venue_list() {
     global $wpdb;

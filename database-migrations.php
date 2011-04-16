@@ -122,8 +122,14 @@ function bfc_install_db_3() {
     global $caladdress_table_name;
     global $wpdb;
 
+    # This is changed from the old code. The old code had a canonical
+    # name for the venue that was used to automatically match the user's
+    # input. Since the new code uses a drop-down list to let the user select
+    # from, we don't need the canonical name. That's replaced by an ID
+    # as the primary key.
+
     $sql = "CREATE TABLE IF NOT EXISTS ${caladdress_table_name} (";
-    $sql .= "canon VARCHAR(255) PRIMARY KEY NOT NULL,"; # simplified locname
+    $sql = "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,"; 
     $sql .= "address VARCHAR(255),";	# address of the venue
     $sql .= "locname VARCHAR(255),";	# name of the venue
     $sql .= "locked INT(1)";		# 1=locked, 0=automatic updates allowed
