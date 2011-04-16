@@ -217,6 +217,37 @@ function bfc_cal_date_navigation_tag($atts) {
 add_shortcode('bfc_cal_date_navigation', 'bfc_cal_date_navigation_tag');
 
 
+
+# A shorttag that returns the number of events. It's meant to show how many
+# events are in a palooza (current or archived).
+function bfc_cal_count_tag($atts) {
+    # Start and End can be specified to show archived Paloozas.
+    #
+    # bfc_get_cal_dates() returns times as integers and we want strings,
+    # so don't bother calling it.
+    $start = isset($atts['start']) ? $atts['start'] : PSTART;
+    $end   = isset($atts['end'])   ? $atts['end']   : PEND;
+
+    global $wpdb;
+    global $caldaily_table_name;
+    global $calevent_table_name;
+    # The old code checks the review flag here, but we haven't turned that on yet.
+    $sql = $wpdb->prepare("SELECT count(${caldaily_table_name}.id) " .
+                          "FROM ${caldaily_table_name}, ${calevent_table_name} " .
+                          "WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND " .
+                          "      eventdate >= %s   AND " .
+                          "      eventdate <= %s   AND " .
+                          "      eventstatus <> \"E\"  AND " .
+                          "      eventstatus <> \"C\"  AND " .
+                          "      eventstatus <> \"S\" ",
+                          $start, $end);
+                          
+    $count = $wpdb->get_var($sql);
+    return $count;
+}
+add_shortcode('bfc_cal_count', 'bfc_cal_count_tag');
+
+
 function bfc_get_month_cal_url($month = null, $year = null) {
     $edit_page_title = 'Monthly Calendar';
     $edit_page = get_page_by_title($edit_page_title);
