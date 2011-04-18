@@ -129,7 +129,7 @@ function bfc_install_db_3() {
     # as the primary key.
 
     $sql = "CREATE TABLE IF NOT EXISTS ${caladdress_table_name} (";
-    $sql = "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,"; 
+    $sql .= "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,"; 
     $sql .= "address VARCHAR(255),";	# address of the venue
     $sql .= "locname VARCHAR(255),";	# name of the venue
     $sql .= "locked INT(1)";		# 1=locked, 0=automatic updates allowed

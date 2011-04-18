@@ -3,12 +3,6 @@
 #
 # This is a loose port of calform.php & calsubmit.php from the old
 # site.
-#
-# Todos:
-# - Test new event creation
-# - Test update of existing events
-
-global $wpdb;
 
 class BfcEventSubmission {
     # Arguments for events (to pass on to the database)
@@ -134,8 +128,14 @@ class BfcEventSubmission {
 
     }
 
+    # Populate the data fields for this event, based on the query
+    # parameters passed in.
+    #
+    # The make_exception() method initializes the same fields as
+    # this method. If you make changes here, you may have to change
+    # make_exception(), too.
     public function populate_from_query($query_vars, $post_files) {
-        $this->post_files = $post_files || Array();
+        $this->post_files = $post_files;
         
         if (isset($query_vars['submission_event_id'])) {
             $this->event_id = (int) $query_vars['submission_event_id'];
@@ -229,13 +229,6 @@ class BfcEventSubmission {
             if (!$this->is_valid()) {
                 # Can't create or update because the event wasn't valid.
                 # Go back to editing.
-                #
-                # @@@ This will break when creating a new event. The
-                # next action will go from "edit" to "update" -- but update
-                # is wrong; we want the next action to be create.
-                #
-                # Maybe next_action() can check to see if an event_id already
-                # exists, and choose "create" or "update" appropriately.
                 $this->action = "edit";
             }
             else {
@@ -316,8 +309,8 @@ class BfcEventSubmission {
                               $this->event_id);
         $results = $wpdb->get_results($sql, ARRAY_A);
         
-        if (count($results) != 1) {
-            die("Wront number of DB results...");
+        if ($wpdb->num_rows != 1) {
+            die("Load mod fields: Wrong number of DB results: $wpdb->num_rows");
         }
         else {
             $result = $results[0];
@@ -348,8 +341,8 @@ class BfcEventSubmission {
         if ($this->action != 'new') {
             die();
         }
-
-        # @@@ Add more defaults...
+    
+        # Add more defaults, eventually...
         $this->event_args['audience'] = 'G';
     }
 
@@ -731,6 +724,10 @@ class BfcEventSubmission {
             $this->errors[] = "Date is missing";
         }
 
+        if ($this->event_args['title'] == '') {
+            $this->errors[] = "Title is missing";
+        }
+
         # Validate the edit code
         if (!$this->is_editcode_valid()) {
             $this->errors[] = "You don't have authorization to edit this event";
@@ -1025,7 +1022,18 @@ class BfcEventSubmission {
             return "create";
         }
         else if ($this->action == "edit") {
-            return "update";
+            if ($this->has_event_id()) {
+                # Existing events should be updated
+                # after an edit.
+                return "update";
+            }
+            else {
+                # New events should be created after
+                # an edit. (This can happen when the
+                # first create attempt failed because
+                # of invalid inputs.)
+                return "create";
+            }
         }
         else {
             die("next_action() should not have been called");
