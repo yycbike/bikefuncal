@@ -56,11 +56,13 @@ function display_dates(xmlDom)
     tmp = xmlDom.getElementsByTagName("error");
     if (tmp.length != 0) {
         var error_message = tmp[0].firstChild.nodeValue;
-        
-        mydatelist.innerHTML = "<em class='date-error'>" +
-            htmlspecialchars(error_message) +
-            "<\em>";
+        jQuery(mydatelist).empty();
+        jQuery(mydatelist).append(
+            jQuery('<em>').text(error_message)
+        );
         mydatelist.style.display = "block";
+
+        return;
     }
     else {
         // if a canonical form of "dates" is returned, use it
@@ -88,11 +90,7 @@ function display_dates(xmlDom)
     // Get the list of dates.  If there's more than one then
     // show the list in the "datelist" div.
     dates = xmlDom.getElementsByTagName("date");
-    if (dates.length == 0) {
-        mydatelist.innerHTML = "<em>No Dates<\em>";
-        mydatelist.style.display = "block";
-    }
-    else if (dates.length == 1 &&
+    if (dates.length == 1 &&
              dates[0].getElementsByTagName("status")[0].firstChild.nodeValue == "Added") {
         suffix = dates[0].getElementsByTagName("suffix")[0].firstChild.nodeValue;
         mydatelist.innerHTML = "<input type=hidden name=status" + suffix + " value=Added>";

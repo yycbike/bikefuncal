@@ -626,9 +626,14 @@ function repeatdates($str)
     $d = 1;
     
     # Parse the dates
-    $tokens = datetokens($str);
-    $tokens = datealso($tokens);
+    $tokens1 = datetokens($str);
+    $tokens = datealso($tokens1);
     $rules = daterules($tokens);
+
+    if ($rules === null || count($rules) == 0) {
+        $dayinfo['datestype'] = 'error';
+        return $dayinfo;
+    }
 
     # Scan actual dates, starting with today and going forward 364 days
     # or until a 180 gap is detected, looking for days that meet the
