@@ -137,9 +137,8 @@ add_action('init', function() {
         ),
         ));
 
-    # Customize the appearance of the post types through the admin screens.
-    
-
+    # The rest of the function customizes the appearance of the post types through the admin screens.
+        
     # Remove entries from the drop-down list of "bulk actions", on the
     # edit page in the admin menu.
     add_action('bulk_actions-edit-bfc-event', function($actions) {
@@ -197,6 +196,17 @@ add_action('init', function() {
         }
     });
 });
+
+# Change links for editing bike events to go to the regular edit page,
+# not the one WordPress generated.
+add_filter('get_edit_post_link', function($url, $post_id, $context) {
+    if (get_post_type($post_id) == 'bfc-event') {
+        return bfc_get_edit_url_for_wordpress_id($post_id);
+    }
+    else {
+        return $url;
+    }
+}, 10, 3); # 10 = priority (default); 3 = pass in all 3 arguments.
 
 # Return whether or not to show options for administering the calendar,
 # such as editing other people's events.

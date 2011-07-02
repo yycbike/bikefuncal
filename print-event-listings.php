@@ -765,6 +765,19 @@ END_QUERY;
     }
 }
 
+function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
+    global $wpdb;
+    global $calevent_table_name;
+    $sql = $wpdb->prepare("SELECT id, editcode FROM ${calevent_table_name} " .
+                          "WHERE wordpress_id=%d", $wordpress_id);
+
+    $records = $wpdb->get_results($sql, ARRAY_A);
+    if ($wpdb->num_rows != 1) {
+        die();
+    }
+    return bfc_get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
+}
+
 function bfc_get_edit_url_for_event($id, $editcode = null) {
     if (!isset($id)) {
         die("bfc_get_edit_url_for_event: id is unset");
