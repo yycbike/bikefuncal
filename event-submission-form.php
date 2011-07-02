@@ -59,7 +59,7 @@ function bfc_print_event_submission_form($event_submission) {
       <input type="radio" name="event_audience"
              <?php $event_submission->print_checked_for_adult_audience() ?>
              id="audience_adult" value="A">
-      <label for="audience_adult">19+ only</label>
+             <label for="audience_adult">Adults (<?php print get_option('bfc_drinking_age')  ?>+ only)</label>
     </div>
 
     <h4>Description</h4>
