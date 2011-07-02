@@ -547,19 +547,8 @@ function fullentry($record, $for, $include_images)
         print "<img border=0 src=\"${chain_url}\" " .
             "alt=\"Link\" title=\"Link to this event\">\n";
         print "</a>\n";
-
-        #####################
-        # Edit link
-        #
-        # Show the edit link to admin users.
-        # Except if this is a preview; then it's meaningless
-        # because they're already editing.
-        if (bfc_show_admin_options() && $for != 'preview') {
-            $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-            print "<a href=\"$edit_url\">Edit</a>";
-        }
     }
-    
+
     #####################
     # Audience badge
     #
@@ -701,6 +690,19 @@ function fullentry($record, $for, $include_images)
         print "<img border=0 src='$forumimg' alt='forum'>";
         print "</a>\n";
     }
+
+
+    #####################
+    # Edit link
+    #
+    # Show the edit link to admin users.
+    # Except if this is a preview; then it's meaningless
+    # because they're already editing.
+    if (bfc_show_admin_options() && $for != 'preview') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+        print "<a href=\"$edit_url\">Edit Event</a>";
+    }
+
     print "</dd>\n";
 
     # if this event has no image, then the next event's
