@@ -158,6 +158,10 @@ add_action('init', function() {
         ?>
         <style type="text/css">
             .add-new-h2, /* 'Add New' button at the top of the page */
+            select[name=m], /* Drop-down of months. Hide it because month means month event was created, not when the
+                             * event is.
+                             */
+            input#post-query-submit, /* submit button for above */                             
             div.row-actions span /* Quick actions below an item in the event listing  */
                 {
                 display: none;
