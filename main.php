@@ -199,6 +199,16 @@ add_action('init', function() {
                    esc_html($post->post_title));
         }
     });
+
+    # There is a drop-down of common actions. Remove the new event link
+    # from it.
+    add_filter('favorite_actions', function($actions) {
+        $new_link = 'post-new.php?post_type=bfc-event';
+        if (isset($actions[$new_link])) {
+            unset($actions[$new_link]);
+        }
+        return $actions;
+    });
 });
 
 # Change links for editing bike events to go to the regular edit page,

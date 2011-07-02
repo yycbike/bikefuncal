@@ -11,9 +11,18 @@ function bfc_venues() {
     
 ?>
 
+<div class='wrap'>
+    
 <h2>Known-Venue List</h2>
 
-<p>todo: Explain what this is good for</p>
+<p>
+When people are adding a ride to the calendar, the venue name (and address) can be filled in if the
+database knows about that venue. Add known venues here.
+</p>
+
+<p>
+Don't worry about the <em>Lock</em> field. Just leave it checked.
+</p>
 
 <table id='known-venues'>
 <thead>
@@ -61,8 +70,8 @@ function bfc_venues() {
 
 </table>
 
-<p>Todo: Explain what <em>locked</em> is.</p>
-
+</div><!-- wrap -->
+     
 <?php    
 }
 
