@@ -155,11 +155,41 @@ function bfc_plugin_menu() {
                      'manage_options', # capability
                      'bfc-venues',   # menu slug
                      'bfc_venues');  # function callback
-
 }
 
 function bfc_options() {
-    echo "<p>More options will go here someday</p>";
+    # echo "<p>More options will go here someday</p>";
+    
+    ?>
+    <div class="wrap">
+        <h2>Bike Fun Calendar Options</h2>
+        <p>
+        
+        </p>
+
+        <form method="post" action="options.php">
+            <?php settings_fields( 'bikefuncal-options' ); ?>
+
+            <p>
+            Festival Start Date <em>(ex: 2011-06-02)</em>:
+            <input type='text' name='bfc_festival_start_date' value='<?php echo get_option('bfc_festival_start_date'); ?>'
+            </p>
+
+            <p>
+            Festival End Date:
+            <input type='text' name='bfc_festival_end_date' value='<?php echo get_option('bfc_festival_end_date'); ?>'
+            </p>
+
+            <p>
+            Drinking Age:
+            <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'
+            </p>
+
+            <br>
+            <input type='submit' value='save'>
+        </form>                
+    </div>
+    <?php
 }
 
 function bfc_event_content_filter($content) {
@@ -211,6 +241,25 @@ END_QUERY;
     }
 }
 add_filter('the_content', 'bfc_event_content_filter');
+
+
+add_action('admin_init', 'bfc_options_init');
+function bfc_options_init() {
+    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_drinking_age');
+}
+
+function bfc_sanitize_festival_date($input) {
+    $date = strtotime($input);
+    if ($date === false) {
+        return "";
+    }
+    else {
+        return $input;
+    }
+}
+
 
 
 ?>

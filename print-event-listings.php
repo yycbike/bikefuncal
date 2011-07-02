@@ -166,13 +166,6 @@ function calendar_quote($days)
 function palooza_overview_calendar_inset($days) {
 ?>    
       <td colspan="<?php print $days ?>" class="palooza-overview-calendar-inset">
-	<span class="palooza-date">
-        <?php
-          print substr(constant("PDATES"),0,4);
-          print "&nbsp;";
-          print substr(constant("PSTART"),0,4)
-        ?>
-        </span>
         <br>
 	<a href="explain/audience.html" target="_BLANK" onClick="window.open('explain/audience.html', 'audience', 'width=600, height=500, menubar=no, status=no, location=no, toolbar=no, scrollbars=yes'); return false;">
 	  <span class="family-friendly">Family Friendly events have <strong>green</strong> times</span>
@@ -465,8 +458,8 @@ function fullentry($record, $for, $include_images)
     }
     if ($record["audience"] == "A") {
 	$badge = "beer.gif";
-	$badgealt = constant("OFAGE")."+";
-	$badgehint = "Adult Only (".constant("OFAGE")."+)";
+	$badgealt = sprintf('%d+', get_option('bfc_drinking_age'));
+        $badgehint = sprintf('Adult Only (%d+)', get_option('bfc_drinking_age'));
     }
     
     $address = htmlspecialchars($record["address"]);
