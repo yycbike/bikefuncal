@@ -105,14 +105,23 @@ function calendar_queryvars($qvars) {
 }
 add_filter('query_vars', 'calendar_queryvars');
 
-function bfc_create_post_types() {
+# Create the custom post type for bfc-events
+add_action('init', function() {
     register_post_type('bfc-event', array(
         'description' => 'Events in the bike fun calendar',
         'public' => true,
         'show_ui' => true,
-        'show_in_menu' => true,
+        'show_in_menu' => 'bfc-top',
         'menu_position' => 100, # below 2nd seperator
         'supports' => array('title', 'comments'),
+        'capabilities' => array(
+            # Have to allow an edit_post capability, because otherwise you
+            # cannot edit comments.
+            'edit_post'     => 'moderate_comments',
+            'publish_posts' => 'do_not_allow',
+            'read_post'     => 'read',
+            'delete_post'   => 'do_not_allow',
+        ),
         'labels' => array(
             'name' => 'Bike Events',
             'singular_name' => 'Bike Event',
@@ -124,11 +133,70 @@ function bfc_create_post_types() {
             'search_items' => 'Search for Event',
             'not_found' => 'No events found',
             'not_found_in_trash' => 'No events found in trash',
-            'menu_name' => 'Bike Fun Cal',
+            'menu_name' => 'Events',
         ),
         ));
-}
-add_action('init', 'bfc_create_post_types');
+
+    # Customize the appearance of the post types through the admin screens.
+    
+
+    # Remove entries from the drop-down list of "bulk actions", on the
+    # edit page in the admin menu.
+    add_action('bulk_actions-edit-bfc-event', function($actions) {
+        unset($actions['edit']);
+        unset($actions['trash']);
+
+        return $actions;
+    });
+
+    # CSS to hide certain things from the admin page.
+    add_action('admin_print_styles', function() {
+        global $current_screen;
+        if ('edit-bfc-event' != $current_screen->id) {
+            return;
+        }
+
+        ?>
+        <style type="text/css">
+            .add-new-h2, /* 'Add New' button at the top of the page */
+            div.row-actions span /* Quick actions below an item in the event listing  */
+                {
+                display: none;
+            }
+        </style>
+        <?php
+    });
+
+    # Customize the columns in the list of bike events.
+    add_filter("manage_bfc-event_posts_columns", function($old_cols) {
+        $new_cols = array(
+            'cb' => $old_cols['cb'], # Checkbox
+
+            # In order to customize the title, it cannot be named 'title'
+            'bfc_title' => $old_cols['title'],
+
+            'comments' => $old_cols['comments'],
+
+            # Skip 'date' from the old columns. That is the date the event
+            # was added to the calendar.
+        );
+
+        return $new_cols;
+    });
+
+    # Display custom columns in the list of bike events.
+    add_action("manage_bfc-event_posts_custom_column", function($col) {
+        global $post;
+
+        if ($col == 'bfc_title' && get_post_type($post->ID) == 'bfc-event') {
+
+            # Customizing the 'title' column lets us remove the edit link.
+            printf("<a href='%s' title='View'><strong>%s</strong></a>",
+                   get_permalink($post->ID),
+                   esc_html($post->post_title));
+        }
+    });
+});
 
 # Return whether or not to show options for administering the calendar,
 # such as editing other people's events.
@@ -144,14 +212,22 @@ function bfc_show_admin_options() {
 # Add options to the WordPress admin menu
 add_action('admin_menu', 'bfc_plugin_menu');
 function bfc_plugin_menu() {
-    add_submenu_page('edit.php?post_type=bfc-event', # parent
+    add_menu_page('Bike Fun Cal', # Page title
+                         'Bike Fun Cal', # Menu title
+                         'manage_options', # capability
+                         'bfc-top',   # menu slug
+                         function() {
+                             echo "<p>TBD</p>";
+                         });
+
+    add_submenu_page('bfc-top', # parent
                      'Edit Known Venues', # title
                      'Venues',
                      'manage_options', # capability
                      'bfc-venues',   # menu slug
                      'bfc_venues');  # function callback
 
-    add_submenu_page('edit.php?post_type=bfc-event', # parent
+    add_submenu_page('bfc-top', # parent
                      'Bike Fun Cal Options', # title
                      'Options',
                      'manage_options', # capability
@@ -228,6 +304,12 @@ END_QUERY;
                       TRUE);    # include images
             $listing = ob_get_contents();
             ob_end_clean();
+
+            # Add a link for editing comments
+            if (current_user_can('moderate_comments')) {
+                $comments_url = admin_url(sprintf('edit-comments.php?p=%d', $wp_query->post->ID));
+                $listing .= "<p><a href='${comments_url}'>Edit Comments</a></p>";
+            }
 
             # For bfc-event posts, there is no content, so we
             # don't need to do anything with the $content
