@@ -111,6 +111,7 @@ function bfc_create_post_types() {
         'public' => true,
         'show_ui' => true,
         'show_in_menu' => true,
+        'menu_position' => 100, # below 2nd seperator
         'supports' => array('title', 'comments'),
         'labels' => array(
             'name' => 'Bike Events',
@@ -123,7 +124,7 @@ function bfc_create_post_types() {
             'search_items' => 'Search for Event',
             'not_found' => 'No events found',
             'not_found_in_trash' => 'No events found in trash',
-            'menu_name' => 'Bike Events',
+            'menu_name' => 'Bike Fun Cal',
         ),
         ));
 }
@@ -143,18 +144,20 @@ function bfc_show_admin_options() {
 # Add options to the WordPress admin menu
 add_action('admin_menu', 'bfc_plugin_menu');
 function bfc_plugin_menu() {
-    add_menu_page('Bike Fun Cal', # Page title
-                     'Bike Fun Cal', # Menu title
-                     'manage_options', # capability
-                     'bfc-top',   # menu slug
-                     'bfc_options');  # function callback
-
-    add_submenu_page('bfc-top', # parent
+    add_submenu_page('edit.php?post_type=bfc-event', # parent
                      'Edit Known Venues', # title
                      'Venues',
                      'manage_options', # capability
                      'bfc-venues',   # menu slug
                      'bfc_venues');  # function callback
+
+    add_submenu_page('edit.php?post_type=bfc-event', # parent
+                     'Bike Fun Cal Options', # title
+                     'Options',
+                     'manage_options', # capability
+                     'bfc-options',   # menu slug
+                     'bfc_options');  # function callback
+                     
 }
 
 function bfc_options() {
