@@ -42,8 +42,10 @@ class TestSubmissionChangeLog extends BfcTestCase {
         $this->assertContains('audience', $changes);
     }
 
-    # Make no changes to an event.  Ensure that nothing is flagged as
-    # changing.
+    /**
+     * Make no changes to an event.  Ensure that nothing is flagged as
+     * changing.
+     */
     function test_change_nothing() {
         $event1 = $this->make_valid_submission();
         $event2 = $this->update_submission($event1, array());
@@ -118,8 +120,8 @@ class TestSubmissionChangeLog extends BfcTestCase {
         $this->assertEquals('As Scheduled', $daychanges['Jun4']['status']);
     }
 
-    # @@@ Make a test of new exceptions
+    // @@@ Make a test of new exceptions
 
-    # @@@ Make tests for changing the image
+    // @@@ Make tests for changing the image
 }
 ?>

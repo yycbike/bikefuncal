@@ -16,8 +16,12 @@ class BfcEventSubmission {
     # Contents: A list of field names that changed.
     # e.g., Array('title', 'tinytitle')
     protected $event_args_changes = Array();
-    # Contents: A list of suffix/sqldate/name/values
-    # e.g., Array( array('sqldate' => '2011-06-30', 'name' => 'newsflash', 'value' => '...'), array(...), ...)
+    // Contents: Suffix -> value that changed.
+    // Ex:
+    // array(
+    //     'Oct8' => array('newsflash' => 'Flash'),
+    //     'Oct9' => array('status'    => 'Added'),
+    // )
     protected $daily_args_changes = Array();
 
     # A locally-cached copy of the $_FILES variable.
@@ -716,8 +720,6 @@ class BfcEventSubmission {
         $this->event_args['image'] = $relative_filename;
         $this->event_args['imageheight'] = $imageheight;
         $this->event_args['imagewidth'] = $imagewidth;
-
-        #var_dump($this->event_args);
         
         # (We could make a WordPress attachment out of this. But what would
         # the benefit be?)
@@ -1220,10 +1222,50 @@ class BfcEventSubmission {
                                  $value);
         }
 
-        # @@@ Image changes
+        // Changes to images
+        switch ($this->image_action) {
+            case 'keep': break;
+            case 'create':
+                $changes[] = 'Image added';
+                break;
+            case 'change':
+                $changes[] = 'Image changed';
+                break;
+            case 'delete':
+                $changes[] = 'Image removed';
+                break;
+        }
 
-        # @@@ caldaily changes
+        // Changes to caldaily
+        foreach ($this->dayinfo['daylist'] as $day) {
+            $suffix = $day['suffix'];
 
+            // Find the date w/ eventdate or sqldate, whichever is set
+            if (isset($day['eventdate'])) {
+                $date = $day['eventdate'];
+            }
+            else if (isset($day['sqldate'])) {
+                $date = $day['sqldate'];
+            }
+            else {
+                die();
+            }
+            $date   = date("M j", strtotime($date));
+
+            if (isset($this->daily_args_changes[$suffix]['status'] )) {
+                $changes[] = sprintf('%s status changed to: %s',
+                                     $date,
+                                     $this->daily_args_changes[$suffix]['status']);
+            }
+
+            if (isset($this->daily_args_changes[$suffix]['newsflash'] )) {
+                $changes[] = sprintf('%s newsflash changed to: %s',
+                                     $date,
+                                     $this->daily_args_changes[$suffix]['newsflash']);
+            }
+            
+        }
+        
         return $changes;
     }
 

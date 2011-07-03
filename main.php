@@ -311,6 +311,9 @@ SELECT *
 FROM ${calevent_table_name}, ${caldaily_table_name}
 WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
       ${calevent_table_name}.wordpress_id = %d
+ORDER BY ${caldaily_table_name}.eventdate
+LIMIT 1
+
 END_QUERY;
         $sql = $wpdb->prepare($sql, $wp_query->post->ID);
         $records = $wpdb->get_results($sql, ARRAY_A);
