@@ -28,6 +28,9 @@ To edit this event in the future, go to this URL:
 </p>
 
 <?php
+if ($event_submission->current_action() == 'update') {
+    $event_submission->print_changes();
+}    
 
 $exceptions = $event_submission->get_exceptions();
 if (count($exceptions) > 0) {

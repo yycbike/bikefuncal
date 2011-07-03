@@ -11,6 +11,15 @@ class BfcEventSubmission {
     # Arguments for caldaily (to pass on to the database)
     protected $daily_args = Array();
 
+    # Track changes
+    #
+    # Contents: A list of field names that changed.
+    # e.g., Array('title', 'tinytitle')
+    protected $event_args_changes = Array();
+    # Contents: A list of suffix/sqldate/name/values
+    # e.g., Array( array('sqldate' => '2011-06-30', 'name' => 'newsflash', 'value' => '...'), array(...), ...)
+    protected $daily_args_changes = Array();
+
     # A locally-cached copy of the $_FILES variable.
     # Create our own copy because this object isn't always created
     # in a POST request.
@@ -49,7 +58,7 @@ class BfcEventSubmission {
     # and delete.
     protected $user_editcode;
     protected $db_editcode;
-
+    
     # Information about the database fields we'll be populating.
     # Keys are names of the fields.
     #
@@ -166,6 +175,7 @@ class BfcEventSubmission {
             $this->action = 'new';
         }
         
+        # Choose an image action to take
         if (isset($query_vars['submission_image_action'])) {
             $this->image_action = $query_vars['submission_image_action'];
         }
@@ -184,11 +194,10 @@ class BfcEventSubmission {
         # If we're editing an existing object, grab it from the db.
         # Do this before we load the rest of the query vars, so that
         # user-specified values can override the database.
-        if ($this->action == "edit") {
+        if ($this->action == "edit" || $this->action == "update") {
             $this->load_from_db();
         }
-        else if ($this->action == "update"   ||
-                 $this->action == "delete") {
+        else if ($this->action == "delete") {
             $this->load_modification_fields_from_db();
         }
         
@@ -225,8 +234,15 @@ class BfcEventSubmission {
                     $this->user_editcode = $query_vars[$query_field_name];
                 }
                 else {
-                    $this->event_args[$field_name] = 
-                        stripslashes($query_vars[$query_field_name]);
+                    $new_value = stripslashes($query_vars[$query_field_name]);
+
+                    if (isset($this->event_args[$field_name]) &&
+                        $new_value !== $this->event_args[$field_name]) {
+                        
+                        $this->event_args_changes[] = $field_name;
+                    }
+                    
+                    $this->event_args[$field_name] = $new_value;
                 }
             }
         }
@@ -278,6 +294,19 @@ class BfcEventSubmission {
         global $caldaily_table_name;
         global $wpdb;
 
+        # Fields to not load from the database.
+        # We either don't use these fields, or in the
+        # case of modified we leave it up to the
+        # database to set.'
+        $do_not_load = array(
+            'modified',
+            'external',
+            'source',
+            'nestid',
+            'nestflag',
+            'review',
+        );
+
         if (!isset($this->event_id)) {
             die("Event ID is not set");
         }
@@ -297,7 +326,7 @@ class BfcEventSubmission {
                 if ($db_key == 'editcode') {
                     $this->db_editcode = $db_value;
                 }
-                else {
+                else if (!in_array($db_key, $do_not_load)) {
                     $this->event_args[$db_key] = $db_value;
                 }
             }
@@ -352,13 +381,13 @@ class BfcEventSubmission {
         }
     }
 
-    # Set some values to their defaults.
+    # A new event has mostly blank default values. But for the values
+    # that are non-blank by default, set them here.
     protected function set_defaults() {
         if ($this->action != 'new') {
             die();
         }
     
-        # Add more defaults, eventually...
         $this->event_args['audience'] = 'G';
     }
 
@@ -480,7 +509,7 @@ class BfcEventSubmission {
 
     protected function add_event_to_db($event_args) {
         global $calevent_table_name, $caldaily_table_name;
-
+        
         if ($this->action == "create") {
             # Create the editcode
             $event_args['editcode'] = uniqid();
@@ -561,6 +590,8 @@ class BfcEventSubmission {
                         # the database. But we also have to check for null
                         # because that's what comes *out* of the database,
                         # before anything else has been set.
+                        #
+                        # @@@ But it looks like we never insert a -1 into the database...
                         if (!isset($day['exceptionid']) ||
                             $day['exceptionid'] == null ||
                             $day['exceptionid'] == -1) {
@@ -569,8 +600,6 @@ class BfcEventSubmission {
                             $caldaily_args['exceptionid'] = $exception->event_id;
                             $day['exceptionid'] = $exception->event_id;
                         }
-
-                        # @@@ Store a list of exceptions, so we can show edit links to the user.
                     }
 
                     $where = Array('id' => $this->event_id,
@@ -749,6 +778,12 @@ class BfcEventSubmission {
             }
         }
 
+        if ($this->event_args['audience'] != 'G' &&
+            $this->event_args['audience'] != 'A' &&
+            $this->event_args['audience'] != 'F') {
+            $this->errors[] = 'Audience is invalid';
+        }
+
         if ($this->event_args['title'] == '') {
             $this->errors[] = "Title is missing";
         }
@@ -788,6 +823,19 @@ class BfcEventSubmission {
             # Merge the old and new lists.
             $this->dayinfo['daylist'] =
                 mergedates($this->dayinfo['daylist'], $olddates);
+
+            # Look for changes
+            foreach($this->dayinfo['daylist'] as $day) {
+                $new_newsflash = $this->daily_args[ $day['suffix'] ]['newsflash'];
+                if ($day['newsflash'] != $new_newsflash) {
+                    $this->daily_args_changes[ $day['suffix'] ]['newsflash'] = $new_newsflash;
+                }
+
+                $new_status = $this->daily_args[ $day['suffix'] ]['status'];
+                if ( $day['status'] != $new_status && $new_status != 'Added' ) {
+                    $this->daily_args_changes[ $day['suffix'] ]['status'] = $new_status;
+                }
+            }
         }
         else if ($this->action == "create") {
             # all dates will be added
@@ -1083,6 +1131,109 @@ class BfcEventSubmission {
         }
     }
 
+    # Produce a list of human-readable descriptions of changes.
+    protected function assemble_changes() {
+        if ($this->action != 'update') {
+            die();
+        }
+        
+        $changes = array();
+        
+        $human_readable_name_for = array(
+            'title'     => 'Title',
+            'tinytitle' => 'Tiny Title',
+            'audience'  => 'Audience',
+            'descr'     => 'Description',
+            'printdescr' => 'Print description',
+            'dates'      => 'Dates',
+            'eventtime'  => 'Time',
+            'eventduration' => 'Duration',
+            'timedetails'   => 'Time details',
+            'locname'       => 'Venue',
+            'address'       => 'Address',
+            'locdetails'    => 'Location details',
+            'name'          => 'Organizer name',
+            'email'         => 'Email',
+            'hidephone'     => 'Don\'t publish my email address online',
+            'phone'         => 'Phone number',
+            'hidephone'     => 'Don\'t publish my phone number online',
+            'weburl'        => 'Web site URL',
+            'webname'       => 'Web site name',
+            'contact'       => 'Other contact info',
+            'hidephone'     => 'Don\'t publish my other contact info online',
+        );
+
+        # Convert from internal representation to something suitable to present to people.
+        $human_readable_value_for = array(
+            'audience'  => function($audience) {
+                switch ($audience) {
+                    case "G": return 'General';
+                    case "F": return 'Family Friendly';
+                    case "A": return 'Adults Only';
+                    default: die();
+                }
+            },
+            'eventtime' => function($eventtime) { return hmmpm($eventtime); },
+            'eventduration' => function($minutes) { return sprintf('%d minutes', $minutes); },
+            'hidephone' => function($value)  { return $value ? 'Yes' : 'No'; },
+            'hideemail' => function($value)  { return $value ? 'Yes' : 'No'; },
+            'hidecontact' => function($value)  { return $value ? 'Yes' : 'No'; },
+        );
+
+        foreach ($this->event_args_changes as $fieldname) {
+            $value = $this->event_args[$fieldname];
+
+            # Convert value to human-readable, if appropriate
+            if (isset($human_readable_value_for[$fieldname])) {
+                $value = $human_readable_value_for[$fieldname]($value);
+            }
+
+            # Choose a message to tell the user
+            if ($value == '') {
+                $message_format = '%s removed';
+            }
+            else {
+                if ($fieldname == 'descr' || $fieldname == 'printdescr') {
+                    # These fields are long, so only say they changed,
+                    # not what they changed to.
+                    $message_format = '%s changed';
+                }
+                else {
+                    # All other fields, show the name & new value
+                    $message_format = '%s changed to: %s';
+                }
+            }
+
+            # Add this to the log of changes
+            if (!isset($human_readable_name_for[$fieldname])) {
+                die($fieldname);
+            }
+            $changes[] = sprintf($message_format,
+                                 $human_readable_name_for[$fieldname],
+                                 $value);
+        }
+
+        # @@@ Image changes
+
+        # @@@ caldaily changes
+
+        return $changes;
+    }
+
+    public function print_changes() {
+        $changes = $this->assemble_changes();
+
+        print "<ul>\n";
+
+        foreach ($changes as $change) {
+            print "<li>";
+            print $change;
+            print "</li>";
+        }
+
+        print "</ul>\n";
+    }
+
     # What kind of page should the caller show?
     #
     # edit-event     -- Show the form for making/updating an event
@@ -1106,5 +1257,26 @@ class BfcEventSubmission {
             die("Bad action: $this->action");
         }
     }
+
+    # Only for use from unit tests
+    public function event_args_changes() {
+        return $this->event_args_changes;
+    }
+
+    # Only for use from unit tests
+    public function event_args() {
+        return $this->event_args;
+    }
+
+    # Only for use from unit tests
+    public function daily_args() {
+        return $this->daily_args;
+    }
+
+    # Only for use from unit tests
+    public function daily_args_changes() {
+        return $this->daily_args_changes;
+    }
+
 }
 ?>

@@ -1,16 +1,5 @@
 <?php
 class TestSubmissionWordPressPost extends BfcTestCase {
-    function setUp() {
-        parent::setUp();
-        # Do stuff here
-        bfc_install();
-    }
-
-    function tearDown() {
-        # Do stuff here
-        parent::tearDown();
-    }
-
     function test_post_is_created() {
         $submission = $this->make_valid_submission();
 

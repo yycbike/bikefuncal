@@ -44,17 +44,10 @@ class TestSubmissionNextAction extends BfcTestCase {
      */
     function test_invalid_update() {
         $valid_submission = $this->make_valid_submission();
-
-        $invalid_submission = new BfcEventSubmission;
-        $invalid_submission_args = array(
-            'submission_action' => 'update',
-            'submission_event_id' => $valid_submission->event_id(),
+        $invalid_submission = $this->update_submission($valid_submission, array(
+            /* Cause validation to fail, due to no dates */
             'event_dates' => '',
-            'event_title' => 'Title 2',
-            );
-        $invalid_submission->populate_from_query(
-            $invalid_submission_args, array());
-        $invalid_submission->do_action();
+        ));                                                           
 
         $this->assertFalse($invalid_submission->is_valid());
         $this->assertEquals($invalid_submission->current_action(),
