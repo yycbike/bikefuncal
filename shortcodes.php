@@ -8,8 +8,8 @@
 function bfc_get_cal_dates($atts) {
     if ($atts['for'] == 'palooza') {
         # Start and End can be specified to show archived Paloozas
-        $start = isset($atts['start']) ? $atts['start'] : PSTART;
-        $end   = isset($atts['end'])   ? $atts['end']   : PEND;
+        $start = isset($atts['start']) ? $atts['start'] : get_option('bfc_festival_start_date');
+        $end   = isset($atts['end'])   ? $atts['end']   : get_option('bfc_festival_end_date');
 
         $startdate = strtotime($start);
         $enddate   = strtotime($end);
@@ -216,8 +216,6 @@ function bfc_cal_date_navigation_tag($atts) {
 }
 add_shortcode('bfc_cal_date_navigation', 'bfc_cal_date_navigation_tag');
 
-
-
 # A shorttag that returns the number of events. It's meant to show how many
 # events are in a palooza (current or archived).
 function bfc_cal_count_tag($atts) {
@@ -225,8 +223,8 @@ function bfc_cal_count_tag($atts) {
     #
     # bfc_get_cal_dates() returns times as integers and we want strings,
     # so don't bother calling it.
-    $start = isset($atts['start']) ? $atts['start'] : PSTART;
-    $end   = isset($atts['end'])   ? $atts['end']   : PEND;
+    $start = isset($atts['start']) ? $atts['start'] : get_option('bfc_festival_start_date');
+    $end   = isset($atts['end'])   ? $atts['end']   : get_option('bfc_festival_end_date');
 
     global $wpdb;
     global $caldaily_table_name;
@@ -331,3 +329,42 @@ function bfc_load_event_submission_form_javascript() {
     wp_print_styles('bfc-jquery-ui-style');
     wp_print_scripts('event-submission');                       
 }
+
+
+function bfc_festival_dates_tag($atts) {
+    $start = get_option('bfc_festival_start_date');
+    $end   = get_option('bfc_festival_end_date');
+
+    $startdate = strtotime($start);
+    $enddate   = strtotime($end);
+
+    $start_month = date('F', $startdate);
+    $start_day   = date('j', $startdate);
+    $start_year  = date('Y', $startdate);
+
+    $end_month = date('F', $enddate);
+    $end_day   = date('j', $enddate);
+    $end_year  = date('Y', $enddate);
+
+
+    $same_month = ($start_month == $end_month);
+    if ($same_month) {
+        return sprintf('%s %s to %s, %s',
+                       $start_month, $start_day, $end_day, $start_year);
+    }
+    else {
+        return sprintf('%s %s to %s %s, %s',
+                       $start_month, $start_day, $end_month, $end_day, $start_year);
+    }
+}
+add_shortcode('bfc_festival_dates', 'bfc_festival_dates_tag');
+
+function bfc_festival_count_days_tag($atts) {
+    $start = new DateTime(get_option('bfc_festival_start_date'));
+    $end = new DateTime(get_option('bfc_festival_end_date'));
+
+    $interval = $start->diff($end);
+
+    return $interval->d;
+}
+add_shortcode('bfc_festival_count_days', 'bfc_festival_count_days_tag');

@@ -735,9 +735,18 @@ class BfcEventSubmission {
     
     # @@@ check for more invalid values
     protected function check_validity() {
-        # @@@ Validate the dates more carefully
         if ($this->event_args['dates'] == '') {
             $this->errors[] = "Date is missing";
+        }
+        else {
+            # Check the date formatting. First, parse the dates.
+            $this->dayinfo = repeatdates($this->event_args['dates']);
+            
+            if ($this->dayinfo['datestype'] === 'error') {
+                $this->errors[] =
+                    sprintf('The date, "%s", was not understood',
+                            $this->event_args['dates']);
+            }
         }
 
         if ($this->event_args['title'] == '') {
@@ -754,14 +763,18 @@ class BfcEventSubmission {
         return count($this->errors) == 0;
     }
     
-    # Calculate the recurring event stuff.
+    # Calculate the days this event occurs on, and any changes to the dates
+    # that may be in this update.
     protected function calculate_days() {
-        if (!isset($this->event_args['dates'])) {
+        # check_validity() should have already tried parsing the dates,
+        # and made sure everything is OK.
+        if (!isset($this->event_args['dates'])  ||
+            !isset($this->dayinfo)              ||
+            !isset($this->dayinfo['datestype']) ||
+            $this->dayinfo['datestype'] == 'error') {
+
             die();
         }
-
-        # parse the $dates value, and convert it to a list of specific dates
-        $this->dayinfo = repeatdates($this->event_args['dates']);
 
         # Store the type of date (sequential, scattered, etc.)
         # But we only store the first letter in the DB.

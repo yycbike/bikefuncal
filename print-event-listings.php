@@ -166,13 +166,6 @@ function calendar_quote($days)
 function palooza_overview_calendar_inset($days) {
 ?>    
       <td colspan="<?php print $days ?>" class="palooza-overview-calendar-inset">
-	<span class="palooza-date">
-        <?php
-          print substr(constant("PDATES"),0,4);
-          print "&nbsp;";
-          print substr(constant("PSTART"),0,4)
-        ?>
-        </span>
         <br>
 	<a href="explain/audience.html" target="_BLANK" onClick="window.open('explain/audience.html', 'audience', 'width=600, height=500, menubar=no, status=no, location=no, toolbar=no, scrollbars=yes'); return false;">
 	  <span class="family-friendly">Family Friendly events have <strong>green</strong> times</span>
@@ -465,8 +458,8 @@ function fullentry($record, $for, $include_images)
     }
     if ($record["audience"] == "A") {
 	$badge = "beer.gif";
-	$badgealt = constant("OFAGE")."+";
-	$badgehint = "Adult Only (".constant("OFAGE")."+)";
+	$badgealt = sprintf('%d+', get_option('bfc_drinking_age'));
+        $badgehint = sprintf('Adult Only (%d+)', get_option('bfc_drinking_age'));
     }
     
     $address = htmlspecialchars($record["address"]);
@@ -554,19 +547,8 @@ function fullentry($record, $for, $include_images)
         print "<img border=0 src=\"${chain_url}\" " .
             "alt=\"Link\" title=\"Link to this event\">\n";
         print "</a>\n";
-
-        #####################
-        # Edit link
-        #
-        # Show the edit link to admin users.
-        # Except if this is a preview; then it's meaningless
-        # because they're already editing.
-        if (bfc_show_admin_options() && $for != 'preview') {
-            $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-            print "<a href=\"$edit_url\">Edit</a>";
-        }
     }
-    
+
     #####################
     # Audience badge
     #
@@ -708,6 +690,19 @@ function fullentry($record, $for, $include_images)
         print "<img border=0 src='$forumimg' alt='forum'>";
         print "</a>\n";
     }
+
+
+    #####################
+    # Edit link
+    #
+    # Show the edit link to admin users.
+    # Except if this is a preview; then it's meaningless
+    # because they're already editing.
+    if (bfc_show_admin_options() && $for != 'preview') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+        print "<a href=\"$edit_url\">Edit Event</a>";
+    }
+
     print "</dd>\n";
 
     # if this event has no image, then the next event's
@@ -768,6 +763,19 @@ END_QUERY;
 
 	print ("</dl>\n");
     }
+}
+
+function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
+    global $wpdb;
+    global $calevent_table_name;
+    $sql = $wpdb->prepare("SELECT id, editcode FROM ${calevent_table_name} " .
+                          "WHERE wordpress_id=%d", $wordpress_id);
+
+    $records = $wpdb->get_results($sql, ARRAY_A);
+    if ($wpdb->num_rows != 1) {
+        die();
+    }
+    return bfc_get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
 }
 
 function bfc_get_edit_url_for_event($id, $editcode = null) {

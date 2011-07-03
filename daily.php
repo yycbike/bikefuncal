@@ -151,9 +151,12 @@ function mergedates($newdates, $olddates)
             $mergeddates[$m]["newsflash"] == "") {
 	    if (isset($mergeddates[$m + 1]["status"]) &&
                 $mergeddates[$m + 1]["status"] == "Added") {
+                
 		$mergeddates[$m]["newsflash"] = "Moved to ".date("F j", $mergeddates[$m + 1]["timestamp"]);
             }
-	    else if ($mergeddates[$m - 1]["status"] == "Added") {
+	    else if (isset($mergeddates[$m - 1]["status"]) &&
+                $mergeddates[$m - 1]["status"] == "Added") {
+                
 		$mergeddates[$m]["newsflash"] = "Moved to ".date("F j", $mergeddates[$m - 1]["timestamp"]);
             }
 	}

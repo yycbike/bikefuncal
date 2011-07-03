@@ -32,23 +32,16 @@ function verify_dates() {
 
     # Parse the "dates" parameter to generate the list of new dates
     $dayinfo = repeatdates($_POST["dates"]);
-    $canonical = $dayinfo["canonical"];
     $datestype = $dayinfo["datestype"];
-    $newdates = $dayinfo["daylist"];
 
-    if (!isset($newdates[1])) {
-        # No dates?  That means we parsed it correctly but there were no
-        # dates that satisfied the criteria.
-        print "<vfydates>\n";
-        print "  <error>No matching dates</error>\n";
-        print "</vfydates>\n";
-    } else  if (isset($newdates[365])) {
-        # Every day matches?  That means we failed to parse anything in
-        # the date.
+    if ($datestype == 'error') {
         print "<vfydates>\n";
         print "  <error>Date not understood</error>\n";
         print "</vfydates>\n";
     } else {
+        $newdates = $dayinfo["daylist"];
+        $canonical = $dayinfo["canonical"];
+
         # If we're editing an existing event, then fetch its daily list and merge
         # it into the $newdates.
         if (isset($_POST["id"])) {

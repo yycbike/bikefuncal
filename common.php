@@ -19,7 +19,6 @@ define("PRELOAD", 100);		# Preload all days if no alldays cookie is set and numb
 # Info about locality
 define("OCITY", "Vancouver");	# City where events are mainly held
 define("OPROV", "BC");		# State or Province code where events are mainly held
-define("OFAGE", 19);		# Local age of adult in State or Province where events are mainly held
 define("AREACODE", "604");	# Default area code where events are mainly held
 
 # Info about organization that's behind the palooza event
@@ -56,12 +55,6 @@ define("OWMAIL", "webadmin&#x40;velolove&#x2e;bc&#x2e;ca");	# Email address for 
 # festival calendar page (e.g., "viewpalooza.php").
 define("PNAME", "Velopalooza");			# Name of the festival
 define("PTEXT", "palooza");			# Text in calling URL that decides landing page and site personality
-define("PSTART", "2011-06-03");			# Start date, in MySQL format
-define("PEND", "2011-06-19");			# End date, in MySQL format
-define("PSTART_MONTHDAY", "June 3");		# Start date, in "Month Day" format
-define("PDAYS", 17);				# Duration in days
-define("PDATES", "June 3-19");			# Dates, in "Month Day-Day" format
-define("PDATES_LONG", "June 3 to June 19");	# Dates, in a longer format
 define("PSMALL", "images/palooza_poster_small.jpg"); # Relative URL of the medium poster image
 define("PLARGE", "images/palooza_poster.jpg");	# Relative URL of the full-size poster image
 
@@ -184,39 +177,6 @@ function htmldescription($descr)
     $html = preg_replace("/([^\\/])(www\\.[0-9a-zA-Z-.]*[0-9a-zA-Z-])($|[^\\/])/", "$1<a href=\"http://$2/\" class=\"smallhref\">$2</a>$3", $html);
 
     return $html;
-}
-
-# Return the URL for a calendar view that includes a given date.  The $date
-# should be supplied in MySQL's "YYYY-MM-DD" format.  The $id indicate which
-# event on that date we want to see.
-function viewurl($date, $id)
-{
-    # If no date, then just use view3week.php
-    if (!$date)
-	return "view3week.php";
-
-    # Extract the day-of-month from the date.  It'll be incorporated into
-    # the returned URL.
-    list($yyyy, $mm, $dd) = split("-", $date);
-
-    # if within palooza event's range, then use that calendar
-    if ($date >= constant("PSTART") && $date <= constant("PEND"))
-	return constant("PPAGE")."#$dd-$id";
-
-    # if within range of the 3-week calendar, use that
-    $numweeks = 3;
-    $now = getdate();
-    $noon = $now[0] + (12 - $now["hours"]) * 3600; # approximately noon today
-    $startdate = $noon - 86400 * $now["wday"];
-    $enddate = $startdate + ($numweeks * 7 - 1) * 86400;
-    $startdate = date("Y-m-d", $startdate);
-    $enddate = date("Y-m-d", $enddate);
-    if ($date >= $startdate && $date <= $enddate)
-	return "view3week.php#$dd-$id";
-
-    # otherwise we'll need to use the monthly calendar, and pass is a specific
-    # month and year.
-    return "viewmonth.php?year=$yyyy&month=$mm&startdate=$startdate&enddate=$enddate#$dd-$id";
 }
 
 #ex:set shiftwidth=4 embedlimit=99999:
