@@ -14,6 +14,7 @@ require_once('event-submission-form.php');
 require_once('event-submission-result.php');
 require_once('event-delete-result.php');
 require_once('shortcodes.php');
+require_once('search.php');
 require_once('venue.php');
 require_once('vfydates.php');
 
@@ -368,6 +369,10 @@ function bfc_sanitize_festival_date($input) {
         return $input;
     }
 }
+
+
+
+
 
 
 
