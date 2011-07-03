@@ -128,6 +128,22 @@ class BfcEventSubmission {
 
     }
 
+    # Provide getter methods for the event properties.
+    # E.g., $event->title() returns the title, and
+    # $event->has_wordpress_id reports if wordpress_id is set.
+    # 
+    public function __call($name, $arguments) {
+        $matches = array();
+
+        if (array_key_exists($name, $this->calevent_field_info)) {
+            return $this->event_args[$name];
+        }
+        else if (preg_match('/^has_(\w+)/', $name, $matches)) {
+            $property_name = $matches[1];
+            return isset($this->event_args[$property_name]);
+        }
+    }
+
     # Populate the data fields for this event, based on the query
     # parameters passed in.
     #

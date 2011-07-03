@@ -5,7 +5,6 @@
 #
 # This file comes from the old (pre-wordpress) code.
 
-
 # Convert a status code from a letter to a full word, or vice-versa.
 function statusname($dateinfo)
 {
