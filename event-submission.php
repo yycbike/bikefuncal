@@ -235,6 +235,7 @@ class BfcEventSubmission {
                 }
                 else {
                     $new_value = stripslashes($query_vars[$query_field_name]);
+                    $new_value = $this->convert_data_type($field_name, $new_value);
 
                     if (isset($this->event_args[$field_name]) &&
                         $new_value !== $this->event_args[$field_name]) {
@@ -250,10 +251,8 @@ class BfcEventSubmission {
         if ($this->action == "new") {
             $this->set_defaults();
         }
-
-        $this->convert_data_types();
     }
-
+    
     public function do_action() {
         if ($this->action == "update" || $this->action == "create") {
             $this->fill_in_missing_values();
@@ -315,7 +314,7 @@ class BfcEventSubmission {
                               "WHERE id=%d",
                               $this->event_id);
         $results = $wpdb->get_results($sql, ARRAY_A);
-        
+
         if (count($results) != 1) {
             die("Wrong number of DB results: " . count($results));
         }
@@ -420,20 +419,25 @@ class BfcEventSubmission {
         }
     }
 
-    # Some of the data we get in from the form has to be converted before it's
-    # ready to be stored to the database. Do those conversions.
-    protected function convert_data_types() {
-        # For these fields, convert Y/N to integer
-        $field_names = array('hideemail', 'hidephone', 'emailforum', 'printemail',
-                             'printphone', 'printweburl', 'hidecontact',
-                             'printcontact');
-
-        foreach ($field_names as $field_name) {
-            if (isset($this->event_args[$field_name])) {
-                $old_value = $this->event_args[$field_name];
-                $new_value = $old_value == "Y" ? 1 : 0;
-                $this->event_args[$field_name] = $new_value;
-            }
+    # Some of the data we get submitted from the web form needs to be converted
+    # before storing it into the database.
+    protected function convert_data_type($field_name, $value) {
+        switch ($field_name) {
+            # For these fields, convert Y/N to integer
+            case 'hideemail':
+            case 'hidephone':
+            case 'emailforum':
+            case 'printemail':
+            case 'printphone':
+            case 'printweburl':
+            case 'hidecontact':
+            case 'printcontact':
+                # When we pull these out of the database, we get strings.
+                # So use strings here, to match the data types.
+                return ($value == 'Y') ? '1' : '0';
+            
+            default:
+                return $value;
         }
     }
 
@@ -1043,14 +1047,14 @@ class BfcEventSubmission {
     }
 
     public function print_selected_for_duration($duration) {
-        if (!isset($this->event_args['duration']) &&
+        if (!isset($this->event_args['eventduration']) &&
             $duration == "0") {
 
             # 0 (unspecified) is selected by default
             print "selected";
         }
-        else if (isset($this->event_args['duration']) &&
-                 $this->event_args['duration'] == $duration) {
+        else if (isset($this->event_args['eventduration']) &&
+                 $this->event_args['eventduration'] == $duration) {
 
             print "selected";
         }
@@ -1154,13 +1158,13 @@ class BfcEventSubmission {
             'locdetails'    => 'Location details',
             'name'          => 'Organizer name',
             'email'         => 'Email',
-            'hidephone'     => 'Don\'t publish my email address online',
+            'hideemail'     => 'Don\'t publish my email address online',
             'phone'         => 'Phone number',
             'hidephone'     => 'Don\'t publish my phone number online',
             'weburl'        => 'Web site URL',
             'webname'       => 'Web site name',
             'contact'       => 'Other contact info',
-            'hidephone'     => 'Don\'t publish my other contact info online',
+            'hidecontact'   => 'Don\'t publish my other contact info online',
         );
 
         # Convert from internal representation to something suitable to present to people.
