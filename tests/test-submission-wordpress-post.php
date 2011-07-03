@@ -1,18 +1,10 @@
 <?php
 class TestSubmissionWordPressPost extends BfcTestCase {
-    function test_post_is_created() {
-        $submission = $this->make_valid_submission();
-
-        $this->assertTrue($submission->has_wordpress_id());
-
-        $post = get_post($submission->wordpress_id());
-        $this->assertEquals($submission->title(),
-                            $post->post_title);
-    }
-
-    # The wp_query object won't look up posts by title,
-    # so we have to wrap our own function to query
-    # the database directly.
+    /**
+     * The wp_query object won't look up posts by title,
+     * so we have to wrap our own function to query
+     * the database directly.
+     */
     function query_wordpress_post_by_title($title) {
         global $wpdb;
         
@@ -24,10 +16,28 @@ class TestSubmissionWordPressPost extends BfcTestCase {
         return $wpdb->get_results($sql, ARRAY_A);
     }
 
-    # @@@ Break this up into several test cases
-    function test_changing_post_title() {
+
+    /**
+     * Make a WordPress post when creating a new bike event.
+     */
+    function test_post_is_created() {
         $submission = $this->make_valid_submission();
 
+        $this->assertTrue($submission->has_wordpress_id());
+
+        $post = get_post($submission->wordpress_id());
+        $this->assertEquals($submission->title(),
+                            $post->post_title);
+
+        return $submission;                            
+    }
+
+    /**
+     * @depends test_post_is_created
+     *
+     * Make sure the titles match between post & event
+     */
+    function test_titles_match($submission) {
         # Make sure there's only one post with this title
         $old_title = $submission->title();
         $posts = $this->query_wordpress_post_by_title($old_title);
@@ -38,18 +48,22 @@ class TestSubmissionWordPressPost extends BfcTestCase {
         $this->assertEquals($posts[0]['ID'],
                             $old_wordpress_id);
 
+        return $submission;
+    }
+
+    /**
+     * @depends test_titles_match
+     *
+     */
+    function test_title_change_propegates($submission) {
+        $old_title = $submission->title();
+        $old_wordpress_id = $submission->wordpress_id();
+
         # Now edit the post to change the title
-        $new_title = $submission->title() . " 2";
-        $update_args = array(
-            'submission_action' => 'update',
-            'submission_event_id' => $submission->event_id(),
-            'event_editcode' => $submission->editcode(),
-            'event_dates' => $submission->dates(),
+        $new_title = $old_title . " 2";
+        $new_submission = $this->update_submission($submission, array(
             'event_title' => $new_title,
-            );
-        $new_submission = new BfcEventSubmission;
-        $new_submission->populate_from_query($update_args, array());
-        $new_submission->do_action();
+        ));
         $new_submission->print_errors();
         $this->assertTrue($new_submission->is_valid());
 

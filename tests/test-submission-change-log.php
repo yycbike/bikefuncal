@@ -20,6 +20,8 @@ class TestSubmissionChangeLog extends BfcTestCase {
         $event1 = $this->make_valid_submission();
         $event2 = $this->update_submission($event1, array(
             'event_dates' => 'September 30',
+            'event_newsflashSep30' => '',
+            'event_statusSep30' => 'Added',
         ));
         $changes = $event2->event_args_changes();
 

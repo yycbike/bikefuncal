@@ -435,7 +435,7 @@ class BfcEventSubmission {
                 # When we pull these out of the database, we get strings.
                 # So use strings here, to match the data types.
                 return ($value == 'Y') ? '1' : '0';
-            
+
             default:
                 return $value;
         }
@@ -831,7 +831,10 @@ class BfcEventSubmission {
             # Look for changes
             foreach($this->dayinfo['daylist'] as $day) {
                 $new_newsflash = $this->daily_args[ $day['suffix'] ]['newsflash'];
-                if ($day['newsflash'] != $new_newsflash) {
+
+                if (isset($day['newsflash']) &&
+                    $day['newsflash'] != $new_newsflash) {
+                    
                     $this->daily_args_changes[ $day['suffix'] ]['newsflash'] = $new_newsflash;
                 }
 

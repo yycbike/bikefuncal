@@ -20,6 +20,8 @@ class BfcTestCase extends WPTestCase {
             # Generate a unique title to avoid clashing with anything else
             # in the database that might have that title.
             'event_title' => 'Title ' . uniqid(),
+
+            'event_eventtime' => '19:15:00',
             );
         $submission_args = array_merge($submission_args, $extra_arguments);
         $submission_args = array_merge(
@@ -45,7 +47,7 @@ class BfcTestCase extends WPTestCase {
         );
     
         # Keep all the old values.
-        foreach ($old_event_args as $fieldname => $value) {
+        foreach ($old_event_args as $field_name => $value) {
             # The field names we got from $old_submission need to have
             # 'event_' prepended.
             $query_field_name = 'event_' . $field_name;
