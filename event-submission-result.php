@@ -7,6 +7,7 @@ function bfc_print_event_submission_result($event_submission) {
 $edit_url = bfc_get_edit_url_for_event($event_submission->event_id(),
                                        $event_submission->editcode());
 
+$permalink_url = get_permalink($event_submission->wordpress_id());                                       
 ?>
 
 
@@ -25,6 +26,15 @@ To edit this event in the future, go to this URL:
 <?php print $edit_url; ?>
 </a>
 
+</p>
+
+
+<p>
+The link to view your event is here. Share it with your friends!
+<br>
+<a href="<?php print $permalink_url; ?>">
+<?php print $permalink_url;  ?>
+</a>
 </p>
 
 <?php
