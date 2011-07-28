@@ -1,71 +1,7 @@
 <?php
-# This file comes from the old (pre-wordpress) code. It defines
-# a bunch of constants for customizing the site. Much of this could
-# be turned into a WordPress admin panel.
-#
-# It also has a few utility functions.
-
-# Relative directory where images are stored, other than event-specific images
-define("IMAGES", "images");
-
-# Relative directory where standard header and footer, and other ..., are stored
-define("INCLUDES", "include");
-
-# Image height limits for the online calendar, and preload threashold
-define("RIGHTHEIGHT", 200);
-define("LEFTHEIGHT", 125);
-define("PRELOAD", 100);		# Preload all days if no alldays cookie is set and number of events is under this threashold
-
-# Info about locality
-define("OCITY", "Vancouver");	# City where events are mainly held
-define("OPROV", "BC");		# State or Province code where events are mainly held
-define("AREACODE", "604");	# Default area code where events are mainly held
-
-# Info about organization that's behind the palooza event
-define("ONAME", "Velolove");		# Full name of organization
-define("ONAME_SHORT", "Velolove");	# Short name of organization (used in [Xxxx Cal])
-
-# Absolute URL of where OPAGE, CPAGE, and PPAGE reside
-# define("CALURL", "http://localhost/~shift/velolove/cal/");
-# This could be split into two: one for PPAGE and the other for OPAGE & CPAGE
-define("CALURL", "http://www.velolove.bc.ca/");
-
-# Relative URL of site entry landing / home pages
-define("OPAGE", "view3week.php");	# Orgainization landing page
-define("CPAGE", "view3week.php");	# Regulare calendar landing page
-define("PPAGE", "viewpalooza.php");	# Palooza festival landing page
-
-# Organization and palooza header and footer pages (located in INCLUDES)
-define("OHEADER", "header1.php");	# Header for organization site entry / pages
-define("PHEADER", "header2.php");	# Header for palooza site entry / pages
-define("OFOOTER", "footer.php");	# Footer for organization site entry / pages
-define("PFOOTER", "footer.php");	# Footer for palooza site entry / pages
-
-# Organization personality email address
-# Encoding the @ sign and dot is enough to fool many spam bots, but users can still click on the e-mail address
-define("OIMAIL", "info&#x40;velolove&#x2e;bc&#x2e;ca");		# Email address for general information
-define("OCMAIL", "calendar&#x40;velolove&#x2e;bc&#x2e;ca");	# Email address for calendar & calendar forum crew
-define("ODMAIL", "donate&#x40;velolove&#x2e;bc&#x2e;ca");	# Email address for donations
-define("OSMAIL", "sponsor&#x40;velolove&#x2e;bc&#x2e;ca");	# Email address to become a sponsor
-define("OVMAIL", "volunteer&#x40;velolove&#x2e;bc&#x2e;ca");	# Email address to volunteer
-define("OWMAIL", "webadmin&#x40;velolove&#x2e;bc&#x2e;ca");	# Email address for web site crew
-
-# Info about the palooza event. In addition to the values here,
-# you may have to do some editing to the year-specific version the
-# festival calendar page (e.g., "viewpalooza.php").
-define("PNAME", "Velopalooza");			# Name of the festival
-define("PTEXT", "palooza");			# Text in calling URL that decides landing page and site personality
-define("PSMALL", "images/palooza_poster_small.jpg"); # Relative URL of the medium poster image
-define("PLARGE", "images/palooza_poster.jpg");	# Relative URL of the full-size poster image
-
-# Palooza festival email address
-# Encoding the @ sign and dot is enough to fool many spam bots, but users can still click on the e-mail address
-define("PIMAIL", "info&#x40;velopalooza&#x2e;ca");	# Email address for palooza information
-define("PCMAIL", "calendar&#x40;velopalooza&#x2e;ca");	# Email address for calendar & calendar forum crew
-define("PDMAIL", "donate&#x40;velopalooza&#x2e;ca");	# Email address for donations
-define("PSMAIL", "sponsor&#x40;velopalooza&#x2e;ca");	# Email address to become a sponsor
-define("PVMAIL", "volunteer&#x40;velopalooza&#x2e;ca");	# Email address to volunteer
-define("PWMAIL", "webadmin&#x40;velopalooza&#x2e;ca");	# Email address for web site crew
+// Utility functions
+//
+// These could probably be moved into other, more appropriate, files.
 
 # This function determins the landing page and site's personality
 function ptext($ptext)
@@ -172,7 +108,7 @@ function htmldescription($descr)
     $html = str_replace("\n\n", "<p>", $html);
     $html = str_replace("\n", "<br>", $html);
     $html = preg_replace("/\*([0-9a-zA-Z][0-9a-zA-Z,.!?'\" ]*[0-9a-zA-Z,.!?'\"])\*/", "<strong>$1</strong>", $html);
-    $html = str_replace("@", "<img src=\"".IMAGES."/at.gif\" alt=\"[at]\">", $html);
+    $html = str_replace("@", "<img src=\"images/at.gif\" alt=\"[at]\">", $html);
     $html = preg_replace("/(http:\/\/[^ \t\r\n\"]*[a-zA-Z0-9\/])/", "<a href=\"$1\" class=\"smallhref\">$1</a>", $html);
     $html = preg_replace("/([^\\/])(www\\.[0-9a-zA-Z-.]*[0-9a-zA-Z-])($|[^\\/])/", "$1<a href=\"http://$2/\" class=\"smallhref\">$2</a>$3", $html);
 

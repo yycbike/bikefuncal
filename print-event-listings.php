@@ -3,7 +3,12 @@
 //
 // It prints out events -- the overviews and the individual listings
 
-require_once('common.php');
+// Image height limits for the online calendar
+define("RIGHTHEIGHT", 200);
+define("LEFTHEIGHT", 125);
+
+// Preload all days if no alldays cookie is set and number of events is under this threshold
+define("PRELOAD", 100);		
 
 // Return an address that google maps can more reliably parse (and displays with some consistency)
 function addrparseprep($address)
@@ -19,24 +24,32 @@ function addrparseprep($address)
     // otherwise 
       // add " Vancouver BC" to end then parse
 
-    if ( strtoupper(substr($address,strlen($address)-strlen(constant("OPROV"))-1)) == " ".strtoupper(constant("OPROV")) 
-      || strtoupper(substr($address,strlen($address)-strlen(constant("OPROV"))-1)) == ",".strtoupper(constant("OPROV")) 
-      || strtoupper(substr($address,strlen($address)-strlen(constant("OPROV"))-1)) == "+".strtoupper(constant("OPROV")) )
+    $city = get_option('bfc_city');
+    $province = get_option('bfc_province');
+
+    if ($city === false || $province === false) {
+        return $address;
+    }
+    
+    if ( strtoupper(substr($address,strlen($address)-strlen($province)-1)) == " ".strtoupper($province) 
+      || strtoupper(substr($address,strlen($address)-strlen($province)-1)) == ",".strtoupper($province) 
+      || strtoupper(substr($address,strlen($address)-strlen($province)-1)) == "+".strtoupper($province) ) {
 	    $address = trim($address);
-
-    elseif ( strtoupper(substr($address,strlen($address)-strlen(constant("OCITY")))) == strtoupper(constant("OCITY")) 
-      || stristr($address,",") )
-	    $address = trim($address).', '.strtoupper(constant("OPROV"));
-
-    elseif ( strtoupper(substr($address,strlen($address)-strlen(constant("OCITY")))) == strtoupper(constant("OCITY")) )
-	    $address = trim($address).' '.strtoupper(constant("OPROV"));
-
-    elseif ( stristr($address,",") )
-	    $address = trim($address).', '.constant("OCITY").', '.strtoupper(constant("OPROV"));
-
-    else
-	    $address = trim($address).' '.constant("OCITY").' '.strtoupper(constant("OPROV"));
-
+    }
+    elseif ( strtoupper(substr($address,strlen($address)-strlen($city))) == strtoupper($city) 
+             || stristr($address,",") ) {
+	    $address = trim($address).', '.strtoupper($province);
+    }
+    elseif ( strtoupper(substr($address,strlen($address)-strlen($city))) == strtoupper($city) ) {
+	    $address = trim($address).' '.strtoupper($province);
+    }
+    elseif ( stristr($address,",") ) {
+	    $address = trim($address).', '.$city.', '.strtoupper($province);
+    }
+    else {
+	    $address = trim($address).' '.$city.' '.strtoupper($province);
+    }
+    
     return $address;
 }
 
@@ -56,7 +69,6 @@ function class_for_special_day($thisdate) {
 // Output the TD for one day in the overview calendar
 function overview_calendar_day($thisdate, $preload_alldays) {
 
-    // If grand finale then use a background image, else plain background
     $dayofmonth = date("j",$thisdate);
 
     // If today is special...

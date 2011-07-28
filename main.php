@@ -7,6 +7,7 @@
 require_once(ABSPATH . "wp-admin/includes/upgrade.php");
 require_once('print-event-listings.php');
 require_once('repeat.php');
+require_once('common.php');
 require_once('daily.php');
 require_once('database-migrations.php');
 require_once('event-submission.php');
@@ -271,20 +272,34 @@ function bfc_options() {
             <?php settings_fields( 'bikefuncal-options' ); ?>
 
             <p>
-            Festival Start Date <em>(ex: 2011-06-02)</em>:
-            <input type='text' name='bfc_festival_start_date' value='<?php echo get_option('bfc_festival_start_date'); ?>'
+            Festival Start Date:
+            <input type='text' name='bfc_festival_start_date' value='<?php echo get_option('bfc_festival_start_date'); ?>'>
+            <em>YYYY-MM-DD (e.g. 2011-06-02)</em>        
             </p>
 
             <p>
             Festival End Date:
-            <input type='text' name='bfc_festival_end_date' value='<?php echo get_option('bfc_festival_end_date'); ?>'
+            <input type='text' name='bfc_festival_end_date' value='<?php echo get_option('bfc_festival_end_date'); ?>'>
+            <em>YYYY-MM-DD</em>
             </p>
 
             <p>
             Drinking Age:
-            <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'
+            <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'>
             </p>
 
+            <p>
+            Your City:
+            <input type='text' name='bfc_city' value='<?php echo get_option('bfc_city'); ?>'>
+        <em>e.g., Vancouver</em>
+            </p>
+
+            <p>
+            Your Province (or State):
+            <input type='text' name='bfc_province' value='<?php echo get_option('bfc_province'); ?>'>
+        <em>e.g., BC</em>
+            </p>
+        
             <br>
             <input type='submit' value='save'>
         </form>                
@@ -353,11 +368,12 @@ END_QUERY;
     }
 });
 
-
 add_action('admin_init', function() {
     register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');
+    register_setting('bikefuncal-options', 'bfc_city');
+    register_setting('bikefuncal-options', 'bfc_province');
 });
 
 /**
