@@ -1,53 +1,23 @@
 <?php
-# This file comes from the old, pre-wordpress code (where it was named view.php).
-# The comments below are from that era and may or may not be relevant anymore.
-#
-#
-# This is a fragment of PHP code.  It defines functions for generating a
-# days' tiny entries (used in the weekly grid at the top of many views)
-# and full entries (used in the body below the grid).
-#
-# IMPORTANT: THIS FILE MUST NOT OUTPUT ANYTHING!  It is included in some
-# pages which alter the header.
-#
-# It is sensitive to the following HTTP parameters (which would be passed to
-# the page that includes this file):
-#
-#   p=...	p=y to use printer-friendly formatting.
-#
-#   i=...	i=n to inhibit event images.
-#
-# It uses the following global variables, which should be declared in the
-# file that includes this one:
-#
-#   $conn	A connection to the MySQL server
-#
-#   $imageover	Used to handle images that overlap entries.  It should be
-#		initialized to 0
-#
-# In addition, it assumes the following CSS classes are defined:
-#
-#   div.tiny    { font-size: xx-small; font-stretch: ultra-condensed; }
-#   div.tinier  { font-size: xx-small; font-stretch: ultra-condensed; }
-#   dt.canceled { text-decoration: line-through; }
-#   dd.canceled { text-decoration: line-through; }
+// This file comes from the old, pre-wordpress code (where it was named view.php).
+//
+// It prints out events -- the overviews and the individual listings
 
 require_once('common.php');
 
-# Return an address that google maps can more reliably parse (and displays with some consistency)
+// Return an address that google maps can more reliably parse (and displays with some consistency)
 function addrparseprep($address)
 {
-    
-    # if $address ends in " BC" or ",BC" or "+BC" (which includes ending in ", BC")
-      # parse as is
-    # if $address ends in "Vancouver" and there's a "," anywhere in $address
-      # add ", BC" to end then parse
-    # if $address ends in "Vancouver" 
-      # add " BC" to end then parse
-    # if there's a "," anywhere in $address
-      # add ", Vancouver, BC" to end then parse
-    # otherwise 
-      # add " Vancouver BC" to end then parse
+    // if $address ends in " BC" or ",BC" or "+BC" (which includes ending in ", BC")
+      // parse as is
+    // if $address ends in "Vancouver" and there's a "," anywhere in $address
+      // add ", BC" to end then parse
+    // if $address ends in "Vancouver" 
+      // add " BC" to end then parse
+    // if there's a "," anywhere in $address
+      // add ", Vancouver, BC" to end then parse
+    // otherwise 
+      // add " Vancouver BC" to end then parse
 
     if ( strtoupper(substr($address,strlen($address)-strlen(constant("OPROV"))-1)) == " ".strtoupper(constant("OPROV")) 
       || strtoupper(substr($address,strlen($address)-strlen(constant("OPROV"))-1)) == ",".strtoupper(constant("OPROV")) 
@@ -70,46 +40,46 @@ function addrparseprep($address)
     return $address;
 }
 
-# Return the URL for bus/train trip planner, or NULL if unreachable
+// Return the URL for bus/train trip planner, or NULL if unreachable
 function transiturl($sqldate, $eventtime, $address)
 {
     return NULL;
 }
 
 function class_for_special_day($thisdate) {
-    # For Pedalpalooza, the Portland calendar highlights
-    # special events, such as MCBF, Father's Day, and the Solstice.
-    # If we wanted to do that, we could do so here.
+    // For Pedalpalooza, the Portland calendar highlights
+    // special events, such as MCBF, Father's Day, and the Solstice.
+    // If we wanted to do that, we could do so here.
     return "";
 }
 
-# Output the TD for one day in the overview calendar
+// Output the TD for one day in the overview calendar
 function overview_calendar_day($thisdate, $preload_alldays) {
 
-    # If grand finale then use a background image, else plain background
+    // If grand finale then use a background image, else plain background
     $dayofmonth = date("j",$thisdate);
 
-    # If today is special...
+    // If today is special...
     $class = class_for_special_day($thisdate);
 
-    # Highlight today's date.
+    // Highlight today's date.
     if (date("Y-m-d", time()) == date("Y-m-d", $thisdate)) {
         $class .= " today";
     }
     
     print "<td id=\"cal$dayofmonth\" class=\"${class}\">\n";
 
-    # For debugging
-    #print "<p>" . date("Y-m-d h:m:s", $thisdate) . "</p>";
+    // For debugging
+    //print "<p>" . date("Y-m-d h:m:s", $thisdate) . "</p>";
     
-    # Output this day's tinytitles
+    // Output this day's tinytitles
     $sqldate = date("Y-m-d", $thisdate);
     print "<a href=\"#".date("Fj",$thisdate)."\" ";
     print "title=\"".date("M j, Y", $thisdate)."\" ";
     print "class=\"date\" ";
     if (!$preload_alldays) {
-        # If the days aren't all being loaded, add JS to load them
-        # when the day is clicked.
+        // If the days aren't all being loaded, add JS to load them
+        // when the day is clicked.
         print "onclick=\"loadday('$sqldate', true, 0); return false;\"";
     }
     print ">";
@@ -119,12 +89,12 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     print "</td>\n";
 }   
 
-# This function is used in the weekly grid portion of the calendar,
-# to skip multiple days in the column.  If a large number of days
-# are to be skipped, it may put something useful in there.
-#
-# @@@ This is all commented-out because the quotations file hasn't
-# been ported to WordPress yet.
+// This function is used in the weekly grid portion of the calendar,
+// to skip multiple days in the column.  If a large number of days
+// are to be skipped, it may put something useful in there.
+//
+// @@@ This is all commented-out because the quotations file hasn't
+// been ported to WordPress yet.
 function calendar_quote($days)
 {
 #     if ($days == 1)
@@ -160,9 +130,9 @@ function calendar_quote($days)
     print "<td colspan=$days>&nbsp;</td>\n";
 }
 
-# Generate the inset that goes in the palooza
-# calendar. This is the text that explains all
-# ages & adult rides.
+// Generate the inset that goes in the palooza
+// calendar. This is the text that explains all
+// ages & adult rides.
 function palooza_overview_calendar_inset($days) {
 ?>    
       <td colspan="<?php print $days ?>" class="palooza-overview-calendar-inset">
@@ -180,12 +150,12 @@ function palooza_overview_calendar_inset($days) {
 <?php
 }
 
-# Print an overview calendar, that lists the events in a grid.
-#
-# $startdate, $enddate -- The range of dates to show in the calendar.
-# $for -- "palooza" or "cal". Is this calendar for a palooza?
-# $preload_alldays -- TRUE if all days are loaded onto the page;
-#     FALSE if the days will be dynamically loaded.
+// Print an overview calendar, that lists the events in a grid.
+//
+// $startdate, $enddate -- The range of dates to show in the calendar.
+// $for -- "palooza" or "cal". Is this calendar for a palooza?
+// $preload_alldays -- TRUE if all days are loaded onto the page;
+//     FALSE if the days will be dynamically loaded.
 function overview_calendar(
     $startdate, $enddate, $for, $preload_alldays) {
 ?>
@@ -203,13 +173,13 @@ function overview_calendar(
     <tr>
     <?php
 
-    # If month doesn't start on Sunday, then skip earlier days
+    // If month doesn't start on Sunday, then skip earlier days
     $weekday = getdate($startdate);
     $weekday = $weekday["wday"];
     if ($weekday != 0) {
-        # Fill the extra space with something.
-        # Palooza gets a special overview; other calendars
-        # get a bike-related quotation.
+        // Fill the extra space with something.
+        // Palooza gets a special overview; other calendars
+        // get a bike-related quotation.
         if ($for == "cal") {
             calendar_quote($weekday);
         }
@@ -218,23 +188,23 @@ function overview_calendar(
         }
     }
 
-    # Loop through each day between $startdate and $enddate.
-    # We can't just increment $thisdate forward by 86400
-    # (seconds per day) because that causes trouble around
-    # daylight savings time (but I'm not sure why...).
-    # So we we increment $day_of_month.
+    // Loop through each day between $startdate and $enddate.
+    // We can't just increment $thisdate forward by 86400
+    // (seconds per day) because that causes trouble around
+    // daylight savings time (but I'm not sure why...).
+    // So we we increment $day_of_month.
     $day_of_month = date('d', $startdate);
     do {
-        # It's OK to call this with, for example,
-        # the 32nd of July; PHP turns that into
-        # 1st of August. Also, 32 Dec 2010 becomes
-        # 1 Jan 2011.
-        $thisdate = mktime(0, 0, 0, #hms
+        // It's OK to call this with, for example,
+        // the 32nd of July; PHP turns that into
+        // 1st of August. Also, 32 Dec 2010 becomes
+        // 1 Jan 2011.
+        $thisdate = mktime(0, 0, 0, //hms
                            date('m', $startdate),
                            $day_of_month,
                            date('Y', $startdate));
         
-	# Start new row each week
+	// Start new row each week
 	if (date("D", $thisdate) == "Sun") {
 	    print "</tr><tr>\n";
         }
@@ -243,15 +213,15 @@ function overview_calendar(
 
         $day_of_month++;
 
-        # Check the date 2 ways. Sometimes $thisdate has an
-        # h:m:s component, and will be greater than $enddate, even
-        # if they're on the same day.
+        // Check the date 2 ways. Sometimes $thisdate has an
+        // h:m:s component, and will be greater than $enddate, even
+        // if they're on the same day.
     } while ( ($thisdate <= $enddate) &&
               (date('Y-m-d', $thisdate) != date('Y-m-d', $enddate)) );
 
 
     $last_day = date('w', $enddate);
-    # If the calendar doesn't end on Saturday
+    // If the calendar doesn't end on Saturday
     if ($last_day != 6) { 
         calendar_quote(7 - $last_day);
     }
@@ -263,8 +233,8 @@ function overview_calendar(
 <?php    
 }
 
-# Generate the HTML for all entries in a given day, in the tiny format
-# used in the weekly grid near the top of the page.
+// Generate the HTML for all entries in a given day, in the tiny format
+// used in the weekly grid near the top of the page.
 function tinyentries($day, $exclude = FALSE, $loadday = FALSE)
 {
     global $calevent_table_name;
@@ -273,7 +243,7 @@ function tinyentries($day, $exclude = FALSE, $loadday = FALSE)
     
     $dayofmonth = substr($day, -2);
 
-    # Find events that are not exceptions or skipped
+    // Find events that are not exceptions or skipped
     $query = <<<END_QUERY
 SELECT ${calevent_table_name}.id, newsflash,title, tinytitle, eventtime,
        audience, eventstatus, descr, review
@@ -294,7 +264,7 @@ END_QUERY;
 	$tinytitle = htmlspecialchars($record["tinytitle"]);
 	$title = htmlspecialchars($record["title"]);
         
-        # CSS classes
+        // CSS classes
         $titleclass = "event-tiny-title ";
         $timeclass  = "";
         
@@ -309,7 +279,7 @@ END_QUERY;
             $timeclass .= "family-friendly ";
             
 	} elseif ($record["audience"] == "G") {
-            # Nothing to do here
+            // Nothing to do here
 	} else {
             $timeclass .= "adults-only ";
 	}
@@ -318,8 +288,8 @@ END_QUERY;
             $titleclass .= "newsflash ";
         }
 
-        # Portland's Multnomah County Bike Fair
-        # gets printed in larger type.
+        // Portland's Multnomah County Bike Fair
+        // gets printed in larger type.
         if ($tinytitle == "MCBF") {
 	    print "<div>";
         }
@@ -347,7 +317,7 @@ END_QUERY;
     }
 }
 
-# Print the event listings that go below the calendar.
+// Print the event listings that go below the calendar.
 function event_listings($startdate,
                         $enddate,
                         $preload_alldays,
@@ -361,8 +331,8 @@ function event_listings($startdate,
          $thisdate <= $enddate;
          $thisdate += 86400) {
         
-        # Use a fancy graphical devider for screen,
-        # a plain HR for printer.
+        // Use a fancy graphical devider for screen,
+        // a plain HR for printer.
 	if (!$for_printer) {
 	    print "<div class=hr></div>\n";
         }
@@ -378,15 +348,15 @@ function event_listings($startdate,
 	$ymd = date("Y-m-d", $thisdate);
 	print "<div id='div${ymd}'>\n";
 
-        # If the events for this day should be loaded
+        // If the events for this day should be loaded
 	if ($thisdate == $today ||
             $thisdate == $tomorrow ||
             $for_printer ||
             $preload_alldays) {
-	    fullentries(date("Y-m-d", $thisdate),
-                        TRUE,
-                        $for_printer,
-                        $include_images);  
+	    bfc_fullentries(date("Y-m-d", $thisdate),
+                            TRUE,
+                            $for_printer,
+                            $include_images);  
         }
 	else {
 	    print "<span class=\"loadday\" ";
@@ -398,39 +368,39 @@ function event_listings($startdate,
     }
 }
 
-# Generate the HTML entry for a single event
-#
-# $for is one of:
-#   'listing'         -- The event listings on the calendar
-#   'printer'         -- The event listings on a printer
-#   'preview'         -- The preview when creating/editing an event
-#   'event-page'      -- The page for the event
-#
-# $include_images -- TRUE to include images, FALSE to leave them out
+// Generate the HTML entry for a single event
+//
+// $for is one of:
+//   'listing'         -- The event listings on the calendar
+//   'printer'         -- The event listings on a printer
+//   'preview'         -- The preview when creating/editing an event
+//   'event-page'      -- The page for the event
+//
+// $include_images -- TRUE to include images, FALSE to leave them out
 function fullentry($record, $for, $include_images)
 {
-    # Check arguments
+    // Check arguments
     if (!in_array($for, Array('listing', 'printer', 'preview', 'event-page'))) {
         die("Bad entry 'for': $for");
     }
 
     global $imageover;
 
-    # 24 hours ago.  We compare timestamps to this in order to
-    # detect recently changed entries.
+    // 24 hours ago.  We compare timestamps to this in order to
+    // detect recently changed entries.
     $yesterday = date("Y-m-d H:i:s", strtotime("yesterday"));
 
-    # extract info from the record
+    // extract info from the record
     if ($for != 'preview') {
         $id = $record["id"];
     }
     else {
-        # It's OK to use $id when creating URLs based off of the
-        # event ID. In preview mode, all of the link hrefs are
-        # replaced by the JavaScript preview code.
-        #
-        # But, use caution not to use $id for things like database
-        # lookups.
+        // It's OK to use $id when creating URLs based off of the
+        // event ID. In preview mode, all of the link hrefs are
+        // replaced by the JavaScript preview code.
+        //
+        // But, use caution not to use $id for things like database
+        // lookups.
         $id = 'PREVIEW';
     }
     $wordpress_id = $record["wordpress_id"];
@@ -477,17 +447,17 @@ function fullentry($record, $for, $include_images)
     $weburl = $record["weburl"];
     $webname = $record["webname"];
     if ($webname == "" || $for == 'printer') {
-        # If they left out the name for their web site, or if
-        # this is being shown for printing, show the URL insetad of the
-        # site name.
+        // If they left out the name for their web site, or if
+        // this is being shown for printing, show the URL insetad of the
+        // site name.
 	$webname = $weburl;
     }
     $webname = htmlspecialchars($webname);
 
-    # get the image info
+    // get the image info
     $image = "";
     if ($include_images && $for != 'preview' && $record["image"]) {
-        # The image field has the path relative to the uploads dir.
+        // The image field has the path relative to the uploads dir.
         $upload_dirinfo = wp_upload_dir();
         $image = $upload_dirinfo['baseurl'] . $record["image"];
         
@@ -504,11 +474,11 @@ function fullentry($record, $for, $include_images)
     
     print "<dt class=\"${class}\">";
 
-    #####################
-    # Image (if right-aligned)
-    #
+    //////////////////////////////////////////
+    // Image (if right-aligned)
+    //
     if ($image && $imageover <= 0 && $imageheight > RIGHTHEIGHT / 2) {
-        # Put the image's width & height in bounds
+        // Put the image's width & height in bounds
 	if ($imageheight > RIGHTHEIGHT) {
 	    $imagewidth = $imagewidth * RIGHTHEIGHT / $imageheight;
 	    $imageheight = RIGHTHEIGHT;
@@ -521,21 +491,21 @@ function fullentry($record, $for, $include_images)
         print "\n";
     }
     
-    # Don't show title & permalink on the
-    # event page.
+    // Don't show title & permalink on the
+    // event page.
     if ($for != 'event-page') {
-        #####################
-        # Title
-        #
+        //////////////////////////////////////////
+        // Title
+        //
         print "<a name=\"${dayofmonth}-${id}\" " .
             "class=\"eventhdr $class\">";
         print $title;
         print "</a>\n";
 
 
-        #####################
-        # Permalink
-        #
+        //////////////////////////////////////////
+        // Permalink
+        //
         if ($for == 'preview') {
             $permalink = '#';
         }
@@ -549,9 +519,9 @@ function fullentry($record, $for, $include_images)
         print "</a>\n";
     }
 
-    #####################
-    # Audience badge
-    #
+    //////////////////////////////////////////
+    // Audience badge
+    //
     if ($badge != "") {
         $badgeurl = plugins_url('bikefuncal/images/') . $badge;
         print "<img align=left src=\"$badgeurl\" " .
@@ -561,11 +531,11 @@ function fullentry($record, $for, $include_images)
     print "</dt>\n";
     print "<dd>";
 
-    #####################
-    # Image (if left-aligned)
-    #
+    //////////////////////////////////////////
+    // Image (if left-aligned)
+    //
     if ($image && ($imageover > 0 || $imageheight <= RIGHTHEIGHT / 2)) {
-        # Put the image's width & height in bounds
+        // Put the image's width & height in bounds
 	if ($imageheight > LEFTHEIGHT) {
 	    $imagewidth = $imagewidth * LEFTHEIGHT / $imageheight;
 	    $imageheight = LEFTHEIGHT;
@@ -576,18 +546,18 @@ function fullentry($record, $for, $include_images)
             "class=\"ride-image\">\n";
     }
 
-    #####################
-    # Location
-    #
-    # (This div contains the location)
+    //////////////////////////////////////////
+    // Location
+    //
+    // (This div contains the location)
     print "<div class=\"$class\">";
 
-    # Street address
+    // Street address
     $address_url = "http://maps.google.com/?q=" .
         urlencode(addrparseprep($record["address"]));
     print "<a href=\"$address_url\" target=\"_BLANK\">".$address.'</a>';
     
-    # Transit directions
+    // Transit directions
     if ($for != 'printer') {
 	$transit_url = transiturl($record["eventdate"],
                                   $record["eventtime"],
@@ -601,23 +571,23 @@ function fullentry($record, $for, $include_images)
         }
     }
     
-    # Location details
+    // Location details
     if ($locdetails != "") {
         print " ($locdetails)";
     }
     print "</div>\n";
 
     
-    #####################
-    # Time
-    #
+    //////////////////////////////////////////
+    // Time
+    //
     print "<div>";
     print "$eventtime";
     if ($eventtime == "CANCELED" && $newsflash != "") {
 	print " <span class=newsflash>$newsflash</span>";
     }
     if ($eventtime != "CANCELED") {
-        # Print end time
+        // Print end time
 	if ($eventduration != 0) {
 	    print " - ";
             print endtime($eventtime,$eventduration);
@@ -627,26 +597,26 @@ function fullentry($record, $for, $include_images)
             print ", $timedetails";
         }
 
-        # Print the dates (e.g., "every Tuesday") for repeating
-        # events.
+        // Print the dates (e.g., "every Tuesday") for repeating
+        // events.
 	if ($record["datestype"] == "C" || $record["datestype"] == "S") {
 	    print ", " . $record['dates'];
         }
     }
     print "</div>";
 
-    #####################
-    # Description
-    #
+    //////////////////////////////////////////
+    // Description
+    //
     print "<div class=\"$class\">\n";
     print "<em>$descr</em>\n";
     if ($newsflash != "" && $eventtime != "CANCELED") {
 	print "<span class=newsflash>$newsflash</span>";
     }
 
-    #####################
-    # Contact info
-    #
+    //////////////////////////////////////////
+    // Contact info
+    //
     print "<div class='contact-info'>\n";
     print $name;
     if (!strpbrk(substr(trim($name),strlen(trim($name))-1),".,:;-")) {
@@ -668,11 +638,11 @@ function fullentry($record, $for, $include_images)
     }
     print "</div>\n";
 
-    #####################
-    # Forum link
-    #
+    //////////////////////////////////////////
+    // Forum link
+    //
     if ($for != 'printer' && $for != 'event-page' && $wordpress_id > 0) {
-        # No forums, for now
+        // No forums, for now
         $comment_counts = wp_count_comments($wordpress_id);
 
         $forumimg = plugins_url("bikefuncal/images/forum.gif");
@@ -682,9 +652,9 @@ function fullentry($record, $for, $include_images)
             ($comment_counts->approved == 1 ? "" : "s");
         $forumurl   = get_permalink($wordpress_id);
 
-        # @@@ If there's been recent activity in the forum,
-        # show forumflash.gif instead. (The old code did this,
-        # but it's not ported to WP yet.)
+        // @@@ If there's been recent activity in the forum,
+        // show forumflash.gif instead. (The old code did this,
+        // but it's not ported to WP yet.)
         
         print "<a href='$forumurl' title='$forumtitle'>";
         print "<img border=0 src='$forumimg' alt='forum'>";
@@ -692,12 +662,12 @@ function fullentry($record, $for, $include_images)
     }
 
 
-    #####################
-    # Edit link
-    #
-    # Show the edit link to admin users.
-    # Except if this is a preview; then it's meaningless
-    # because they're already editing.
+    //////////////////////////////////////////
+    // Edit link
+    //
+    // Show the edit link to admin users.
+    // Except if this is a preview; then it's meaningless
+    // because they're already editing.
     if (bfc_show_admin_options() && $for != 'preview') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
         print "<a href=\"$edit_url\">Edit Event</a>";
@@ -705,8 +675,8 @@ function fullentry($record, $for, $include_images)
 
     print "</dd>\n";
 
-    # if this event has no image, then the next event's
-    # image can be left-aligned.
+    // if this event has no image, then the next event's
+    // image can be left-aligned.
     if ($image == "" || $imageover > 0 || $imageheight <= RIGHTHEIGHT / 2) {
 	$imageover = 0;
     }
@@ -715,12 +685,12 @@ function fullentry($record, $for, $include_images)
     }
 }
 
-# Generate the HTML for all entries in a given day, in the full format
-# used in the lower part of the page.
-function fullentries($day,
-                     $exclude = FALSE,
-                     $for_printer = FALSE,
-                     $include_images = TRUE)
+// Generate the HTML for all entries in a given day, in the full format
+// used in the lower part of the page.
+function bfc_fullentries($day,
+                         $exclude = FALSE,
+                         $for_printer = FALSE,
+                         $include_images = TRUE)
 {
     global $calevent_table_name;
     global $caldaily_table_name;
@@ -728,13 +698,13 @@ function fullentries($day,
     
     global $imageover;
 
-    # The day separator line is about 20 pixels high.  We can
-    # reduce $imageover by that much.
+    // The day separator line is about 20 pixels high.  We can
+    // reduce $imageover by that much.
     $imageover -= 20;
 
-    # for each event on this day...
+    // for each event on this day...
     
-    # Find events that are not exceptions or skipped.
+    // Find events that are not exceptions or skipped.
     $query = <<<END_QUERY
 SELECT *
 FROM ${calevent_table_name}, ${caldaily_table_name}
@@ -748,7 +718,6 @@ END_QUERY;
     $records = $wpdb->get_results($query, ARRAY_A);
     $num_records = count($records);
     
-    #$result = mysql_query($query, $conn) or die(mysql_error());
     if ($num_records > 0) {
 	print ("<dl>\n");
 
@@ -765,6 +734,10 @@ END_QUERY;
     }
 }
 
+/**
+ * Get a URL for editing an event, based upon the wordpress_id for that
+ * event.
+ */
 function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
     global $wpdb;
     global $calevent_table_name;
@@ -778,6 +751,10 @@ function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
     return bfc_get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
 }
 
+/**
+ * Get a URL for editing an event, based upon the id for that
+ * event.
+ */
 function bfc_get_edit_url_for_event($id, $editcode = null) {
     if (!isset($id)) {
         die("bfc_get_edit_url_for_event: id is unset");
@@ -787,7 +764,7 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
     $edit_page = get_page_by_title($edit_page_title);
     $base_url = get_permalink($edit_page->ID); 
     
-    # No editcode provided; look it up in the database
+    // No editcode provided; look it up in the database
     if ($editcode === null) {
         global $wpdb;
         global $calevent_table_name;
@@ -808,15 +785,14 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
         "event_editcode=${editcode}";
 }
 
+// This is called by the event submission form to preview the
+// event listing.
+function bfc_preview_event_submission() {
+    // This sends a plain-text response, so no
+    // header is needed.
 
-# This is called by the event submission form to preview the
-# event listing.
-function preview_event_submission() {
-    # This sends a plain-text response, so no
-    # header is needed.
-
-    # Make a record out of the items in the post.
-    # Remove the prefix "event_" from the names
+    // Make a record out of the items in the post.
+    // Remove the prefix "event_" from the names
     $record = array();
     foreach ($_POST as $query_name => $query_value) {
         if (substr($query_name, 0, 6) == "event_") {
@@ -826,31 +802,32 @@ function preview_event_submission() {
         }
     }
 
-    # These fields are not passed in, because
-    # they go along with caldaily (not calevent) and we
-    # haven't yet worked out how the preview works with
-    # repeating events.
+    // These fields are not passed in, because
+    // they go along with caldaily (not calevent) and we
+    // haven't yet worked out how the preview works with
+    // repeating events.
     $record['eventdate'] = '';
     $record['newsflash'] = '';
     $record["eventstatus"] = "A";
-    $record["datestype"] = "O"; # one-time
+    $record["datestype"] = "O"; // one-time
 
-    # Keep the code from barfing because wordpress_id
-    # is undefined. It also supresses the link to the
-    # forum, which is OK in the preview.
+    // Keep the code from barfing because wordpress_id
+    // is undefined. It also supresses the link to the
+    // forum, which is OK in the preview.
     $record["wordpress_id"] = 0;
 
     fullentry($record,
               'preview',
-              FALSE); # include images,
+              FALSE); // include images,
     exit;
 }
-# Add this to WordPress' registry of AJAX actions.
+
+// Add this to WordPress' registry of AJAX actions.
 add_action('wp_ajax_nopriv_preview-event-submission',
-           'preview_event_submission');
+           'bfc_preview_event_submission');
 add_action('wp_ajax_preview-event-submission',
-           'preview_event_submission');
+           'bfc_preview_event_submission');
 
 
-#ex:set sw=4 embedlimit=60000:
+//ex:set sw=4 embedlimit=60000:
 ?>
