@@ -1,17 +1,19 @@
 <?php
+namespace bike_fun_cal;
+
 // Utility functions
 //
 // These could probably be moved into other, more appropriate, files.
 
-# This function determins the landing page and site's personality
+// This function determins the landing page and site's personality
 function ptext($ptext)
 { return stripos(strtolower($_SERVER['HTTP_HOST']),strtolower($ptext)); }
 
 
-# Convert a time string from "hh:mm:ss" format to "h:mmpm" format
+// Convert a time string from "hh:mm:ss" format to "h:mmpm" format
 function hmmpm($hhmmss)
 {
-    $h = substr($hhmmss, 0, 2) + 0; # to convert to an integer
+    $h = substr($hhmmss, 0, 2) + 0; // to convert to an integer
     $m = substr($hhmmss, 3, 2);
     if ($h == 0) {
 	$ampm = "am";
@@ -27,10 +29,10 @@ function hmmpm($hhmmss)
     return $h.":".$m.$ampm;
 }
 
-# Return the result of adding minutes to a given time of day
+// Return the result of adding minutes to a given time of day
 function endtime($eventtime, $eventduration)
 {
-    # parse the "h:mmpm" or "hh:mmpm" time, and convert to minutes
+    // parse the "h:mmpm" or "hh:mmpm" time, and convert to minutes
     if (strlen($eventtime) == 7)
     {
 	$h = substr($eventtime, 0, 2);
@@ -49,14 +51,14 @@ function endtime($eventtime, $eventduration)
 	$h += 12;
     $m += $h * 60;
 
-    # add the duration minutes
+    // add the duration minutes
     $m += $eventduration;
 
-    # break it down into hours and minutes again
+    // break it down into hours and minutes again
     $h = floor($m / 60) % 24;
     $m = $m % 60;
 
-    # convert it back into an "h:mmpm" or "hh:mmpm" string
+    // convert it back into an "h:mmpm" or "hh:mmpm" string
     if ($h == 0) {
 	$ampm = "am";
 	$h = 12;
@@ -73,9 +75,9 @@ function endtime($eventtime, $eventduration)
     return $h.":".$m.$ampm;	
 }
 
-# Mangle an email address.  The result is an HTML string that uses images
-# and superfluous tags to make the email address very hard for a spammer
-# to harvest, but it still looks fairly normal on the screen.
+// Mangle an email address.  The result is an HTML string that uses images
+// and superfluous tags to make the email address very hard for a spammer
+// to harvest, but it still looks fairly normal on the screen.
 function mangleemail($email)
 {
     if ($email == "") {
@@ -94,10 +96,10 @@ function mangleemail($email)
     return $mangle;
 }
 
-# Convert an event's description to HTML.  This involves replacing HTML
-# special characters with their equivalent entities, replacing "@" with
-# an image of an "at" sign (a light form of email mangling), interpreting
-# asterisks as boldface markers, replacing convering URLs to links.
+// Convert an event's description to HTML.  This involves replacing HTML
+// special characters with their equivalent entities, replacing "@" with
+// an image of an "at" sign (a light form of email mangling), interpreting
+// asterisks as boldface markers, replacing convering URLs to links.
 function htmldescription($descr)
 {
     $html = preg_replace("/\n\t ]+$/", "", $descr);
@@ -115,5 +117,5 @@ function htmldescription($descr)
     return $html;
 }
 
-#ex:set shiftwidth=4 embedlimit=99999:
+//ex:set shiftwidth=4 embedlimit=99999:
 ?>

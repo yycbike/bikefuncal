@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 /**
  * Make the built-in WordPress search also seach for events in the calendar.
  *

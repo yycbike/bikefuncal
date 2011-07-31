@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 /*
  * Plugin Name: Bike fun calendar
  */
@@ -388,11 +390,5 @@ function bfc_sanitize_festival_date($input) {
         return $input;
     }
 }
-
-
-
-
-
-
 
 ?>

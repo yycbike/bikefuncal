@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 # Print the results of submitting an event
 # 
 # $event_submission -- A BfcEventSubmission object.

@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 # This file contains a few functions for scanning caldaily records.  It is
 # used by calsubmit.php and vfydates.php to check the status of an event's
 # days.

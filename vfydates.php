@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 # This is an AJAX request.  It is passed a "dates" string, which it decodes.
 # It can also be passed the id of an existing event, in which case it'll merge
 # any information about currently booked dates with the new "dates" list.

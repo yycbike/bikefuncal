@@ -1,47 +1,53 @@
 <?php
-# This file contains code for parsing repeating event specifications.
-#
-# Description of the dayinfo hash.
-# 
-# dayinfo:
-#   canonical - Canonical representation of the dates
-#   datestype - Type of dates (consecutive, one, error)
-#   daylist:
-#     timestamp     - Unix time representation of eventdate
-#     eventdate+    - The date the event occurs on
-#     eventstatus+  - A/S/C/D/E - see statusname() to decode.
-#     status        - The long-text form of eventstatus
-#     newdate       - "Y" if a date was added in an update of an existing
-#                     event. "N" otherwise.
-#     suffix        - @@@ Used somehow for updating & stuff?
-#     newsflash+    - The text of the newsflash.
-#     exceptionid+  - If this date is an exception, the exception's event ID.
-#                     If this is not an exception, then it's null.
-#     olddate       - @@@ How is this different than newdate?
-#     changed       - "Y" if we're updating an existing caldate, and this
-#                     has changed. "N" if this is new or unchanged.
-#     sqldate       - Date to use in SQL queries. And it's also used in other things?
-#                     This appears to always (often?) to be the same as eventdate.
-#
-#     (Items flagged with + are stored in the caldaily table of the DB.)
+namespace bike_fun_cal;
+
+/**
+ * This file contains code for parsing repeating event specifications.
+ *
+ * Description of the dayinfo hash.
+ * 
+ * dayinfo:
+ *   canonical - Canonical representation of the dates
+ *   datestype - Type of dates (consecutive, one, error)
+ *   daylist:
+ *     timestamp     - Unix time representation of eventdate
+ *     eventdate+    - The date the event occurs on
+ *     eventstatus+  - A/S/C/D/E - see statusname() to decode.
+ *     status        - The long-text form of eventstatus
+ *     newdate       - "Y" if a date was added in an update of an existing
+ *                     event. "N" otherwise.
+ *     suffix        - @@@ Used somehow for updating & stuff?
+ *     newsflash+    - The text of the newsflash.
+ *     exceptionid+  - If this date is an exception, the exception's event ID.
+ *                     If this is not an exception, then it's null.
+ *     olddate       - @@@ How is this different than newdate?
+ *     changed       - "Y" if we're updating an existing caldate, and this
+ *                     has changed. "N" if this is new or unchanged.
+ *     sqldate       - Date to use in SQL queries. And it's also used in other things?
+ *                     This appears to always (often?) to be the same as eventdate.
+ *
+ *     (Items flagged with + are stored in the caldaily table of the DB.)
+ */
 
 
-# Return an array of tokens extracted from a string.  To simplify later
-# expressions, the tokens are converted into a standard form.  The following
-# lists the standard form and alternative forms of each word:
-#
-# first 1st           Sunday syn       January jan    to - through thru
-# second 2nd          Monday mon       February feb   except but
-# third 3rd           Tuesday tue      March mar      (numbers 1-31)
-# fourth 4th forth    Wednesday wed    April apr       
-# fifth 5th           Thursday thu     May      
-# last                Friday fri       June jun    
-#                     Saturday sat     July jul      
-#                                      August aug
-#                                      September sep
-#                                      October oct
-#                                      November nov
-#                                      December dec
+/**
+ * Return an array of tokens extracted from a string.  To simplify later
+ * expressions, the tokens are converted into a standard form.  The following
+ * lists the standard form and alternative forms of each word:
+ *
+ * first 1st           Sunday syn       January jan    to - through thru
+ * second 2nd          Monday mon       February feb   except but
+ * third 3rd           Tuesday tue      March mar      (numbers 1-31)
+ * fourth 4th forth    Wednesday wed    April apr       
+ * fifth 5th           Thursday thu     May      
+ * last                Friday fri       June jun    
+ *                     Saturday sat     July jul      
+ *                                      August aug
+ *                                      September sep
+ *                                      October oct
+ *                                      November nov
+ *                                      December dec
+ */
 function datetokens($str)
 {
     # Start with an empty array for the tokens

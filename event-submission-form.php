@@ -1,4 +1,5 @@
 <?php
+namespace bike_fun_cal;
 
 # Output a line for the time selector
 function generatetime($event_submission, $time, $label)

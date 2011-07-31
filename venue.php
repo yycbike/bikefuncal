@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 # Functions related to the known-venues list
 
 

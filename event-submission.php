@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 # Functions related to creating & updating calendar events.
 #
 # This is a loose port of calform.php & calsubmit.php from the old

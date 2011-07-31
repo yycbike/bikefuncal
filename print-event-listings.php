@@ -1,4 +1,6 @@
 <?php
+namespace bike_fun_cal;
+
 // This file comes from the old, pre-wordpress code (where it was named view.php).
 //
 // It prints out events -- the overviews and the individual listings
@@ -109,35 +111,35 @@ function overview_calendar_day($thisdate, $preload_alldays) {
 // been ported to WordPress yet.
 function calendar_quote($days)
 {
-#     if ($days == 1)
-#         print "<td>&nbsp;</td>\n";
-#     else if ($days > 3 && file_exists("Quotations")) {
-#         mt_srand ((double) microtime() * 1000000);
-#         $lines = file("Quotations");
-#         $line_number = mt_rand(0,sizeof($lines)-1);
-#         $quotation = htmlspecialchars($lines[$line_number]);
-#         $quotation = preg_replace(
-#             '/^(.*)~/',
-#             '<span class=quotation-text>$1</span><br>--',
-#             $quotation);
-#         $length = strlen($lines[$line_number]);
-#         $class = "quotation ";
-#         if ($length / $days > 80) {
-#             $class .= "size-0 ";
-#         }
-#         else if ($length / $days > 50) {
-#             $class .= "size-1 ";
-#         }
-#         else if ($length / $days > 35) {
-#             $class .= "size-2 ";
-#         }
-#         else {
-#             $class .= "size-3 ";
-#         }
-#         print "<td colspan=$days class=\"$class\">$quotation</td>\n";
-#     } else {
-#         print "<td colspan=$days>&nbsp;</td>\n";
-#     }
+//     if ($days == 1)
+//         print "<td>&nbsp;</td>\n";
+//     else if ($days > 3 && file_exists("Quotations")) {
+//         mt_srand ((double) microtime() * 1000000);
+//         $lines = file("Quotations");
+//         $line_number = mt_rand(0,sizeof($lines)-1);
+//         $quotation = htmlspecialchars($lines[$line_number]);
+//         $quotation = preg_replace(
+//             '/^(.*)~/',
+//             '<span class=quotation-text>$1</span><br>--',
+//             $quotation);
+//         $length = strlen($lines[$line_number]);
+//         $class = "quotation ";
+//         if ($length / $days > 80) {
+//             $class .= "size-0 ";
+//         }
+//         else if ($length / $days > 50) {
+//             $class .= "size-1 ";
+//         }
+//         else if ($length / $days > 35) {
+//             $class .= "size-2 ";
+//         }
+//         else {
+//             $class .= "size-3 ";
+//         }
+//         print "<td colspan=$days class=\"$class\">$quotation</td>\n";
+//     } else {
+//         print "<td colspan=$days>&nbsp;</td>\n";
+//     }
 
     print "<td colspan=$days>&nbsp;</td>\n";
 }

@@ -1,8 +1,9 @@
 <?php
+namespace bike_fun_cal;
+
 # Functions related to installing the datbase, and migrating between versions.
 
 # Names of tables in the database.
-# @@@ Variable names should be prefixed with bfc_
 global $calevent_table_name;
 $calevent_table_name =
     $wpdb->prefix . "bfc_calevent";
@@ -191,6 +192,5 @@ function bfc_install() {
 
     return true;
 }
-
 
 ?>
