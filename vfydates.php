@@ -106,7 +106,7 @@ function verify_dates() {
             print "      <status>".$date["status"]."</status>\n";
             print "      <exception-url>";
             if (isset($date["exceptionid"])) {
-                $url = bfc_get_edit_url_for_event($date["exceptionid"]);
+                $url = get_edit_url_for_event($date["exceptionid"]);
                 print htmlentities($url);
             }
             print "</exception-url>\n";

@@ -16,7 +16,7 @@ $caladdress_table_name =
 
 #
 # Create the tables in the WordPress database.
-function bfc_install_db_1() {
+function install_db_1() {
     global $calevent_table_name;
     global $caldaily_table_name;
     global $wpdb;
@@ -105,7 +105,7 @@ function bfc_install_db_1() {
     return true;
 }
 
-function bfc_install_db_2() {
+function install_db_2() {
     global $calevent_table_name;
     global $wpdb;
 
@@ -119,7 +119,7 @@ function bfc_install_db_2() {
     return true;
 }
 
-function bfc_install_db_3() {
+function install_db_3() {
     global $caladdress_table_name;
     global $wpdb;
 
@@ -145,7 +145,7 @@ function bfc_install_db_3() {
     return true;
 }
 
-function bfc_install_db_4() {
+function install_db_4() {
     global $calevent_table_name;
     global $wpdb;
 
@@ -173,10 +173,10 @@ function bfc_install() {
         $db_version = (int) $db_version;
     }
 
-    $install_functions = array('bfc_install_db_1',
-                               'bfc_install_db_2',
-                               'bfc_install_db_3',
-                               'bfc_install_db_4',
+    $install_functions = array('install_db_1',
+                               'install_db_2',
+                               'install_db_3',
+                               'install_db_4',
                                );
 
     for ($db_level = $db_version;

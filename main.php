@@ -218,7 +218,7 @@ add_action('init', function() {
 // not the one WordPress generated.
 add_filter('get_edit_post_link', function($url, $post_id, $context) {
     if (get_post_type($post_id) == 'bfc-event') {
-        return bfc_get_edit_url_for_wordpress_id($post_id);
+        return get_edit_url_for_wordpress_id($post_id);
     }
     else {
         return $url;
@@ -232,7 +232,7 @@ add_filter('get_edit_post_link', function($url, $post_id, $context) {
 // a plugin define its own set of capability levels. That could be useful
 // if we ever want to have multiple kinds of admins/editors.
 // See: http://codex.wordpress.org/Roles_and_Capabilities
-function bfc_show_admin_options() {
+function show_admin_options() {
     return current_user_can('edit_posts');
 }
 
@@ -251,18 +251,18 @@ add_action('admin_menu', function() {
                      'Venues',
                      'manage_options', // capability
                      'bfc-venues',   // menu slug
-                     'bfc_venues');  // function callback
+                     'venues');  // function callback
 
     add_submenu_page('bfc-top', // parent
                      'Bike Fun Cal Options', // title
                      'Options',
                      'manage_options', // capability
                      'bfc-options',   // menu slug
-                     'bfc_options');  // function callback
+                     'options');  // function callback
                      
 });
 
-function bfc_options() {
+function options() {
     ?>
     <div class="wrap">
         <h2>Bike Fun Calendar Options</h2>
@@ -371,8 +371,8 @@ END_QUERY;
 });
 
 add_action('admin_init', function() {
-    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
-    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');
     register_setting('bikefuncal-options', 'bfc_city');
     register_setting('bikefuncal-options', 'bfc_province');
@@ -381,7 +381,7 @@ add_action('admin_init', function() {
 /**
  * Ensure that the festival date is a well-formatted date.
  */
-function bfc_sanitize_festival_date($input) {
+function sanitize_festival_date($input) {
     $date = strtotime($input);
     if ($date === false) {
         return "";

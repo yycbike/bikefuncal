@@ -1,15 +1,18 @@
 <?php
 namespace bike_fun_cal;
+/**
+ * Functions related to the known-venues list
+ */
 
-# Functions related to the known-venues list
 
-
-# Display the known-venues list for editing
-function bfc_venues() {
+/**
+ * Display the known-venues list for editing
+ */
+function venues() {
 
     # We can just call this directly; no futzing around with making it part
     # of the footer.
-    bfc_load_venue_list_javascript();
+    load_venue_list_javascript();
     
 ?>
 
@@ -77,9 +80,9 @@ Don't worry about the <em>Lock</em> field. Just leave it checked.
 <?php    
 }
 
-function bfc_get_known_venues() {
-    # Don't bother checking a nonce, because this is a nondestructive
-    # action.
+add_action('wp_ajax_get-known-venues', function() {
+    // Don't bother checking a nonce, because this is a nondestructive
+    // action.
 
     global $wpdb;
     global $caladdress_table_name;
@@ -87,7 +90,7 @@ function bfc_get_known_venues() {
     $sql = "select * from ${caladdress_table_name} order by locname ASC";
     $venues = $wpdb->get_results($sql, ARRAY_A);
 
-    # Convert locked to a boolean
+    // Convert locked to a boolean
     foreach ($venues as &$venue) {
         $venue['locked'] = ($venue['locked'] == 1);
     }
@@ -97,11 +100,9 @@ function bfc_get_known_venues() {
     echo $json, "\n";
 
     exit;
-}
-add_action('wp_ajax_get-known-venues',
-           'bfc_get_known_venues');
+});
 
-function bfc_edit_venue() {
+add_action('wp_ajax_edit-venue', function() {
     $result = array();
     $args = array();
 
@@ -197,11 +198,9 @@ function bfc_edit_venue() {
 
     print json_encode($result);
     exit;
-}
-add_action('wp_ajax_edit-venue',
-           'bfc_edit_venue');
+});
 
-function bfc_delete_venue() {
+add_action('wp_ajax_delete-venue', function() {
     $result = array();
 
     if (!wp_verify_nonce($_POST['nonce'], 'bfc-venue')) {
@@ -234,17 +233,13 @@ function bfc_delete_venue() {
 
     print json_encode($result);
     exit;
-}
-add_action('wp_ajax_delete-venue',
-           'bfc_delete_venue');
-
-
+});
 
 #
 # Load the JavaScript code that the event submission page needs.
 #
 # This is designed to be run in the wp_footer action.
-function bfc_load_venue_list_javascript() {
+function load_venue_list_javascript() {
     # WordPress ships with a crappy old version of jquery hotkeys. It breaks
     # when binding return. Use the newer version.
     $hotkeys_js_url = plugins_url('bikefuncal/jquery.hotkeys/jquery.hotkeys.js');
@@ -266,7 +261,7 @@ function bfc_load_venue_list_javascript() {
 
 # Return an associative array of location names 
 # mapped to addresses.
-function bfc_venue_list() {
+function venue_list() {
     global $wpdb;
     global $caladdress_table_name;
 

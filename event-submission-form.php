@@ -15,7 +15,7 @@ function generatetime($event_submission, $time, $label)
 # Print the event submission/editing form
 # 
 # $event_submission -- A BfcEventSubmission object.
-function bfc_print_event_submission_form($event_submission) {
+function print_event_submission_form($event_submission) {
 ?>
 
     <div class="new-event-form">

@@ -367,7 +367,7 @@ function event_listings($startdate,
             $thisdate == $tomorrow ||
             $for_printer ||
             $preload_alldays) {
-	    bfc_fullentries(date("Y-m-d", $thisdate),
+	    fullentries(date("Y-m-d", $thisdate),
                             TRUE,
                             $for_printer,
                             $include_images);  
@@ -682,8 +682,8 @@ function fullentry($record, $for, $include_images)
     // Show the edit link to admin users.
     // Except if this is a preview; then it's meaningless
     // because they're already editing.
-    if (bfc_show_admin_options() && $for != 'preview') {
-        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+    if (show_admin_options() && $for != 'preview') {
+        $edit_url = get_edit_url_for_event($id, $record['editcode']);
         print "<a href=\"$edit_url\">Edit Event</a>";
     }
 
@@ -701,7 +701,7 @@ function fullentry($record, $for, $include_images)
 
 // Generate the HTML for all entries in a given day, in the full format
 // used in the lower part of the page.
-function bfc_fullentries($day,
+function fullentries($day,
                          $exclude = FALSE,
                          $for_printer = FALSE,
                          $include_images = TRUE)
@@ -752,7 +752,7 @@ END_QUERY;
  * Get a URL for editing an event, based upon the wordpress_id for that
  * event.
  */
-function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
+function get_edit_url_for_wordpress_id($wordpress_id) {
     global $wpdb;
     global $calevent_table_name;
     $sql = $wpdb->prepare("SELECT id, editcode FROM ${calevent_table_name} " .
@@ -762,16 +762,16 @@ function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
     if ($wpdb->num_rows != 1) {
         die();
     }
-    return bfc_get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
+    return get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
 }
 
 /**
  * Get a URL for editing an event, based upon the id for that
  * event.
  */
-function bfc_get_edit_url_for_event($id, $editcode = null) {
+function get_edit_url_for_event($id, $editcode = null) {
     if (!isset($id)) {
-        die("bfc_get_edit_url_for_event: id is unset");
+        die("get_edit_url_for_event: id is unset");
     }
 
     $edit_page_title = 'New Event';
@@ -801,7 +801,7 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
 
 // This is called by the event submission form to preview the
 // event listing.
-function bfc_preview_event_submission() {
+function preview_event_submission() {
     // This sends a plain-text response, so no
     // header is needed.
 
@@ -838,10 +838,9 @@ function bfc_preview_event_submission() {
 
 // Add this to WordPress' registry of AJAX actions.
 add_action('wp_ajax_nopriv_preview-event-submission',
-           'bfc_preview_event_submission');
+           'preview_event_submission');
 add_action('wp_ajax_preview-event-submission',
-           'bfc_preview_event_submission');
-
+           'preview_event_submission');
 
 //ex:set sw=4 embedlimit=60000:
 ?>
