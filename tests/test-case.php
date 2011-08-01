@@ -93,29 +93,31 @@ class BfcTestCase extends \WPTestCase {
      * values, as specified in $new_query_args.
      */
     function update_submission($old_submission, $new_query_args, $new_files_args = array()) {
-        $old_event_args = $old_submission->event_args();
-        $old_daily_args = $old_submission->daily_args();
-        // @@@ if $old_submission was loaded with load_submission_for_edit(), it won't have
-        // the old daily args. This is causing failures in TestExceptions::test_change_exception_not_original,
-        // and others.
-
-
         $args = array(
             'submission_action' => 'update',
             'submission_event_id' => $old_submission->event_id(),
             'event_editcode' => $old_submission->db_editcode(),
         );
     
-        # Keep all the old values.
+        // Keep all the old event_args values.
+        // Unlike daily_args [see below], $old_submission->event_args() is always instantiated.
+        $old_event_args = $old_submission->event_args();
         foreach ($old_event_args as $field_name => $value) {
             # The field names we got from $old_submission need to have
             # 'event_' prepended.
             $query_field_name = 'event_' . $field_name;
             $args[$query_field_name] = $value;
         }
-        foreach (array_keys($old_daily_args) as $suffix) {
-            $args['event_newsflash' . $suffix] = $old_daily_args[$suffix]['newsflash'];
-            $args['event_status'    . $suffix] = $old_daily_args[$suffix]['status'];
+
+        // We can't use $old_submission->daily_args() to get the caldaily args, because
+        // if $old_submission was loaded with load_submission_for_edit(), they're not
+        // instantiated. Load from the database.
+        $daylist = dailystatus($old_submission->event_id());
+        foreach ($daylist as $day) {
+            $args['event_newsflash' . $day['suffix']] = $day['newsflash'];
+            // Use status not eventstatus, to get the long-form text of the status,
+            // like the web form submits.
+            $args['event_status'    . $day['suffix']] = $day['status'];
         }
 
         # Overwrite some of the old values with new values.

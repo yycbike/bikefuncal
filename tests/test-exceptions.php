@@ -70,6 +70,8 @@ class TestExceptions extends BfcTestCase {
         $this->assertNotEquals($main_event->wordpress_id(), $exception->wordpress_id());
         $this->assertNotEquals(get_permalink($main_event->wordpress_id()),
                                get_permalink($exception->wordpress_id()));
+        $this->assertEquals(get_post($main_event->wordpress_id())->post_title,
+                            get_post($exception->wordpress_id() )->post_title);
     }
 
     /* Exception doesn't share an image with the original */
@@ -107,38 +109,35 @@ class TestExceptions extends BfcTestCase {
     }
 
     /* Changing exception doesn't change original */
-//    function test_change_exception_not_original() {
-//        $x = $this->make_event_and_exception();
-//        $main_event = $x[0];
-//        $exception = $x[1];
-//
-//        print("Exception's daily args: ");
-//        var_dump($exception->daily_args());
-//
-//        $this->assertEquals($main_event->title(), $exception->title());
-//        $old_title = $main_event->title();
-//        $new_title = str_rot13($old_title);
-//        $exception = $this->update_submission($exception, array('event_title' => $new_title));
-//
-//        $this->assertEquals($main_event->title(), $old_title);
-//        $this->assertEquals($exception->title(),  $new_title);
-//    }
-//
-//    /* Changing original doesn't change exception */
-//    function test_change_original_not_exception() {
-//        $x = $this->make_event_and_exception();
-//        $main_event = $x[0];
-//        $exception = $x[1];
-//
-//        $this->assertEquals($main_event->title(), $exception->title());
-//        $old_title = $main_event->title();
-//        $new_title = str_rot13($old_title);
-//        $main_event = $this->update_submission($main_event, array('event_title' => $new_title));
-//
-//        $this->assertEquals($main_event->title(), $new_title);
-//        $this->assertEquals($exception->title(),  $old_title);
-//    }
-//
+    function test_change_exception_not_original() {
+        $x = $this->make_event_and_exception();
+        $main_event = $x[0];
+        $exception = $x[1];
+
+        $this->assertEquals($main_event->title(), $exception->title());
+        $old_title = $main_event->title();
+        $new_title = str_rot13($old_title);
+        $exception = $this->update_submission($exception, array('event_title' => $new_title));
+
+        $this->assertEquals($main_event->title(), $old_title);
+        $this->assertEquals($exception->title(),  $new_title);
+    }
+
+    /* Changing original doesn't change exception */
+    function test_change_original_not_exception() {
+        $x = $this->make_event_and_exception();
+        $main_event = $x[0];
+        $exception = $x[1];
+
+        $this->assertEquals($main_event->title(), $exception->title());
+        $old_title = $main_event->title();
+        $new_title = str_rot13($old_title);
+        $main_event = $this->update_submission($main_event, array('event_title' => $new_title));
+
+        $this->assertEquals($main_event->title(), $new_title);
+        $this->assertEquals($exception->title(),  $old_title);
+    }
+
     /* get_exceptions() returns all the exceptions we know about */
 
     /* Make a 2nd exception, ensure that everything is still OK */
