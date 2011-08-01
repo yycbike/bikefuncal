@@ -21,8 +21,8 @@ require_once("repeat.php");
 require_once("daily.php");
 
 # Add this to WordPress' registry of AJAX actions.
-add_action('wp_ajax_nopriv_verify-dates', 'verify_dates');
-add_action('wp_ajax_verify-dates', 'verify_dates');
+add_action('wp_ajax_nopriv_verify-dates', 'bike_fun_cal\verify_dates');
+add_action('wp_ajax_verify-dates', 'bike_fun_cal\verify_dates');
 
 function verify_dates() {
     # Turn on plain text PHP errors for the remainder of the AJAX request

@@ -21,7 +21,7 @@ Your changes have been saved.
 </p>
 
 <p>
-To edit this event in the future, go to this URL:
+ To make changes to your event, go here:
 <br>
 
 <a href="<?php print $edit_url; ?>">
@@ -32,7 +32,7 @@ To edit this event in the future, go to this URL:
 
 
 <p>
-The link to view your event is here. Share it with your friends!
+ To share your event with friends, send them here:
 <br>
 <a href="<?php print $permalink_url; ?>">
 <?php print $permalink_url;  ?>

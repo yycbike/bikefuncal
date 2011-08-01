@@ -81,6 +81,9 @@ add_filter('query_vars', function($qvars) {
     $qvars[] = "submission_action";
     $qvars[] = "submission_event_id";
     $qvars[] = "submission_image_action";
+    $qvars[] = "submission_comment";
+    $qvars[] = "submission_suppress_email";
+    $qvars[] = "submission_changed_by_admin";
 
     // Tell WordPress about the query vars for an event's newsflash & status.
     // But because these variables have a suffix with the day of the event
@@ -274,7 +277,7 @@ function options_admin_page() {
             <?php settings_fields( 'bikefuncal-options' ); ?>
 
             <h3>Festival</h3>
-            <p>This plugin assumes you have a Pedalpalooza-type festival. Enter the dates of the upcoming festival here.</p>
+            <p>This plugin assumes you have a Pedalpalooza-type festival. Enter the dates of the next festival here.</p>
         
             <p>
             Festival Start Date:
@@ -303,6 +306,17 @@ function options_admin_page() {
         <em>e.g., BC</em>
             </p>
 
+            <h3>Organization</h3>
+            <p>Information about the people putting on the festival.</p>
+        
+            <p>
+            Calendar crew e-mail address:
+            <input type='text' name='bfc_calendar_email' value='<?php echo get_option('bfc_calendar_email'); ?>'>
+            <em>The people at this address help when ride leaders have problems making an event. And when people create an event, they get an
+            e-mail from this address.
+            </em>
+            </p>
+        
             <h3>Misc.</h3>
 
             <p>
@@ -382,11 +396,12 @@ END_QUERY;
 });
 
 add_action('admin_init', function() {
-    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'sanitize_festival_date');
-    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bike_fun_cal\sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bike_fun_cal\sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');
     register_setting('bikefuncal-options', 'bfc_city');
     register_setting('bikefuncal-options', 'bfc_province');
+    register_setting('bikefuncal-options', 'bfc_calendar_email');
 });
 
 /**

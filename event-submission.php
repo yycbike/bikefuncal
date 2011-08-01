@@ -50,8 +50,11 @@ class BfcEventSubmission {
     # delete = delete the image
     protected $image_action;
 
+    // A list of form validation errors (in human-readable format)
     protected $errors = Array();
 
+    // The results of calling repeatdates(), this stores info about the
+    // instance(s) of an event.
     protected $dayinfo;
 
     # About editcodes
@@ -64,6 +67,11 @@ class BfcEventSubmission {
     # and delete.
     protected $user_editcode;
     protected $db_editcode;
+
+    // Comments for when an admin edits someone else's event
+    protected $comment;
+    protected $suppress_email;
+    protected $changed_by_admin;
     
     # Information about the database fields we'll be populating.
     # Keys are names of the fields.
@@ -197,6 +205,14 @@ class BfcEventSubmission {
             $this->image_action = 'keep'; 
         }
 
+        // Grab any comments from the admin
+        $this->comment = 
+            isset($query_vars['submission_comment']) ?
+            $this->comment = stripslashes($query_vars['submission_comment']) : '';
+        // These values are either true or missing
+        $this->suppress_email = isset($query_vars['submission_suppress_email']);
+        $this->changed_by_admin = isset($query_vars['submission_changed_by_admin']);
+        
         # If we're editing an existing object, grab it from the db.
         # Do this before we load the rest of the query vars, so that
         # user-specified values can override the database.
@@ -264,16 +280,16 @@ class BfcEventSubmission {
             $this->fill_in_missing_values();
             $this->check_validity();
             if (!$this->is_valid()) {
-                # Can't create or update because the event wasn't valid.
-                # Go back to editing.
+                // Can't create or update because the event wasn't valid.
+                // Go back to editing.
                 $this->action = "edit";
             }
             else {
                 $this->calculate_days();
                 $this->do_image_action();
                 $this->save_wordpress_post();
-                
                 $this->add_event_to_db($this->event_args);
+                $this->mail_ride_leader();
             }
         }
         else if ($this->action == "delete") {
@@ -350,7 +366,7 @@ class BfcEventSubmission {
         global $wpdb;
 
         if (!isset($this->event_id)) {
-            die();
+            die('Event ID is unset');
         }
 
         $sql = $wpdb->prepare("SELECT editcode, image, wordpress_id " .
@@ -390,7 +406,7 @@ class BfcEventSubmission {
     # that are non-blank by default, set them here.
     protected function set_defaults() {
         if ($this->action != 'new') {
-            die();
+            die('Setting defaults, but not creating a new event.');
         }
     
         $this->event_args['audience'] = 'G';
@@ -401,7 +417,7 @@ class BfcEventSubmission {
     # in the query.
     protected function fill_in_missing_values() {
         if ($this->action != 'update' && $this->action != 'create') {
-            die();
+            die('Filling in missing values, but not updating or creating');
         }
 
         # Do missing values for event_args
@@ -690,7 +706,7 @@ class BfcEventSubmission {
                  $this->post_files['event_image']['error'] != UPLOAD_ERR_OK) {
 
             # This shouldn't have been called
-            die(); 
+            die('No image to attach'); 
         }
 
         # Copy the file to the uploads directory.
@@ -749,6 +765,103 @@ class BfcEventSubmission {
             $this->event_args['imageheight'] = 0;
         }
     }
+
+    /**
+     * Send e-mail to the ride leader, with information about what happened and
+     * links for editing.
+     */
+    protected function mail_ride_leader() {
+        $wrap_width = 70;
+        
+        if ($this->suppress_email) {
+            return;
+        }
+
+        if ($this->action == 'update') {
+            $subject = 'Changes to ride: ' . $this->event_args['title'];
+            $action_past_tense = 'updated';
+        }
+        else if ($this->action == 'create') {
+            $subject = 'New ride: ' . $this->event_args['title'];
+            $action_past_tense = 'created';
+        }
+        else if ($this->action == 'delete') {
+            $subject = 'Deleted ride: ' . $this->event_args['title'];
+            $action_past_tense = 'deleted';
+        }
+        else {
+            die("Bad action: " . $this->action);
+        }
+
+        // Tell the user what happened (update, delete, or create). If the cal crew did it,
+        // explain why.
+        $body = '';
+        if ($this->changed_by_admin) {
+            $body .= sprintf('Your event was %s by a member of the calendar crew. ', $action_past_tense);
+
+            // if the admin left a comment, include it.
+            if (trim($this->comment) != '') {
+                $body .= "The reason for the change is:\n\n";
+
+                // Indent the comment with 4 spaces, and wrap to 70 characters total.
+                $comment = wordwrap(trim($this->comment), $wrap_width - 4);
+                $comment = preg_replace('/^/m', '    ', $comment);
+
+                $body .= $comment;
+            }
+        }
+        else {
+            $body .= sprintf('You successfully %s your event', $action_past_tense);
+        }
+        $body .= "\n\n";
+
+        // Show dates of the event
+        if ($this->action != 'delete') {
+            $body .= sprintf('Your event is scheduled for %s at %s.',
+                             $this->event_args['dates'],
+                             hmmpm($this->event_args['eventtime']));
+
+            // @@@ Show exceptions here
+        }
+        $body .= "\n\n";
+
+        // Tell them what changed
+        if ($this->action == 'update') {
+            $changes = $this->assemble_changes();
+            if (count($changes) > 0) {
+                $body .= "The changes to your ride are:\n";
+                foreach ($changes as $change) {
+                    $body .= '* ' . wordwrap($change, $wrap_width) . "\n";
+                }
+                $body .= "\n\n";
+            }
+        }
+
+        // Provide links
+        if ($this->action != 'delete') {
+            $edit_url = get_edit_url_for_event($this->event_id(), $this->editcode());
+            $permalink_url = get_permalink($this->wordpress_id());
+
+            $body .= sprintf("To make changes to your event, go here: %s\n", $edit_url);
+            $body .= sprintf("To share your event with friends, send them here: %s\n", $permalink_url);
+            $body .= "\n";
+        }
+
+        // Add contact info for the calendar crew
+        $body .= "If you have questions, contact the calendar crew at ";
+        $body .= get_option('bfc_calendar_email');
+        $body .= "\n\n";
+
+        // Do one last wordwrap, for the things we haven't wrapped yet...
+        $body = wordwrap($body, $wrap_width);
+        //echo '<pre>', $body, '</pre>';
+        
+        // Send the e-mail
+        $to = $this->event_args['email'];
+        $headers = "From: " . get_option('bfc_calendar_email') . "\r\n" .
+                   "CC: "   . get_option('bfc_calendar_email');
+        mail($to, $subject, $body, $headers);
+    }
     
     protected function is_editcode_valid() {
         if ($this->action == "edit"   ||
@@ -770,7 +883,6 @@ class BfcEventSubmission {
         return true;
     }
     
-    # @@@ check for more invalid values
     protected function check_validity() {
         if ($this->event_args['dates'] == '') {
             $this->errors[] = "Date is missing";
@@ -784,6 +896,15 @@ class BfcEventSubmission {
                     sprintf('The date, "%s", was not understood',
                             $this->event_args['dates']);
             }
+        }
+
+        if ($this->event_args['email'] == '') {
+            $this->errors[] = 'E-mail address is missing. '.
+                '(We only use this to mail you information about updating your event. We won\'t spam you.)';
+        }
+        else if (filter_var($this->event_args['email'], FILTER_VALIDATE_EMAIL) === false) {
+            $this->errors[] = 'E-mail address is invalid. '.
+                '(We only use this to mail you information about updating your event. We won\'t spam you.)';
         }
 
         if ($this->event_args['audience'] != 'G' &&
@@ -816,7 +937,7 @@ class BfcEventSubmission {
             !isset($this->dayinfo['datestype']) ||
             $this->dayinfo['datestype'] == 'error') {
 
-            die();
+            die('Days should have been parsed already');
         }
 
         # Store the type of date (sequential, scattered, etc.)
@@ -1102,6 +1223,25 @@ class BfcEventSubmission {
                 $this->event_args['image'] != '';
     }
 
+    public function has_admin_comment() {
+        if ($this->action != 'edit') {
+            // Only show admin comment when updating
+            return false;
+        }
+        
+        if (!show_admin_options()) {
+            // Current user isn't an admin (or current user isn't logged in)
+            return false;
+        }
+
+        // User is admin. But is she editing her own event?
+        global $current_user;
+        get_currentuserinfo();
+
+        // Don't show admin comment if user's e-mail matches ride leader's e-mail
+        return $current_user->user_email !== $this->event_args['email'];
+    }
+
     # Return the action to perform next.
     # This should only be called from the edit-event
     # page.
@@ -1145,7 +1285,7 @@ class BfcEventSubmission {
     # Produce a list of human-readable descriptions of changes.
     protected function assemble_changes() {
         if ($this->action != 'update') {
-            die();
+            die("Assembling changes when not doing an update");
         }
         
         $changes = array();
@@ -1265,7 +1405,6 @@ class BfcEventSubmission {
                                      $date,
                                      $this->daily_args_changes[$suffix]['newsflash']);
             }
-            
         }
         
         return $changes;

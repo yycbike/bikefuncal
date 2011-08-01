@@ -297,6 +297,28 @@ function print_event_submission_form($event_submission) {
 
     </div>
 
+    <?php
+    if ($event_submission->has_admin_comment()) {
+    ?>
+      <h3>Comments</h3>
+      <p>Briefly tell the ride leader what you, the administrator, are changing about their event.
+      <br>
+      <textarea name='submission_comment'></textarea>
+      </p>
+
+      <p>
+      <input type='checkbox' name='submission_suppress_email' id='submission_suppress_email'>
+      <label for='submission_suppress_email'>
+      This change is minor (don't e-mail the ride leader).
+      </label>
+      </p>
+
+      <input type='hidden' name='submission_changed_by_admin' value='true'>
+
+    <?php
+    } // end if, has admin comment
+    ?>
+          
 
     <?php
     if ($event_submission->has_event_id()) {

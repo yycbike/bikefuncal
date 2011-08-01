@@ -270,7 +270,7 @@ add_shortcode('bfc_event_submission', function($atts) {
     if ($event_submission->page_to_show() == "edit-event") {
         // We have to load the javascript in the footer, because by now
         // the header has already been output and it's too late for that.
-        add_action('wp_footer', 'load_event_submission_form_javascript');
+        add_action('wp_footer', 'bike_fun_cal\load_event_submission_form_javascript');
         print_event_submission_form($event_submission);
     }
     else if ($event_submission->page_to_show() == "event-updated") {

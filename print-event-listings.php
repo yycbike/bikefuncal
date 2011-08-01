@@ -838,9 +838,9 @@ function preview_event_submission() {
 
 // Add this to WordPress' registry of AJAX actions.
 add_action('wp_ajax_nopriv_preview-event-submission',
-           'preview_event_submission');
+           'bike_fun_cal\preview_event_submission');
 add_action('wp_ajax_preview-event-submission',
-           'preview_event_submission');
+           'bike_fun_cal\preview_event_submission');
 
 //ex:set sw=4 embedlimit=60000:
 ?>
