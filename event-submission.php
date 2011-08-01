@@ -817,13 +817,22 @@ class BfcEventSubmission {
 
         // Show dates of the event
         if ($this->action != 'delete') {
-            $body .= sprintf('Your event is scheduled for %s at %s.',
+            $body .= sprintf('Your event is scheduled for %s at %s. ',
                              $this->event_args['dates'],
                              hmmpm($this->event_args['eventtime']));
 
-            // @@@ Show exceptions here
+            $exceptions = $this->get_exceptions();
+            if (count($exceptions) > 0) {
+                $body .= "It has exceptions on these days. (Follow the links to edit the exceptions.)\n";
+                foreach ($exceptions as $exception) {
+                    $edit_url = get_edit_url_for_event($exception['exceptionid']);
+                    $date = date('l, F j', strtotime($exception['sqldate']));
+                    $body .= sprintf("* %s %s\n", $date, $edit_url);
+                }
+            }
+            
+            $body .= "\n\n";
         }
-        $body .= "\n\n";
 
         // Tell them what changed
         if ($this->action == 'update') {
@@ -1002,7 +1011,7 @@ class BfcEventSubmission {
 
         # Copy most (but not all) fields from this event to the exception.
         $do_not_copy = Array('dates', 'datestype',
-                             'wordpress_id',
+                             'wordpress_id', 'id',
                              'image', 'imagewidth', 'imageheight');
         foreach ($this->event_args as $arg_name => $arg_value) {
             if (!in_array($arg_name, $do_not_copy)) {
