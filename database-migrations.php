@@ -173,10 +173,10 @@ function bfc_install() {
         $db_version = (int) $db_version;
     }
 
-    $install_functions = array('install_db_1',
-                               'install_db_2',
-                               'install_db_3',
-                               'install_db_4',
+    $install_functions = array('bike_fun_cal\install_db_1',
+                               'bike_fun_cal\install_db_2',
+                               'bike_fun_cal\install_db_3',
+                               'bike_fun_cal\install_db_4',
                                );
 
     for ($db_level = $db_version;

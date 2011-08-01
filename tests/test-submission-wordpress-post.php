@@ -1,4 +1,7 @@
 <?php
+namespace bike_fun_cal;
+require_once('test-case.php');
+
 class TestSubmissionWordPressPost extends BfcTestCase {
     /**
      * The wp_query object won't look up posts by title,

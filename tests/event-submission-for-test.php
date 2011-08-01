@@ -1,4 +1,7 @@
 <?php
+namespace bike_fun_cal;
+require_once('test-case.php');
+
 /*
  * Extend BfcEventSubmission with some methods that allow the
  * unit tests to peer inside and examine its internals. Also,

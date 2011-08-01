@@ -1,4 +1,7 @@
 <?php
+namespace bike_fun_cal;
+require_once('test-case.php');
+
 /*
  * Tests for event exceptions.
  */

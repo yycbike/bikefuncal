@@ -1,16 +1,74 @@
 <?php
-# Generic base class for other tests.
-#
-class BfcTestCase extends WPTestCase {
+namespace bike_fun_cal;
+
+/**
+ * Generic base class for other tests.
+ */
+class BfcTestCase extends \WPTestCase {
     function setUp() {
         parent::setUp();
         bfc_install();
+
+        // Create the mandatory pages: New Event and Monthly Calendar
+        $this->insert_post_or_die(array(
+                                      'post_title' => 'New Event',
+                                      'post_content' => '[bfc_event_submission]',
+                                      'post_status' => 'publish',
+                                      'post_type'   => 'page',
+                                        ));
+
+        $this->insert_post_or_die(array(
+                                      'post_title' => 'Monthly Calendar',
+                                      'post_content' => 'calendar goes here',
+                                      'post_status' => 'publish',
+                                      'post_type'   => 'page',
+                                        ));
+
+
+        
+        // Set values for the options
+        update_option('bfc_festival_start_date', '2012-06-02');
+        update_option('bfc_festival_end_date', '2012-06-19');
+        update_option('bfc_drinking_age', '19');
+        update_option('bfc_city', 'Vancouver');
+        update_option('bfc_province', 'BC');
+        update_option('bfc_calendar_email', 'test-velolove-calendar@bogushost.ca');
     }
 
     function tearDown() {
         parent::tearDown();
     }
+
+    /**
+     * Try to make a WordPress post. Die if it fails.
+     */
+    function insert_post_or_die($options) {
+        $result = wp_insert_post($options);
+
+        // The return value of wp_insert_post() depends on the value of
+        // $wp_error.
+        global $wp_error;
+        if ($wp_error) {
+            if ($result !== null) {
+                die("Couldn't create a page");
+            }
+        }
+        else {
+            if ($result === 0) {
+                die("Couldn't create a page");
+            }
+        }
+        
+    }
     
+
+
+    /**
+     * Create a valid event submission. It comes with enough default arguments
+     * to pass the validator. You can pass in extra arguments to supplement or
+     * override the defaults. The arguments simulate what gets passed in
+     * to $wp_query->query_vars[].
+     */
     function make_valid_submission($extra_arguments = array()) {
         $submission = new BfcEventSubmissionForTest;
         $submission_args = array(
@@ -20,6 +78,7 @@ class BfcTestCase extends WPTestCase {
             // Generate a unique title to avoid clashing with anything else
             // in the database that might have that title.
             'event_title' => 'Title ' . uniqid(),
+            'event_email' => 'hi@hello.ca',
 
             'event_eventtime' => '19:15:00',
             );
@@ -122,8 +181,10 @@ class BfcTestCase extends WPTestCase {
         return $submission;
     }
 
-    ######################################################
-    # Test cases that test the functions provided in this file.
+    /********************************************************************************
+     *
+     * Test cases that test the functions provided in this file.
+     */
     function test_valid_submission_is_valid() {
         $valid_submission = $this->make_valid_submission();
         $this->assertTrue($valid_submission->is_valid());

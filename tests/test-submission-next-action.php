@@ -1,4 +1,7 @@
 <?php
+namespace bike_fun_cal;
+require_once('test-case.php');
+
 class TestSubmissionNextAction extends BfcTestCase {
     function test_default_action_is_new() {
         $submission = new BfcEventSubmission;
