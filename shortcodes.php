@@ -358,8 +358,8 @@ add_shortcode('bfc_festival_dates', function($atts) {
  * Print the number of days in the festival
  */
 add_shortcode('bfc_festival_count_days', function($atts) {
-    $start = new DateTime(get_option('bfc_festival_start_date'));
-    $end = new DateTime(get_option('bfc_festival_end_date'));
+    $start = new \DateTime(get_option('bfc_festival_start_date'));
+    $end = new \DateTime(get_option('bfc_festival_end_date'));
 
     $interval = $start->diff($end);
 

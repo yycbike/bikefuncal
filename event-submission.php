@@ -296,6 +296,7 @@ class BfcEventSubmission {
             
             if ($this->is_editcode_valid()) {
                 $this->delete();
+                $this->mail_ride_leader();
             }
             else {
                 $this->errors[] = "You don't have permission to delete this event.";
@@ -665,7 +666,7 @@ class BfcEventSubmission {
                                          $this->event_id);
         $result = $wpdb->query($calevent_query);
         if ($result === false) {
-            die("Failed to delete from caldaily");
+            die("Failed to delete from calevent");
         }
 
         $this->delete_image();
