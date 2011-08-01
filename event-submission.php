@@ -194,7 +194,7 @@ class BfcEventSubmission {
             $this->image_action = $query_vars['submission_image_action'];
         }
         else if (isset($this->post_files['event_image']['error']) &&
-                 $this->post_files['event_image']['error'] == UPLOAD_ERR_OK) {
+                 $this->post_files['event_image']['error'] === UPLOAD_ERR_OK) {
             # This happens the first time an image is attached.
             # (submission_image_action is only passed in when editing an
             # event with an existing image.)
@@ -702,9 +702,17 @@ class BfcEventSubmission {
         }
     }
 
+    // Wrapper around move_uploaded_file that lets BfcEventSubmissionForTest
+    // replace move_uploaded_file() with rename().
+    //
+    // http://stackoverflow.com/questions/3402765/how-can-i-write-tests-for-file-upload-in-php/3410684#3410684
+    protected function move_uploaded_file($from, $to) {
+        return move_uploaded_file($from, $to);
+    }
+    
     protected function attach_image() {
         if (!isset($this->post_files['event_image']['error']) ||
-                 $this->post_files['event_image']['error'] != UPLOAD_ERR_OK) {
+                 $this->post_files['event_image']['error'] !== UPLOAD_ERR_OK) {
 
             # This shouldn't have been called
             die('No image to attach'); 
@@ -726,8 +734,12 @@ class BfcEventSubmission {
         $filename = $upload_dirinfo['path'] . '/' .
             uniqid() . '.' . $extension;
 
-        move_uploaded_file($this->post_files['event_image']['tmp_name'],
-                           $filename);
+        $result = $this->move_uploaded_file($this->post_files['event_image']['tmp_name'],
+                                            $filename);
+        if (!$result) {
+            die("An error occurred processing the uploaded file");
+        }
+        
         list($imagewidth, $imageheight) = getimagesize($filename);
 
         # Make a filename that's relative to the uploads dir.
@@ -1057,7 +1069,7 @@ class BfcEventSubmission {
         return $exceptions;
     }
 
-    private function print_value_for_text_input($argname) {
+    protected function print_value_for_text_input($argname) {
         if (isset($this->event_args[$argname])) {
             $value = htmlspecialchars($this->event_args[$argname], ENT_QUOTES);
             printf("value=\"%s\"", $value);
@@ -1122,7 +1134,7 @@ class BfcEventSubmission {
         }
     }
 
-    private function print_checked_for_audience($audience) {
+    protected function print_checked_for_audience($audience) {
         if (isset($this->event_args['audience']) &&
             $this->event_args['audience'] == $audience) {
 
@@ -1457,26 +1469,5 @@ class BfcEventSubmission {
             die("Bad action: $this->action");
         }
     }
-
-    # Only for use from unit tests
-    public function event_args_changes() {
-        return $this->event_args_changes;
-    }
-
-    # Only for use from unit tests
-    public function event_args() {
-        return $this->event_args;
-    }
-
-    # Only for use from unit tests
-    public function daily_args() {
-        return $this->daily_args;
-    }
-
-    # Only for use from unit tests
-    public function daily_args_changes() {
-        return $this->daily_args_changes;
-    }
-
 }
 ?>
