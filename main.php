@@ -251,18 +251,18 @@ add_action('admin_menu', function() {
                      'Venues',
                      'manage_options', // capability
                      'bfc-venues',   // menu slug
-                     'venues');  // function callback
+                     'bike_fun_cal\venues_admin_page');  // function callback
 
     add_submenu_page('bfc-top', // parent
                      'Bike Fun Cal Options', // title
                      'Options',
                      'manage_options', // capability
                      'bfc-options',   // menu slug
-                     'options');  // function callback
+                     'bike_fun_cal\options_admin_page');  // function callback
                      
 });
 
-function options() {
+function options_admin_page() {
     ?>
     <div class="wrap">
         <h2>Bike Fun Calendar Options</h2>
@@ -273,6 +273,9 @@ function options() {
         <form method="post" action="options.php">
             <?php settings_fields( 'bikefuncal-options' ); ?>
 
+            <h3>Festival</h3>
+            <p>This plugin assumes you have a Pedalpalooza-type festival. Enter the dates of the upcoming festival here.</p>
+        
             <p>
             Festival Start Date:
             <input type='text' name='bfc_festival_start_date' value='<?php echo get_option('bfc_festival_start_date'); ?>'>
@@ -285,10 +288,8 @@ function options() {
             <em>YYYY-MM-DD</em>
             </p>
 
-            <p>
-            Drinking Age:
-            <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'>
-            </p>
+            <h3>Location</h3>
+            <p>Where is the bike fun happening?</p>
 
             <p>
             Your City:
@@ -301,9 +302,19 @@ function options() {
             <input type='text' name='bfc_province' value='<?php echo get_option('bfc_province'); ?>'>
         <em>e.g., BC</em>
             </p>
+
+            <h3>Misc.</h3>
+
+            <p>
+            Drinking Age:
+            <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'>
+            <em>People coming on adults-only rides need to be at least this old</em>
+            </p>
         
-            <br>
+
+            <p>
             <input type='submit' value='save'>
+            </p>
         </form>                
     </div>
     <?php

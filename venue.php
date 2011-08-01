@@ -8,7 +8,7 @@ namespace bike_fun_cal;
 /**
  * Display the known-venues list for editing
  */
-function venues() {
+function venues_admin_page() {
 
     # We can just call this directly; no futzing around with making it part
     # of the footer.
