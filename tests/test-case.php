@@ -69,7 +69,7 @@ class BfcTestCase extends \WPTestCase {
      * override the defaults. The arguments simulate what gets passed in
      * to $wp_query->query_vars[].
      */
-    function make_valid_submission($extra_arguments = array()) {
+    function make_valid_submission($extra_args = array(), $files_args = array()) {
         $submission = new BfcEventSubmissionForTest;
         $submission_args = array(
             'submission_action' => 'create',
@@ -82,12 +82,12 @@ class BfcTestCase extends \WPTestCase {
 
             'event_eventtime' => '19:15:00',
             );
-        $submission_args = array_merge($submission_args, $extra_arguments);
+        $submission_args = array_merge($submission_args, $extra_args);
         $submission_args = array_merge(
             $submission_args,
             $this->make_date_args($submission_args['event_dates']));
 
-        $submission->populate_from_query($submission_args, array());
+        $submission->populate_from_query($submission_args, $files_args);
         $submission->do_action();
 
         return $submission;
@@ -129,27 +129,64 @@ class BfcTestCase extends \WPTestCase {
         return $new_submission;
     }
 
-    function update_submission_with_file($submission) {
+    // Return filename & mime type of one of the dummy images
+    function dummy_image_info($image) {
+        switch ($image) {
+            case 'png-1':
+                return array(
+                    'name' => 'dummy-event-image-1.png',
+                    'mime-type' => 'image/png',
+                             );
+                
+            case 'jpg-1':
+                return array(
+                    'name' => 'dummy-event-image-1.jpg',
+                    'mime-type' => 'image/jpeg',
+                             );
+
+            default:
+                die();
+                break;
+        }
+    }
+
+    // Make a copy of the $_FILES array, suitable for passing into
+    // the BfcEventSubmission.
+    function make_files_args($image = 'png-1') {
+        $image_info = $this->dummy_image_info($image);
+
         // Make a temp copy of the dummy event image
         $temp_filename = tempnam(sys_get_temp_dir(), 'bfc-unit-test-');
-        $original_filename = __DIR__ . '/dummy-event-image.png';
+        $original_filename = __DIR__ . '/' . $image_info['name'];
         $result = copy($original_filename, $temp_filename);
         if (!$result) {
             die("Can't copy $original_filename to $temp_filename");
         }
 
         // Fake a copy of the $_FILES array.
-        $files_args = array(
+        return array(
             'event_image' => array(
                 'error' => UPLOAD_ERR_OK,
-                'name'  => 'dummy-event-image.png',
+                'name'  => $image_info['name'],
                 'tmp_name' => $temp_filename,
-                'type' => 'image/png',
-                'size' => 1446,
+                'type' => $image_info['mime-type'],
+                'size' => filesize($original_filename),
             ),
         );
-        
-        return $this->update_submission($submission, array(), $files_args);
+    }
+
+    // Return width of one of the dummy images
+    function imagewidth($image) {
+        $info = $this->dummy_image_info($image);
+        list($imagewidth, $imageheight) = getimagesize(__DIR__ . '/' . $info['name']);
+        return $imagewidth;
+    }
+
+    // Return height of one of the dummy images
+    function imageheight($image) {
+        $info = $this->dummy_image_info($image);
+        list($imagewidth, $imageheight) = getimagesize(__DIR__ . '/' . $info['name']);
+        return $imageheight;
     }
 
     # Make arguments for newsflash and status

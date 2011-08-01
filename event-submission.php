@@ -684,15 +684,29 @@ class BfcEventSubmission {
     }
 
     protected function do_image_action() {
+        // If we're doing something with an image, make sure one was uploaded.
+        if ($this->image_action == 'create' || $this->image_action == 'change') {
+            if (!isset($this->post_files['event_image']['error']) ||
+                     $this->post_files['event_image']['error'] !== UPLOAD_ERR_OK) {
+
+                # This shouldn't have been called
+                die('No image to attach'); 
+            }
+        }
+
         if ($this->image_action == 'keep') {
-            # Do nothing
+            // Do nothing
         }
         else if ($this->image_action == 'create') {
-            $this->attach_image();
+            $this->attach_image($this->post_files['event_image']['name'],
+                                $this->post_files['event_image']['tmp_name'],
+                                'move');
         }
         else if ($this->image_action == 'change') {
             $this->delete_image();
-            $this->attach_image();
+            $this->attach_image($this->post_files['event_image']['name'],
+                                $this->post_files['event_image']['tmp_name'],
+                                'move');
         }
         else if ($this->image_action == 'delete') {
             $this->delete_image();
@@ -709,15 +723,8 @@ class BfcEventSubmission {
     protected function move_uploaded_file($from, $to) {
         return move_uploaded_file($from, $to);
     }
-    
-    protected function attach_image() {
-        if (!isset($this->post_files['event_image']['error']) ||
-                 $this->post_files['event_image']['error'] !== UPLOAD_ERR_OK) {
 
-            # This shouldn't have been called
-            die('No image to attach'); 
-        }
-
+    protected function attach_image($original_name, $source_file, $move_or_copy) {
         # Copy the file to the uploads directory.
 
         # @@@ If we wanted to get fancy, we could pass in the date of the
@@ -726,20 +733,26 @@ class BfcEventSubmission {
         $upload_dirinfo = wp_upload_dir();
         
         # This trusts that the file extension is OK on the user's machine...
-        $extension = pathinfo($this->post_files['event_image']['name'],
-                              PATHINFO_EXTENSION);
+        $extension = pathinfo($original_name, PATHINFO_EXTENSION);
 
         # Use uniqid() for the filename because, when this runs, the event ID
         # may not have been set yet.
         $filename = $upload_dirinfo['path'] . '/' .
             uniqid() . '.' . $extension;
 
-        $result = $this->move_uploaded_file($this->post_files['event_image']['tmp_name'],
-                                            $filename);
+        if ($move_or_copy === 'move') {
+            $result = $this->move_uploaded_file($source_file,
+                                                $filename);
+        } else if ($move_or_copy === 'copy') {
+            $result = copy($source_file, $filename);
+        }
+        else {
+            die();
+        }
         if (!$result) {
             die("An error occurred processing the uploaded file");
         }
-        
+
         list($imagewidth, $imageheight) = getimagesize($filename);
 
         # Make a filename that's relative to the uploads dir.
@@ -754,6 +767,7 @@ class BfcEventSubmission {
         
         # (We could make a WordPress attachment out of this. But what would
         # the benefit be?)
+
     }
 
     # Delete the image file for this event, if it has one.
@@ -1022,7 +1036,7 @@ class BfcEventSubmission {
     protected function make_exception($date) {
         $exception = new BfcEventSubmission();
 
-        # Copy most (but not all) fields from this event to the exception.
+        // Copy most (but not all) fields from this event to the exception.
         $do_not_copy = Array('dates', 'datestype',
                              'wordpress_id', 'id',
                              'image', 'imagewidth', 'imageheight');
@@ -1032,8 +1046,8 @@ class BfcEventSubmission {
             }
         }
 
-        # Don't need to set an edit code; that will happen when creating
-        # the event.
+        // Don't need to set an edit code; that will happen when creating
+        // the event.
 
         $exception->action = 'create';
         $exception->image_action = 'keep';
@@ -1041,6 +1055,12 @@ class BfcEventSubmission {
 
         $suffix = date("Mj", strtotime($date));
         $exception->daily_args[$suffix]['status'] = 'As Scheduled';
+
+        // Copy the image file.
+        $upload_dirinfo = wp_upload_dir();
+        $exception->attach_image($this->event_args['image'],
+                                 $upload_dirinfo['basedir'] . $this->event_args['image'],
+                                 'copy');
 
         $exception->do_action();
      

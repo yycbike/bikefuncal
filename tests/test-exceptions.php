@@ -22,7 +22,7 @@ class TestExceptions extends BfcTestCase {
             'event_eventtime'  => '07:00:00',
             'event_eventduraton' => '120',
         ));
-        $main_event = $this->update_submission_with_file($main_event);
+        $main_event = $this->update_submission($main_event, array(), $this->make_files_args());
         
         $main_event = $this->update_submission($main_event, array(
             'event_statusAug5' => 'Exception',
@@ -78,11 +78,21 @@ class TestExceptions extends BfcTestCase {
         $main_event = $x[0];
         $exception = $x[1];
 
-        // Different filename
+        // Both have filenames
+        $this->assertGreaterThan(0, strlen($main_event->image()));
+        $this->assertGreaterThan(0, strlen($exception->image()));
+        
+        // Filenames are different
         $this->assertNotEquals($main_event->image(), $exception->image());
+
         // Same width & height
         $this->assertEquals($main_event->imagewidth(), $exception->imagewidth());
         $this->assertEquals($main_event->imageheight(), $exception->imageheight());
+
+        // Same extension
+        $this->assertEquals(
+            pathinfo($main_event->image(), PATHINFO_EXTENSION),
+            pathinfo($exception->image(), PATHINFO_EXTENSION));
     }
 
     /* Changing exception doesn't change original */
