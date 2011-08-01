@@ -1065,11 +1065,6 @@ class BfcEventSubmission {
         $exception->do_action();
      
         return $exception;
-   
-        # @@@ todo:
-        # - Copy the image. Need to make a new copy of the file, because
-        #   if they share we'd run into problems when one event (but not the other) is
-        #   deleted and the file gets deleted along with it.
     }
 
     # Return a list of exceptions. Something like this:

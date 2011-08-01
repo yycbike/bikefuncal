@@ -95,8 +95,50 @@ class TestExceptions extends BfcTestCase {
             pathinfo($exception->image(), PATHINFO_EXTENSION));
     }
 
-    /* Changing exception doesn't change original */
+    /* Exception and original have different edit codes */
+    function test_exception_edit_codes() {
+        $x = $this->make_event_and_exception();
+        $main_event = $x[0];
+        $exception = $x[1];
 
+        // Because the action is create, user_editcode is unset. Thus is_editcode_valid() will fail.
+        // So don't call it.
+        $this->assertNotEquals($main_event->db_editcode(), $exception->db_editcode());
+    }
+
+    /* Changing exception doesn't change original */
+//    function test_change_exception_not_original() {
+//        $x = $this->make_event_and_exception();
+//        $main_event = $x[0];
+//        $exception = $x[1];
+//
+//        print("Exception's daily args: ");
+//        var_dump($exception->daily_args());
+//
+//        $this->assertEquals($main_event->title(), $exception->title());
+//        $old_title = $main_event->title();
+//        $new_title = str_rot13($old_title);
+//        $exception = $this->update_submission($exception, array('event_title' => $new_title));
+//
+//        $this->assertEquals($main_event->title(), $old_title);
+//        $this->assertEquals($exception->title(),  $new_title);
+//    }
+//
+//    /* Changing original doesn't change exception */
+//    function test_change_original_not_exception() {
+//        $x = $this->make_event_and_exception();
+//        $main_event = $x[0];
+//        $exception = $x[1];
+//
+//        $this->assertEquals($main_event->title(), $exception->title());
+//        $old_title = $main_event->title();
+//        $new_title = str_rot13($old_title);
+//        $main_event = $this->update_submission($main_event, array('event_title' => $new_title));
+//
+//        $this->assertEquals($main_event->title(), $new_title);
+//        $this->assertEquals($exception->title(),  $old_title);
+//    }
+//
     /* get_exceptions() returns all the exceptions we know about */
 
     /* Make a 2nd exception, ensure that everything is still OK */

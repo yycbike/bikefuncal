@@ -24,8 +24,6 @@ class BfcTestCase extends \WPTestCase {
                                       'post_type'   => 'page',
                                         ));
 
-
-        
         // Set values for the options
         update_option('bfc_festival_start_date', '2012-06-02');
         update_option('bfc_festival_end_date', '2012-06-19');
@@ -60,8 +58,6 @@ class BfcTestCase extends \WPTestCase {
         }
         
     }
-    
-
 
     /**
      * Create a valid event submission. It comes with enough default arguments
@@ -79,7 +75,6 @@ class BfcTestCase extends \WPTestCase {
             // in the database that might have that title.
             'event_title' => 'Title ' . uniqid(),
             'event_email' => 'hi@hello.ca',
-
             'event_eventtime' => '19:15:00',
             );
         $submission_args = array_merge($submission_args, $extra_args);
@@ -93,16 +88,22 @@ class BfcTestCase extends \WPTestCase {
         return $submission;
     }
 
-    # Do an 'update' action on $old_submission, changing some of the
-    # values, as specified in $new_query_args.
+    /**
+     * Do an 'update' action on $old_submission, changing some of the
+     * values, as specified in $new_query_args.
+     */
     function update_submission($old_submission, $new_query_args, $new_files_args = array()) {
         $old_event_args = $old_submission->event_args();
         $old_daily_args = $old_submission->daily_args();
+        // @@@ if $old_submission was loaded with load_submission_for_edit(), it won't have
+        // the old daily args. This is causing failures in TestExceptions::test_change_exception_not_original,
+        // and others.
+
 
         $args = array(
             'submission_action' => 'update',
             'submission_event_id' => $old_submission->event_id(),
-            'event_editcode' => $old_submission->editcode(),
+            'event_editcode' => $old_submission->db_editcode(),
         );
     
         # Keep all the old values.
@@ -189,7 +190,7 @@ class BfcTestCase extends \WPTestCase {
         return $imageheight;
     }
 
-    # Make arguments for newsflash and status
+    // Make arguments for newsflash and status
     function make_date_args($dates) {
         $dayinfo = repeatdates($dates);
         $this->assertNotEquals($dayinfo['datestype'], 'error');

@@ -27,6 +27,14 @@ class BfcEventSubmissionForTest extends BfcEventSubmission {
     public function move_uploaded_file($from, $to) {
         return rename($from, $to);
     }
+
+    public function db_editcode() {
+        return $this->db_editcode;
+    }
+
+    public function user_editcode() {
+        return $this->user_editcode;
+    }
 }
 
 ?>
