@@ -22,7 +22,9 @@ class TestSubmissionMissingValues extends BfcTestCase {
         return $results[0][$field];
     }
 
-    /** Ensure that the hideemail flag can be set */
+    /**
+     * Ensure that the hideemail flag can be set
+     */
     function test_hideemail_set() {
         $event = $this->make_valid_submission(array('event_hideemail' => 'Y'));
         $this->assertEquals('1', $this->get_value_from_datbase($event->event_id(), 'hideemail'));

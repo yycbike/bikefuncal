@@ -265,20 +265,14 @@ class BfcEventSubmission {
 
             // Process arguments for calevent
             foreach ($this->calevent_field_info as $field_name => $info) {
-                // These come through the file upload mechanism, so don't
-                // let them come in through the normal query process.
-                if ($field_name == 'image' ||
-                    $field_name == 'imagheight' ||
-                    $field_name == 'imagewidth') {
+                // These fields are generated internally, not passed in. Skip them.
+                if ($field_name == 'id'         || $field_name == 'wordpress_id' ||
+                    $field_name == 'editcode'   || $field_name == 'image'        ||
+                    $field_name == 'imagheight' || $field_name == 'imagewidth'   ||
+                    $field_name == 'datestype') {
 
                     continue;
                 }
-                // Editcode was set previously...
-                if ($field_name == 'editcode') {
-                    continue;
-                }
-
-                // @@@ Should we also skip over id, wordpress_id, and other things?
 
                 $query_field_name = 'event_' . $field_name;
 
