@@ -766,6 +766,23 @@ function get_edit_url_for_wordpress_id($wordpress_id) {
 }
 
 /**
+ * Look up an event's editcode from the datbase.
+ */
+function get_editcode_for_event($id) {
+    global $wpdb;
+    global $calevent_table_name;
+    $sql = $wpdb->prepare("SELECT editcode FROM ${calevent_table_name} " .
+                          "WHERE id=%d",
+                          $id);
+
+    $records = $wpdb->get_results($sql, ARRAY_A);
+    if ($wpdb->num_rows != 1) {
+        die();
+    }
+    return $records[0]['editcode'];
+}
+
+/**
  * Get a URL for editing an event, based upon the id for that
  * event.
  */
@@ -780,17 +797,7 @@ function get_edit_url_for_event($id, $editcode = null) {
     
     // No editcode provided; look it up in the database
     if ($editcode === null) {
-        global $wpdb;
-        global $calevent_table_name;
-        $sql = $wpdb->prepare("SELECT editcode FROM ${calevent_table_name} " .
-                              "WHERE id=%d",
-                              $id);
-
-        $records = $wpdb->get_results($sql, ARRAY_A);
-        if ($wpdb->num_rows != 1) {
-            die();
-        }
-        $editcode = $records[0]['editcode'];
+        $editcode = get_editcode_for_event($id);
     }
 
     return $base_url .

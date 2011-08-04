@@ -8,6 +8,11 @@ require_once('test-case.php');
  * allow us to fake handing file uploads.
  */
 class BfcEventSubmissionForTest extends BfcEventSubmission {
+    // Upgrade from protected to public
+    public function is_editcode_valid() {
+        return parent::is_editcode_valid();
+    }
+
     public function event_args_changes() {
         return $this->event_args_changes;
     }

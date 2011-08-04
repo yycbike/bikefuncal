@@ -7,7 +7,7 @@ namespace bike_fun_cal;
 function print_event_submission_result($event_submission) {
 
 $edit_url = get_edit_url_for_event($event_submission->event_id(),
-                                       $event_submission->editcode());
+                                   $event_submission->editcode());
 
 $permalink_url = get_permalink($event_submission->wordpress_id());                                       
 ?>

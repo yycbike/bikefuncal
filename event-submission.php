@@ -102,7 +102,7 @@ class BfcEventSubmission {
         "emailforum"      => array("type" => "%d", "missing_val" => "N"),
         "printemail"      => array("type" => "%d", "missing_val" => "N"),
         "phone"           => array("type" => "%s", "missing_val" => ""),
-        "hidephone"       => array("type" => "%d", "missing_val" => ""),
+        "hidephone"       => array("type" => "%d", "missing_val" => "N"),
         "printphone"      => array("type" => "%d", "missing_val" => "N"),
         "weburl"          => array("type" => "%s", "missing_val" => ""),
         "webname"         => array("type" => "%s", "missing_val" => ""),
@@ -120,6 +120,8 @@ class BfcEventSubmission {
         # so don't set a missing_val for it.
         "datestype"       => array("type" => "%s"),
         "eventtime"       => array("type" => "%s", "missing_val" => ""),
+        // @@@ Is there really a case where eventduration can be missing?
+        // does it need a missing_val?
         "eventduration"   => array("type" => "%d", "missing_val" => 0),
         "timedetails"     => array("type" => "%s", "missing_val" => ""),
         "locname"         => array("type" => "%s", "missing_val" => ""),
@@ -165,6 +167,8 @@ class BfcEventSubmission {
             $property_name = $matches[1];
             return isset($this->event_args[$property_name]);
         }
+
+        // @@@ Should throw some kind of error here...
     }
 
     # Populate the data fields for this event, based on the query
@@ -213,58 +217,101 @@ class BfcEventSubmission {
         $this->suppress_email = isset($query_vars['submission_suppress_email']);
         $this->changed_by_admin = isset($query_vars['submission_changed_by_admin']);
         
-        # If we're editing an existing object, grab it from the db.
-        # Do this before we load the rest of the query vars, so that
-        # user-specified values can override the database.
+        // If this event already exists, grab it from the database
         if ($this->action == "edit" || $this->action == "update") {
+            // For edit, need to load everything to present it back to the user
+            // For update, need to know the old values to create the change log
             $this->load_from_db();
         }
         else if ($this->action == "delete") {
+            // Only load the db_editcode and a few other things.
+            // @@@ We might not need this anymore -- who cares how much we load
+            // when we're deleting?
             $this->load_modification_fields_from_db();
         }
-        
-        # Process arguments for caldaily
-        foreach ($query_vars as $query_name => $query_value) {
-            $regex_matches = array();
-            if (preg_match('/event_(newsflash|status)(.*)/',
-                $query_name, $regex_matches)) {
 
-                # This is an argument for the caldaily table.
-                # File it separately from the other arguments.
-                $type        = $regex_matches[1];
-                $date_suffix = $regex_matches[2];
-
-                $this->daily_args[$date_suffix][$type] = stripslashes($query_value);
+        if ($this->action == 'edit' || $this->action == 'update' || $this->action == 'delete') {
+            if (!isset($query_vars['event_editcode'])) {
+                die("Missing editcode");
             }
+
+            $this->user_editcode = $query_vars['event_editcode'];
         }
-        
-        # Process arguments for calevent
-        foreach ($this->calevent_field_info as $field_name => $info) {
-            # These come through the file upload mechanism, so don't
-            # let them come in through the normal query process.
-            if ($field_name == 'image' ||
-                $field_name == 'imagheight' ||
-                $field_name == 'imagewidth') {
 
-                continue;
+        // Pull in new values for the fields. 
+        if ($this->action == 'create' || $this->action == 'update') {
+            // Process arguments for caldaily
+            foreach ($query_vars as $query_name => $query_value) {
+                $regex_matches = array();
+                if (preg_match('/event_(newsflash|status)(.*)/',
+                    $query_name, $regex_matches)) {
+
+                    // This is an argument for the caldaily table.
+                    // File it separately from the other arguments.
+                    $type        = $regex_matches[1];
+                    $date_suffix = $regex_matches[2];
+
+                    $this->daily_args[$date_suffix][$type] = stripslashes($query_value);
+                }
+            }
+            
+            // Fill in missing newsflashes
+            foreach ($this->daily_args as $date_suffix => $temp) {
+                if (!isset($this->daily_args[$date_suffix]['newsflash'])) {
+                    $this->daily_args[$date_suffix]['newsflash'] =
+                        $this->caldaily_field_info['newsflash']['missing_val'];
+                }
             }
 
-            $query_field_name = 'event_' . $field_name;
+            // Process arguments for calevent
+            foreach ($this->calevent_field_info as $field_name => $info) {
+                // These come through the file upload mechanism, so don't
+                // let them come in through the normal query process.
+                if ($field_name == 'image' ||
+                    $field_name == 'imagheight' ||
+                    $field_name == 'imagewidth') {
 
-            if (isset($query_vars[$query_field_name])) {
+                    continue;
+                }
+                // Editcode was set previously...
                 if ($field_name == 'editcode') {
-                    $this->user_editcode = $query_vars[$query_field_name];
+                    continue;
+                }
+
+                // @@@ Should we also skip over id, wordpress_id, and other things?
+
+                $query_field_name = 'event_' . $field_name;
+
+                $new_value = NULL;
+                if (isset($query_vars[$query_field_name])) {
+                    $new_value = stripslashes($query_vars[$query_field_name]);
+                }
+                else if (isset($this->calevent_field_info[$field_name]['missing_val'])) {
+                    // Value is missing from $wp_query->query_vars[]. Fill it in.
+                    $new_value = $this->calevent_field_info[$field_name]['missing_val'];
                 }
                 else {
-                    $new_value = stripslashes($query_vars[$query_field_name]);
+                    // Leave it unset & move on.
+                    //
+                    // If it doesn't have a missing_val, it's something (like id) that the
+                    // code will generate, and shouldn't be passed in.
+                }
+
+                if (isset($new_value)) {
                     $new_value = $this->convert_data_type($field_name, $new_value);
 
-                    if (isset($this->event_args[$field_name]) &&
-                        $new_value !== $this->event_args[$field_name]) {
+                    if ($this->action == 'update') {
+                        // @@@ Should we die if event_args[$field_name] is unset?
+                        // If this is an update, then we loaded from the datbase and
+                        // thus, should have values for everything.
                         
-                        $this->event_args_changes[] = $field_name;
+                        if (isset($this->event_args[$field_name]) &&
+                            $new_value !== $this->event_args[$field_name]) {
+
+                            $this->event_args_changes[] = $field_name;
+                        }
                     }
-                    
+
                     $this->event_args[$field_name] = $new_value;
                 }
             }
@@ -277,7 +324,6 @@ class BfcEventSubmission {
     
     public function do_action() {
         if ($this->action == "update" || $this->action == "create") {
-            $this->fill_in_missing_values();
             $this->check_validity();
             if (!$this->is_valid()) {
                 // Can't create or update because the event wasn't valid.
@@ -413,35 +459,6 @@ class BfcEventSubmission {
         $this->event_args['audience'] = 'G';
     }
 
-    # Create values for fields that are missing because the web browser
-    # didn't send them over, or because WordPress isn't reporting them
-    # in the query.
-    protected function fill_in_missing_values() {
-        if ($this->action != 'update' && $this->action != 'create') {
-            die('Filling in missing values, but not updating or creating');
-        }
-
-        # Do missing values for event_args
-        foreach ($this->calevent_field_info as $field_name => $field_info) {
-            if (isset($field_info['missing_val']) &&
-                !isset($this->event_args[$field_name]) ) {
-
-                $this->event_args[$field_name] = $field_info['missing_val'];
-            }
-        }
-
-        # Do missing values for daily_args
-        foreach ($this->daily_args as $date_suffix => &$day) {
-            foreach ($this->caldaily_field_info as $field_name => $field_info) {
-                if (isset($field_info['missing_val']) &&
-                    !isset($day[$field_name]) ) {
-
-                    $day[$field_name] = $field_info['missing_val'];
-                }
-            }
-        }
-    }
-
     # Some of the data we get submitted from the web form needs to be converted
     # before storing it into the database.
     protected function convert_data_type($field_name, $value) {
@@ -457,7 +474,15 @@ class BfcEventSubmission {
             case 'printcontact':
                 # When we pull these out of the database, we get strings.
                 # So use strings here, to match the data types.
-                return ($value == 'Y') ? '1' : '0';
+                if ($value === 'Y') {
+                    return '1';
+                }
+                else if ($value === 'N') {
+                    return '0';
+                }
+                else {
+                    throw new \Exception("Bad value for $field_name: $value");
+                }
 
             default:
                 return $value;
@@ -896,7 +921,9 @@ class BfcEventSubmission {
         $to = $this->event_args['email'];
         $headers = "From: " . get_option('bfc_calendar_email') . "\r\n" .
                    "CC: "   . get_option('bfc_calendar_email');
-        mail($to, $subject, $body, $headers);
+        // Commented out because it was causing errors when Evan ran unit tests
+        // without sendmail installed.
+        //mail($to, $subject, $body, $headers);
     }
     
     protected function is_editcode_valid() {
@@ -910,7 +937,7 @@ class BfcEventSubmission {
             }
 
             if (!isset($this->user_editcode) ||
-                $this->user_editcode != $this->db_editcode) {
+                $this->user_editcode !== $this->db_editcode) {
 
                 return false;
             }

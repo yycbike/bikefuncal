@@ -4,7 +4,7 @@ namespace bike_fun_cal;
 /**
  * Generic base class for other tests.
  */
-class BfcTestCase extends \WPTestCase {
+abstract class BfcTestCase extends \WPTestCase {
     function setUp() {
         parent::setUp();
         bfc_install();
@@ -60,6 +60,49 @@ class BfcTestCase extends \WPTestCase {
     }
 
     /**
+     * Fiddle with the arguments, to ensure they're passed to
+     * BfcEventSubmission->populate_from_query() in the same way
+     * that WordPress and the browser do.
+     */
+    function simulate_query_vars(&$args) {
+        // Empty values are removed from $wp_query->query_vars[], so simulate
+        // that removal for the unit tests.
+        foreach (array_keys($args) as $arg_name) {
+            if ($args[$arg_name] === null ||
+                $args[$arg_name] === '') {
+
+                unset($args[$arg_name]);
+            }
+        }
+
+        // Checkboxes are not reported at all if the value is false.
+        $checkbox_arg_names = array('event_hideemail', 'event_hidecontact', 'event_hidephone',
+                                    'submission_suppress_email', 'event_emailforum', 'event_printemail',
+                                    'event_printphone', 'event_printweburl', 'event_printcontact');
+        foreach ($checkbox_arg_names as $arg_name) {
+            if (isset($args[$arg_name])) {
+                // the value will be Y/N if this is coming in from other test cases
+                // (passing what the browser would pass). It will be 1/0 (as strings) if
+                // it's being copied over from the previous BfcEventSubmission object,
+                // because of BfcEventSubmission::convert_data_type().
+                if ($args[$arg_name] === 'N' || $args[$arg_name] === '0') {
+                    unset($args[$arg_name]);
+                }
+                else if ($args[$arg_name] === '1') {
+                    $args[$arg_name] = 'Y';
+                }
+                else if ($args[$arg_name] === 'Y') {
+                    // Let it go through
+                }
+                else {
+//                    die("Bad value for $arg_name: $args[$arg_name]");
+                    throw new Exception("Bad vlue for $arg_name: '$args[$arg_name]'");
+                }
+            }
+        }
+    }
+
+    /**
      * Create a valid event submission. It comes with enough default arguments
      * to pass the validator. You can pass in extra arguments to supplement or
      * override the defaults. The arguments simulate what gets passed in
@@ -82,6 +125,8 @@ class BfcTestCase extends \WPTestCase {
             $submission_args,
             $this->make_date_args($submission_args['event_dates']));
 
+        $this->simulate_query_vars($submission_args);
+
         $submission->populate_from_query($submission_args, $files_args);
         $submission->do_action();
 
@@ -103,8 +148,8 @@ class BfcTestCase extends \WPTestCase {
         // Unlike daily_args [see below], $old_submission->event_args() is always instantiated.
         $old_event_args = $old_submission->event_args();
         foreach ($old_event_args as $field_name => $value) {
-            # The field names we got from $old_submission need to have
-            # 'event_' prepended.
+            // The field names we got from $old_submission need to have
+            // 'event_' prepended.
             $query_field_name = 'event_' . $field_name;
             $args[$query_field_name] = $value;
         }
@@ -120,10 +165,12 @@ class BfcTestCase extends \WPTestCase {
             $args['event_status'    . $day['suffix']] = $day['status'];
         }
 
-        # Overwrite some of the old values with new values.
+        // Overwrite some of the old values with new values.
         foreach ($new_query_args as $query_field_name => $value) {
             $args[$query_field_name] = $value;
         }
+
+        $this->simulate_query_vars($args);
 
         $new_submission = new BfcEventSubmissionForTest();
         $new_submission->populate_from_query($args, $new_files_args);
@@ -214,21 +261,12 @@ class BfcTestCase extends \WPTestCase {
         $submission_args = array(
             'submission_action' => 'edit',
             'submission_event_id' => $event_id,
+            'event_editcode' => get_editcode_for_event($event_id),
         );
         $submission->populate_from_query($submission_args, array());
         $submission->do_action();
 
         return $submission;
-    }
-
-    /********************************************************************************
-     *
-     * Test cases that test the functions provided in this file.
-     */
-    function test_valid_submission_is_valid() {
-        $valid_submission = $this->make_valid_submission();
-        $this->assertTrue($valid_submission->is_valid());
-        $this->assertTrue($valid_submission->has_event_id());
     }
 }    
     

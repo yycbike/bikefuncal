@@ -17,6 +17,23 @@ class TestSubmissionChangeLog extends BfcTestCase {
 
         $this->assertEquals(1, count($changes));
         $this->assertContains('title', $changes);
+
+        return $event2;
+    }
+
+    /**
+     * @depends test_change_title
+     *
+     * Upon re-submit, the change log shouldn't contain an
+     * entry for fields that didn't change.
+     */
+    function test_dont_change_title($event) {
+        // update_submission() will pass the old title to
+        // BfcEventSubmission->populate_from_query().
+        $event = $this->update_submission($event, array());
+        $changes = $event->event_args_changes();
+
+        $this->assertEquals(0, count($changes));
     }
 
     function test_change_dates() {
@@ -123,6 +140,45 @@ class TestSubmissionChangeLog extends BfcTestCase {
         $this->assertEquals('As Scheduled', $daychanges['Jun4']['status']);
     }
 
+    /**
+     * Test setting the hideemail flag. Test it because clearing it relies on default values.
+     */
+    function test_hideemail_set() {
+        $event1 = $this->make_valid_submission();
+        $event2 = $this->update_submission($event1, array('event_hideemail' => 'Y'));
+        $changes = $event2->event_args_changes();
+
+        $this->assertEquals(1, count($changes));
+        $this->assertContains('hideemail', $changes);
+        $this->assertEquals('1', $event2->hideemail());
+        
+        return $event2;
+    }
+
+    /**
+     * @depends test_hideemail_set
+     */
+    function test_hideemail_clear($event2) {
+        $event3 = $this->update_submission($event2, array('event_hideemail' => 'N'));
+        $changes = $event3->event_args_changes();
+
+        $this->assertEquals(1, count($changes));
+        $this->assertContains('hideemail', $changes);
+        $this->assertEquals('0', $event3->hideemail());
+
+        return $event3;
+    }
+
+    /**
+     * @depends test_hideemail_clear
+     */
+    function test_hideemail_no_change($event) {
+        $event = $this->update_submission($event, array());
+        $changes = $event->event_args_changes();
+
+        $this->assertEquals(0, count($changes));
+    }
+    
     // @@@ Make a test of new exceptions
 
     // @@@ Make tests for changing the image
