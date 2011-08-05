@@ -458,15 +458,14 @@ function fullentry($record, $for, $include_images)
     $email = mangleemail($email);
     $phone = $record["hidephone"] ? "" : htmlspecialchars($record["phone"]);
     $contact = $record["hidecontact"] ? "" : htmlspecialchars($record["contact"]);
-    $weburl = $record["weburl"];
-    $webname = $record["webname"];
+    $weburl = esc_url($record["weburl"]);
+    $webname = htmlspecialchars($record["webname"]);
     if ($webname == "" || $for == 'printer') {
         // If they left out the name for their web site, or if
         // this is being shown for printing, show the URL insetad of the
         // site name.
 	$webname = $weburl;
     }
-    $webname = htmlspecialchars($webname);
 
     // get the image info
     $image = "";

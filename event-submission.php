@@ -945,7 +945,7 @@ class BfcEventSubmission {
             $this->errors[] = "Date is missing";
         }
         else {
-            # Check the date formatting. First, parse the dates.
+            // Check the date formatting. First, parse the dates.
             $this->dayinfo = repeatdates($this->event_args['dates']);
             
             if ($this->dayinfo['datestype'] === 'error') {
@@ -974,7 +974,23 @@ class BfcEventSubmission {
             $this->errors[] = "Title is missing";
         }
 
-        # Validate the edit code
+        if ($this->event_args['weburl'] !== '') {
+            $scheme = parse_url($this->event_args['weburl'], PHP_URL_SCHEME);
+            if ($scheme === NULL) {
+                // Add http:// to the front of a bare URL.
+                $this->event_args['weburl'] = 'http://' . $this->event_args['weburl'];
+                $scheme = 'http';
+            }
+
+            if ($scheme !== 'http' && $scheme !== 'https') {
+                $this->errors[] = 'Web site address: Only http: and https: are allowed';
+            }
+            else if (filter_var($this->event_args['weburl'], FILTER_VALIDATE_URL) === false) {
+                $this->errors[] = 'Web site address is invalid';
+            }
+        }
+
+        // Validate the edit code
         if (!$this->is_editcode_valid()) {
             $this->errors[] = "You don't have authorization to edit this event";
         }
@@ -1387,6 +1403,9 @@ class BfcEventSubmission {
             'hidephone' => function($value)  { return $value ? 'Yes' : 'No'; },
             'hideemail' => function($value)  { return $value ? 'Yes' : 'No'; },
             'hidecontact' => function($value)  { return $value ? 'Yes' : 'No'; },
+
+            // Make URL suitable for showing in the browser
+            'weburl'      => function($value)  { return esc_url($value); },
         );
 
         foreach ($this->event_args_changes as $fieldname) {
