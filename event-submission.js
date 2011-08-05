@@ -93,7 +93,7 @@ function display_dates(xmlDom)
     if (dates.length == 1 &&
              dates[0].getElementsByTagName("status")[0].firstChild.nodeValue == "Added") {
         suffix = dates[0].getElementsByTagName("suffix")[0].firstChild.nodeValue;
-        mydatelist.innerHTML = "<input type=hidden name=status" + suffix + " value=Added>";
+        mydatelist.innerHTML = "<input type=hidden name=event_status" + suffix + " value=Added>";
         mydatelist.style.display = "none";
     }
     else {
@@ -146,7 +146,7 @@ function display_dates(xmlDom)
                 var input = jQuery("<input />");
                 input.attr({
                     type: 'hidden',
-                    name: 'status' + suffix,
+                    name: 'event_status' + suffix,
                     value: 'Exception',
                 });
                 statuscell.append(input);

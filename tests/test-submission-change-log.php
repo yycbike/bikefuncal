@@ -107,6 +107,20 @@ class TestSubmissionChangeLog extends BfcTestCase {
         $this->assertEquals('', $daychanges['Jun3']['newsflash']);
     }
 
+    /**
+     * Test adding a newsflash to a single-day event (instead of a multi-day event)
+     */
+    function test_add_newsflash_one_day() {
+        $event = $this->make_valid_submission(array('event_dates' => 'October 8'));
+        $event = $this->update_submission($event, array('event_newsflashOct8' => 'Haz newz'));
+
+        $daychanges = $event->daily_args_changes();
+
+        $this->assertEquals(1, count($daychanges));
+        $this->assertEquals(1, count($daychanges['Oct8']));
+        $this->assertEquals('Haz newz',  $daychanges['Oct8']['newsflash']);
+    }
+    
     function test_status_cancel() {
         $event1 = $this->make_valid_submission(array(
             'event_dates' => 'June 3-5',
