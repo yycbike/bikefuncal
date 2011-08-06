@@ -266,6 +266,19 @@ add_action('admin_menu', function() {
 });
 
 function options_admin_page() {
+    // Attach javascript
+    add_action('admin_footer', function() {
+            // Register the google maps API.
+            wp_register_script('google-maps', 'http://maps.googleapis.com/maps/api/js?sensor=false', null);
+
+            wp_register_script('bfc-options',
+                               plugins_url('bikefuncal/options.js'),
+                               array('google-maps'));
+
+            wp_print_scripts('bfc-options');
+        });
+
+
     ?>
     <div class="wrap">
         <h2>Bike Fun Calendar Options</h2>
@@ -292,21 +305,40 @@ function options_admin_page() {
             </p>
 
             <h3>Location</h3>
-            <p>Where is the bike fun happening?</p>
+            <p>
+            Where is the bike fun happening? Entering this info helps locate addresses. For example, if a user enters an
+            address of "750 Hornby" we want the Google Map to go to 750 Hornby in Vancouver, and not 750 Hornby in Yakima,
+            WA or Bonner, ID, or the other cities with Hornby streets.
+            </p>
 
             <p>
             Your City:
-            <input type='text' name='bfc_city' value='<?php echo get_option('bfc_city'); ?>'>
-        <em>e.g., Vancouver</em>
+            <input type='text' id='bfc_city' name='bfc_city' value='<?php echo get_option('bfc_city'); ?>'>
+            <em>e.g., Vancouver</em>
             </p>
 
             <p>
             Your Province (or State):
-            <input type='text' name='bfc_province' value='<?php echo get_option('bfc_province'); ?>'>
-        <em>e.g., BC</em>
+            <input type='text' id='bfc_province' name='bfc_province' value='<?php echo get_option('bfc_province'); ?>'>
+            <em>e.g., BC. Leave this blank if your country doesn't have provinces.</em>
             </p>
 
-            <h3>Organization</h3>
+            <p>
+            Your Country:
+            <input type='text' id='bfc_country' name='bfc_country' value='<?php echo get_option('bfc_country'); ?>'>
+            <em>e.g., Canada</em>
+
+            <!-- These will get filled in by the AJAX from google that looks up the lat & long based on the location -->
+            <input type='hidden' id='bfc_latitude' name='bfc_latitude' value='<?php echo get_option('bfc_latitude'); ?>'>
+            <input type='hidden' id='bfc_longitude' name='bfc_longitude' value='<?php echo get_option('bfc_longitude'); ?>'>
+
+            <!-- Report Google's AJAX results to the user -->
+            <div id='bfc_latlong_results'>
+            </div>
+
+            <p>
+
+    <h3>Organization</h3>
             <p>Information about the people putting on the festival.</p>
         
             <p>
@@ -401,6 +433,9 @@ add_action('admin_init', function() {
     register_setting('bikefuncal-options', 'bfc_drinking_age');
     register_setting('bikefuncal-options', 'bfc_city');
     register_setting('bikefuncal-options', 'bfc_province');
+    register_setting('bikefuncal-options', 'bfc_country');
+    register_setting('bikefuncal-options', 'bfc_latitude');
+    register_setting('bikefuncal-options', 'bfc_longitude');
     register_setting('bikefuncal-options', 'bfc_calendar_email');
 });
 

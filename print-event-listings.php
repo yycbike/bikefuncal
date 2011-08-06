@@ -12,47 +12,33 @@ define("LEFTHEIGHT", 125);
 // Preload all days if no alldays cookie is set and number of events is under this threshold
 define("PRELOAD", 100);		
 
-// Return an address that google maps can more reliably parse (and displays with some consistency)
-function addrparseprep($address)
-{
-    // if $address ends in " BC" or ",BC" or "+BC" (which includes ending in ", BC")
-      // parse as is
-    // if $address ends in "Vancouver" and there's a "," anywhere in $address
-      // add ", BC" to end then parse
-    // if $address ends in "Vancouver" 
-      // add " BC" to end then parse
-    // if there's a "," anywhere in $address
-      // add ", Vancouver, BC" to end then parse
-    // otherwise 
-      // add " Vancouver BC" to end then parse
-
-    $city = get_option('bfc_city');
-    $province = get_option('bfc_province');
-
-    if ($city === false || $province === false) {
-        return $address;
-    }
-    
-    if ( strtoupper(substr($address,strlen($address)-strlen($province)-1)) == " ".strtoupper($province) 
-      || strtoupper(substr($address,strlen($address)-strlen($province)-1)) == ",".strtoupper($province) 
-      || strtoupper(substr($address,strlen($address)-strlen($province)-1)) == "+".strtoupper($province) ) {
-	    $address = trim($address);
-    }
-    elseif ( strtoupper(substr($address,strlen($address)-strlen($city))) == strtoupper($city) 
-             || stristr($address,",") ) {
-	    $address = trim($address).', '.strtoupper($province);
-    }
-    elseif ( strtoupper(substr($address,strlen($address)-strlen($city))) == strtoupper($city) ) {
-	    $address = trim($address).' '.strtoupper($province);
-    }
-    elseif ( stristr($address,",") ) {
-	    $address = trim($address).', '.$city.', '.strtoupper($province);
+/**
+ * Create a google maps link to the specified address.
+ *
+ * Reference: http://mapki.com/wiki/Google_Map_Parameters 
+ */
+function address_link($address) {
+    // Use country-specific google maps, if appropriate
+    if (strtolower(get_option('bfc_country')) == 'canada') {
+        $site = 'http://maps.google.ca/';
     }
     else {
-	    $address = trim($address).' '.$city.' '.strtoupper($province);
+        $site = 'http://maps.google.com/';
     }
-    
-    return $address;
+
+    // Start building arguments to pass to google maps
+    $query_args = array('q' => $address);
+
+    // Get the lat & long 
+    $latitude = get_option('bfc_latitude');
+    $longitude = get_option('bfc_longitude');
+    if (strlen($latitude) > 0 && strlen($longitude) > 0) {
+        // sll = search lat/long. Tells Google where to center the
+        // search coordinates.
+        $query_args['sll'] = $latitude . ',' . $longitude;
+    }
+
+    return $site . '?' . http_build_query($query_args);
 }
 
 // Return the URL for bus/train trip planner, or NULL if unreachable
@@ -566,8 +552,7 @@ function fullentry($record, $for, $include_images)
     print "<div class=\"$class\">";
 
     // Street address
-    $address_url = "http://maps.google.com/?q=" .
-        urlencode(addrparseprep($record["address"]));
+    $address_url = address_link($record['address']);
     print "<a href=\"$address_url\" target=\"_BLANK\">".$address.'</a>';
     
     // Transit directions
