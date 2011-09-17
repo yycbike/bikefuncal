@@ -1,22 +1,22 @@
 <?php
 namespace bike_fun_cal;
 
-# Functions related to creating & updating calendar events.
-#
-# This is a loose port of calform.php & calsubmit.php from the old
-# site.
+// Functions related to creating & updating calendar events.
+//
+// This is a loose port of calform.php & calsubmit.php from the old
+// site.
 
 class BfcEventSubmission {
-    # Arguments for events (to pass on to the database)
+    // Arguments for events (to pass on to the database)
     protected $event_args = Array();
 
-    # Arguments for caldaily (to pass on to the database)
+    // Arguments for caldaily (to pass on to the database)
     protected $daily_args = Array();
 
-    # Track changes
-    #
-    # Contents: A list of field names that changed.
-    # e.g., Array('title', 'tinytitle')
+    // Track changes
+    //
+    // Contents: A list of field names that changed.
+    // e.g., Array('title', 'tinytitle')
     protected $event_args_changes = Array();
     // Contents: Suffix -> value that changed.
     // Ex:
@@ -26,28 +26,28 @@ class BfcEventSubmission {
     // )
     protected $daily_args_changes = Array();
 
-    # A locally-cached copy of the $_FILES variable.
-    # Create our own copy because this object isn't always created
-    # in a POST request.
+    // A locally-cached copy of the $_FILES variable.
+    // Create our own copy because this object isn't always created
+    // in a POST request.
     protected $post_files;
 
-    # DB id of the event. Unset when action is new.
+    // DB id of the event. Unset when action is new.
     protected $event_id;
     
-    # new    = show blank form for creating a new object
-    # create = commit the results from a new 
-    # edit   = show filled-in form for editing the event
-    # update = commit the results from an edit
-    # delete = delete the event (with no confirmation)
+    // new    = show blank form for creating a new object
+    // create = commit the results from a new 
+    // edit   = show filled-in form for editing the event
+    // update = commit the results from an edit
+    // delete = delete the event (with no confirmation)
     protected $action;
 
-    # Action to take on the image. This is only used
-    # when $action is create or update.
-    # 
-    # keep   = do nothing
-    # create = create a new image for this event
-    # change = change from an old image to a new image
-    # delete = delete the image
+    // Action to take on the image. This is only used
+    // when $action is create or update.
+    // 
+    // keep   = do nothing
+    // create = create a new image for this event
+    // change = change from an old image to a new image
+    // delete = delete the image
     protected $image_action;
 
     // A list of form validation errors (in human-readable format)
@@ -57,14 +57,14 @@ class BfcEventSubmission {
     // instance(s) of an event.
     protected $dayinfo;
 
-    # About editcodes
-    #
-    # In order to modify an existing event, the user needs to
-    # provide both an ID and an editcode. This prvents people from
-    # editing someone else's event through URL hacking.
-    #
-    # An editcode is required for these actions: edit, update,
-    # and delete.
+    // About editcodes
+    //
+    // In order to modify an existing event, the user needs to
+    // provide both an ID and an editcode. This prvents people from
+    // editing someone else's event through URL hacking.
+    //
+    // An editcode is required for these actions: edit, update,
+    // and delete.
     protected $user_editcode;
     protected $db_editcode;
 
@@ -73,27 +73,27 @@ class BfcEventSubmission {
     protected $suppress_email;
     protected $changed_by_admin;
     
-    # Information about the database fields we'll be populating.
-    # Keys are names of the fields.
-    #
-    # - type: %s or %d, used when generating the SQL statements to
-    #   populate the database.
-    #
-    # - missing_val: A value to use if the field is missing from
-    #   $wp_query. These are not default values. Rather, this overcomes
-    #   these limitations in form processing: (1) WordPress doesn't
-    #   populate $wp_query->query_vars[] for values that are passed in
-    #   from the form, but blank. (2) When a checkbox is unchecked, the
-    #   web browser doesn't even send over form data. We have to notice
-    #   it's unchecked by the lack of a value. 
-    #
+    // Information about the database fields we'll be populating.
+    // Keys are names of the fields.
+    //
+    // - type: %s or %d, used when generating the SQL statements to
+    //   populate the database.
+    //
+    // - missing_val: A value to use if the field is missing from
+    //   $wp_query. These are not default values. Rather, this overcomes
+    //   these limitations in form processing: (1) WordPress doesn't
+    //   populate $wp_query->query_vars[] for values that are passed in
+    //   from the form, but blank. (2) When a checkbox is unchecked, the
+    //   web browser doesn't even send over form data. We have to notice
+    //   it's unchecked by the lack of a value. 
+    //
     protected $calevent_field_info = Array(
         "id"              => array("type" => "%d"),
-        # editcode is a special case, it's generated
-        # internally upon create.
+        // editcode is a special case, it's generated
+        // internally upon create.
         "editcode"        => array("type" => "%s"),
 
-        # wordpress_id is generated upon create
+        // wordpress_id is generated upon create
         "wordpress_id"    => array("type" => "%d"),
         
         "name"            => array("type" => "%s", "missing_val" => ""),
@@ -116,8 +116,8 @@ class BfcEventSubmission {
         "descr"           => array("type" => "%s", "missing_val" => ""),
         "printdescr"      => array("type" => "%s", "missing_val" => ""),
         "dates"           => array("type" => "%s", "missing_val" => ""),
-        # datestype is generated by the code, not input from the form,
-        # so don't set a missing_val for it.
+        // datestype is generated by the code, not input from the form,
+        // so don't set a missing_val for it.
         "datestype"       => array("type" => "%s"),
         "eventtime"       => array("type" => "%s", "missing_val" => ""),
         // @@@ Is there really a case where eventduration can be missing?
@@ -126,18 +126,18 @@ class BfcEventSubmission {
         "timedetails"     => array("type" => "%s", "missing_val" => ""),
         "locname"         => array("type" => "%s", "missing_val" => ""),
         "address"         => array("type" => "%s", "missing_val" => ""),
-        # Unlike other booleans, addressverified has type char(1)
+        // Unlike other booleans, addressverified has type char(1)
         "addressverified" => array("type" => "%s", "missing_val" => "N"),
         "locdetails"      => array("type" => "%s", "missing_val" => ""),
 
-        # No missing_vals for image fields, because they come through the
-        # file upload process.
+        // No missing_vals for image fields, because they come through the
+        // file upload process.
         "image"           => array("type" => "%s"),
         "imagewidth"      => array("type" => "%d"),
         "imageheight"     => array("type" => "%d"),
 
-        # Evan isn't sure yet what the right missing_val is for review,
-        # so leave it alone for now.
+        // Evan isn't sure yet what the right missing_val is for review,
+        // so leave it alone for now.
         "review"          => array("type" => "%s"),
         );
 
@@ -153,10 +153,10 @@ class BfcEventSubmission {
 
     }
 
-    # Provide getter methods for the event properties.
-    # E.g., $event->title() returns the title, and
-    # $event->has_wordpress_id reports if wordpress_id is set.
-    # 
+    // Provide getter methods for the event properties.
+    // E.g., $event->title() returns the title, and
+    // $event->has_wordpress_id reports if wordpress_id is set.
+    // 
     public function __call($name, $arguments) {
         $matches = array();
 
@@ -171,12 +171,12 @@ class BfcEventSubmission {
         // @@@ Should throw some kind of error here...
     }
 
-    # Populate the data fields for this event, based on the query
-    # parameters passed in.
-    #
-    # The make_exception() method initializes the same fields as
-    # this method. If you make changes here, you may have to change
-    # make_exception(), too.
+    // Populate the data fields for this event, based on the query
+    // parameters passed in.
+    //
+    // The make_exception() method initializes the same fields as
+    // this method. If you make changes here, you may have to change
+    // make_exception(), too.
     public function populate_from_query($query_vars, $post_files) {
         $this->post_files = $post_files;
         
@@ -188,24 +188,24 @@ class BfcEventSubmission {
             $this->action = $query_vars['submission_action'];
         }
 
-        # If we haven't set an action, default to new.
+        // If we haven't set an action, default to new.
         if (!isset($this->action)) {
             $this->action = 'new';
         }
         
-        # Choose an image action to take
+        // Choose an image action to take
         if (isset($query_vars['submission_image_action'])) {
             $this->image_action = $query_vars['submission_image_action'];
         }
         else if (isset($this->post_files['event_image']['error']) &&
                  $this->post_files['event_image']['error'] === UPLOAD_ERR_OK) {
-            # This happens the first time an image is attached.
-            # (submission_image_action is only passed in when editing an
-            # event with an existing image.)
+            // This happens the first time an image is attached.
+            // (submission_image_action is only passed in when editing an
+            // event with an existing image.)
             $this->image_action = 'create';
         }
         else {
-            # keep does nothing (and is safe to use if there's no image)
+            // keep does nothing (and is safe to use if there's no image)
             $this->image_action = 'keep'; 
         }
 
@@ -344,7 +344,7 @@ class BfcEventSubmission {
             }
         }
         else if ($this->action == 'new' || $this->action == 'edit') {
-            # No actions to do; these just show a form.
+            // No actions to do; these just show a form.
         }
         else {
             die("Bad action");
@@ -356,10 +356,10 @@ class BfcEventSubmission {
         global $caldaily_table_name;
         global $wpdb;
 
-        # Fields to not load from the database.
-        # We either don't use these fields, or in the
-        # case of modified we leave it up to the
-        # database to set.'
+        // Fields to not load from the database.
+        // We either don't use these fields, or in the
+        // case of modified we leave it up to the
+        // database to set.'
         $do_not_load = array(
             'modified',
             'external',
@@ -394,13 +394,13 @@ class BfcEventSubmission {
             }
         }
 
-        # We don't have to load caldaily here. The fields get loaded
-        # by the AJAX request in the submission form, and then passed
-        # in as part of the form.
+        // We don't have to load caldaily here. The fields get loaded
+        // by the AJAX request in the submission form, and then passed
+        // in as part of the form.
     }
 
-    # Load just the fields that are needed for editing or deleting this
-    # event.
+    // Load just the fields that are needed for editing or deleting this
+    // event.
     protected function load_modification_fields_from_db() {
         global $calevent_table_name;
         global $caldaily_table_name;
@@ -432,19 +432,19 @@ class BfcEventSubmission {
                               $this->event_id);
         $results = $wpdb->get_results($sql, ARRAY_A);
         foreach ($results as $result) {
-            # @@@ This will break if the event ever recurs past one year.
-            # I think the suffix should change to include a four-digit year...
-            #
-            # And, while we're at it, encapsulate the making of suffixes into
-            # a function.
+            // @@@ This will break if the event ever recurs past one year.
+            // I think the suffix should change to include a four-digit year...
+            //
+            // And, while we're at it, encapsulate the making of suffixes into
+            // a function.
             $suffix = date("Mj", strtotime($result['eventdate']));
 
             $this->daily_args[$suffix]['exceptionid'] = $result['exceptionid'];
         }
     }
 
-    # A new event has mostly blank default values. But for the values
-    # that are non-blank by default, set them here.
+    // A new event has mostly blank default values. But for the values
+    // that are non-blank by default, set them here.
     protected function set_defaults() {
         if ($this->action != 'new') {
             die('Setting defaults, but not creating a new event.');
@@ -453,11 +453,11 @@ class BfcEventSubmission {
         $this->event_args['audience'] = 'G';
     }
 
-    # Some of the data we get submitted from the web form needs to be converted
-    # before storing it into the database.
+    // Some of the data we get submitted from the web form needs to be converted
+    // before storing it into the database.
     protected function convert_data_type($field_name, $value) {
         switch ($field_name) {
-            # For these fields, convert Y/N to integer
+            // For these fields, convert Y/N to integer
             case 'hideemail':
             case 'hidephone':
             case 'emailforum':
@@ -466,8 +466,8 @@ class BfcEventSubmission {
             case 'printweburl':
             case 'hidecontact':
             case 'printcontact':
-                # When we pull these out of the database, we get strings.
-                # So use strings here, to match the data types.
+                // When we pull these out of the database, we get strings.
+                // So use strings here, to match the data types.
                 if ($value === 'Y') {
                     return '1';
                 }
@@ -489,9 +489,9 @@ class BfcEventSubmission {
         );
 
         if (!isset($this->event_args['wordpress_id'])) {
-            # Make a new post
+            // Make a new post
 
-            # Additional properties for making a new post.
+            // Additional properties for making a new post.
             $post_props['comment_status'] = 'open';
             $post_props['post_type'] = 'bfc-event';
             $post_props['post_status'] = 'publish';
@@ -506,14 +506,14 @@ class BfcEventSubmission {
             }
         }
         else {
-            # Update the existing post
+            // Update the existing post
             $post_props['ID'] = $this->event_args['wordpress_id'];
 
             wp_update_post($post_props);
         }
     }
     
-    # Do an INSERT operation on the table
+    // Do an INSERT operation on the table
     protected function insert_into_table($table_name, $field_info, $args) {
         $types = Array();
         foreach ($args as $name => $value) {
@@ -529,7 +529,7 @@ class BfcEventSubmission {
         return $wpdb->insert_id;
     }
 
-    # Do an UPDATE operation on the table
+    // Do an UPDATE operation on the table
     protected function update_table($table_name, $field_info,
                                     $args, $where) {
 
@@ -557,7 +557,7 @@ class BfcEventSubmission {
         global $calevent_table_name, $caldaily_table_name;
         
         if ($this->action == "create") {
-            # Create the editcode
+            // Create the editcode
             $event_args['editcode'] = uniqid();
             $this->user_editcode = $event_args['editcode'];
             $this->db_editcode = $event_args['editcode'];
@@ -568,7 +568,7 @@ class BfcEventSubmission {
                                     $event_args);
         }
         else if ($this->action == "update") {
-            # Do one last check on the editcode, for good measure.
+            // Do one last check on the editcode, for good measure.
             if (!$this->is_editcode_valid()) {
                 die("Bad editcode");
             }
@@ -587,12 +587,12 @@ class BfcEventSubmission {
         foreach ($this->dayinfo['daylist'] as &$day) {
             $caldaily_args = Array();
 
-            # associate caldaily with calevent
+            // associate caldaily with calevent
             $caldaily_args['id'] = $this->event_id;
 
-            # Populate the other fields.
-            # We don't use $day directly because it has a bunch of fields
-            # used for calculation that aren't stored in the database.
+            // Populate the other fields.
+            // We don't use $day directly because it has a bunch of fields
+            // used for calculation that aren't stored in the database.
             foreach(Array('newsflash', 'eventdate',
                           'eventstatus', 'exceptionid') as $key) {
 
@@ -601,19 +601,19 @@ class BfcEventSubmission {
                 }
             }
 
-            # Sometimes we end up with a day that has an eventdate &
-            # not a sqldate. Evan thinks the two are interchangable, but
-            # he's not sure... See the comments at the top of repeat.php,
-            # about what the fields all mean.
+            // Sometimes we end up with a day that has an eventdate &
+            // not a sqldate. Evan thinks the two are interchangable, but
+            // he's not sure... See the comments at the top of repeat.php,
+            // about what the fields all mean.
             if (isset($day['sqldate']) && !isset($day['eventdate'])) {
                 $caldaily_args['eventdate'] = $day['sqldate'];
             }
 
             if ($day['status'] == 'Deleted') {
                 global $wpdb;
-                # We have to put $caldaily_table_name into the string,
-                # because if we put it in with %s, prepare() will put
-                # quotes around it, and that's a SQL error.
+                // We have to put $caldaily_table_name into the string,
+                // because if we put it in with %s, prepare() will put
+                // quotes around it, and that's a SQL error.
                 $sql = $wpdb->prepare("DELETE FROM ${caldaily_table_name} " .
                                       "WHERE id=%d and eventdate=%s",
                                       $this->event_id,
@@ -626,18 +626,18 @@ class BfcEventSubmission {
             }
             else {
                 if ($day['olddate'] == 'Y') {
-                    # This caldaily entry already exists; do an update
+                    // This caldaily entry already exists; do an update
 
                     if ($day['status'] == 'Exception') {
-                        # Do we need to make a new exception?
-                        #
-                        # Use -1 as a flag for 'no exception' because
-                        # stupid WordPress won't let us insert null into
-                        # the database. But we also have to check for null
-                        # because that's what comes *out* of the database,
-                        # before anything else has been set.
-                        #
-                        # @@@ But it looks like we never insert a -1 into the database...
+                        // Do we need to make a new exception?
+                        //
+                        // Use -1 as a flag for 'no exception' because
+                        // stupid WordPress won't let us insert null into
+                        // the database. But we also have to check for null
+                        // because that's what comes *out* of the database,
+                        // before anything else has been set.
+                        //
+                        // @@@ But it looks like we never insert a -1 into the database...
                         if (!isset($day['exceptionid']) ||
                             $day['exceptionid'] == null ||
                             $day['exceptionid'] == -1) {
@@ -657,8 +657,8 @@ class BfcEventSubmission {
                                         $where);
                 }
                 else {
-                    # this caldaily entry doesn't exist yet;
-                    # do an insert.
+                    // this caldaily entry doesn't exist yet;
+                    // do an insert.
                     $this->insert_into_table($caldaily_table_name,
                                         $this->caldaily_field_info,
                                         $caldaily_args);
@@ -690,11 +690,11 @@ class BfcEventSubmission {
 
         $this->delete_image();
 
-        # Delete the associated WordPres Bike Event.
-        #
-        # The get_post_type() test is there to prevent a bug from
-        # accidentally deleting an important post (like the front
-        # page).
+        // Delete the associated WordPres Bike Event.
+        //
+        // The get_post_type() test is there to prevent a bug from
+        // accidentally deleting an important post (like the front
+        // page).
         if (isset($this->event_args['wordpress_id']) &&
             get_post_type($this->event_args['wordpress_id']) == 'bfc-event') {
 
@@ -708,7 +708,7 @@ class BfcEventSubmission {
             if (!isset($this->post_files['event_image']['error']) ||
                      $this->post_files['event_image']['error'] !== UPLOAD_ERR_OK) {
 
-                # This shouldn't have been called
+                // This shouldn't have been called
                 die('No image to attach'); 
             }
         }
@@ -738,24 +738,24 @@ class BfcEventSubmission {
     // Wrapper around move_uploaded_file that lets BfcEventSubmissionForTest
     // replace move_uploaded_file() with rename().
     //
-    // http://stackoverflow.com/questions/3402765/how-can-i-write-tests-for-file-upload-in-php/3410684#3410684
+    // http://stackoverflow.com/questions/3402765/how-can-i-write-tests-for-file-upload-in-php/3410684//3410684
     protected function move_uploaded_file($from, $to) {
         return move_uploaded_file($from, $to);
     }
 
     protected function attach_image($original_name, $source_file, $move_or_copy) {
-        # Copy the file to the uploads directory.
+        // Copy the file to the uploads directory.
 
-        # @@@ If we wanted to get fancy, we could pass in the date of the
-        # first event, so the upload dir would correspond to the event date,
-        # not the creation date (today's date).
+        // @@@ If we wanted to get fancy, we could pass in the date of the
+        // first event, so the upload dir would correspond to the event date,
+        // not the creation date (today's date).
         $upload_dirinfo = wp_upload_dir();
         
-        # This trusts that the file extension is OK on the user's machine...
+        // This trusts that the file extension is OK on the user's machine...
         $extension = pathinfo($original_name, PATHINFO_EXTENSION);
 
-        # Use uniqid() for the filename because, when this runs, the event ID
-        # may not have been set yet.
+        // Use uniqid() for the filename because, when this runs, the event ID
+        // may not have been set yet.
         $filename = $upload_dirinfo['path'] . '/' .
             uniqid() . '.' . $extension;
 
@@ -774,22 +774,22 @@ class BfcEventSubmission {
 
         list($imagewidth, $imageheight) = getimagesize($filename);
 
-        # Make a filename that's relative to the uploads dir.
-        # We can use this later to construct a URL.
+        // Make a filename that's relative to the uploads dir.
+        // We can use this later to construct a URL.
         $relative_filename =
             str_replace($upload_dirinfo['basedir'], '', $filename);
         
-        # Update the event_args
+        // Update the event_args
         $this->event_args['image'] = $relative_filename;
         $this->event_args['imageheight'] = $imageheight;
         $this->event_args['imagewidth'] = $imagewidth;
         
-        # (We could make a WordPress attachment out of this. But what would
-        # the benefit be?)
+        // (We could make a WordPress attachment out of this. But what would
+        // the benefit be?)
 
     }
 
-    # Delete the image file for this event, if it has one.
+    // Delete the image file for this event, if it has one.
     protected function delete_image() {
         if (isset($this->event_args['image']) &&
             $this->event_args['image'] != '') {
@@ -803,9 +803,9 @@ class BfcEventSubmission {
                 die("Can't delete image: $old_filename");
             }
 
-            # Because $wpdb->insert() can't handle nulls,
-            # we have to set these to empty values to update
-            # the database.
+            // Because $wpdb->insert() can't handle nulls,
+            // we have to set these to empty values to update
+            // the database.
             $this->event_args['image'] = '';
             $this->event_args['imagewidth'] = 0;
             $this->event_args['imageheight'] = 0;
@@ -926,7 +926,7 @@ class BfcEventSubmission {
             $this->action == "delete") {
 
             if (!isset($this->db_editcode)) {
-                # This shouldn't happen.
+                // This shouldn't happen.
                 die("Missing DB edit code");
             }
 
@@ -1000,11 +1000,11 @@ class BfcEventSubmission {
         return count($this->errors) == 0;
     }
     
-    # Calculate the days this event occurs on, and any changes to the dates
-    # that may be in this update.
+    // Calculate the days this event occurs on, and any changes to the dates
+    // that may be in this update.
     protected function calculate_days() {
-        # check_validity() should have already tried parsing the dates,
-        # and made sure everything is OK.
+        // check_validity() should have already tried parsing the dates,
+        // and made sure everything is OK.
         if (!isset($this->event_args['dates'])  ||
             !isset($this->dayinfo)              ||
             !isset($this->dayinfo['datestype']) ||
@@ -1013,20 +1013,20 @@ class BfcEventSubmission {
             die('Days should have been parsed already');
         }
 
-        # Store the type of date (sequential, scattered, etc.)
-        # But we only store the first letter in the DB.
+        // Store the type of date (sequential, scattered, etc.)
+        // But we only store the first letter in the DB.
         $this->event_args['datestype'] =
             strtoupper(substr($this->dayinfo['datestype'], 0, 1));
 
         if ($this->action == "update") {
-            # Fetch the old dates
+            // Fetch the old dates
             $olddates = dailystatus($this->event_id);
 
-            # Merge the old and new lists.
+            // Merge the old and new lists.
             $this->dayinfo['daylist'] =
                 mergedates($this->dayinfo['daylist'], $olddates);
 
-            # Look for changes
+            // Look for changes
             foreach($this->dayinfo['daylist'] as $day) {
                 $new_newsflash = $this->daily_args[ $day['suffix'] ]['newsflash'];
 
@@ -1043,7 +1043,7 @@ class BfcEventSubmission {
             }
         }
         else if ($this->action == "create") {
-            # all dates will be added
+            // all dates will be added
             foreach ($this->dayinfo['daylist'] as &$day) {
                 $day['changed'] = 'Y';
                 $day['olddate'] = 'N';
@@ -1053,9 +1053,9 @@ class BfcEventSubmission {
             die("Bad value for action");
         }
 
-        # Add values for status & newsflash from the query
-        # parameters. Use a reference to $day, to let us
-        # modify the values.
+        // Add values for status & newsflash from the query
+        // parameters. Use a reference to $day, to let us
+        // modify the values.
         foreach ($this->dayinfo['daylist'] as &$day) {
             $suffix = $day['suffix'];
 
@@ -1104,8 +1104,8 @@ class BfcEventSubmission {
         return $exception;
     }
 
-    # Return a list of exceptions. Something like this:
-    # Array( Array('date' => '2011-06-04', 'exceptionid' => 42), ... );
+    // Return a list of exceptions. Something like this:
+    // Array( Array('date' => '2011-06-04', 'exceptionid' => 42), ... );
     public function get_exceptions() {
         $exceptions = array();
 
@@ -1233,9 +1233,9 @@ class BfcEventSubmission {
     public function print_selected_for_eventtime($time) {
         if (!isset($this->event_args['eventtime']) && $time == "") {
 
-            # The default value of eventtime is empty string.
-            # (that's the value that represents 'Choose a time' in the
-            # SELECT drop-down
+            // The default value of eventtime is empty string.
+            // (that's the value that represents 'Choose a time' in the
+            // SELECT drop-down
 
             print "selected";
         }
@@ -1245,14 +1245,14 @@ class BfcEventSubmission {
             print "selected";
         }
 
-        # Otherwise this isn't selected. Print nothing.
+        // Otherwise this isn't selected. Print nothing.
     }
 
     public function print_selected_for_duration($duration) {
         if (!isset($this->event_args['eventduration']) &&
             $duration == "0") {
 
-            # 0 (unspecified) is selected by default
+            // 0 (unspecified) is selected by default
             print "selected";
         }
         else if (isset($this->event_args['eventduration']) &&
@@ -1261,7 +1261,7 @@ class BfcEventSubmission {
             print "selected";
         }
 
-        # Otherwise this isn't selected. Print nothing.
+        // Otherwise this isn't selected. Print nothing.
     }
 
     public function current_action() {
@@ -1316,24 +1316,24 @@ class BfcEventSubmission {
         return $current_user->user_email !== $this->event_args['email'];
     }
 
-    # Return the action to perform next.
-    # This should only be called from the edit-event
-    # page.
+    // Return the action to perform next.
+    // This should only be called from the edit-event
+    // page.
     public function next_action() {
         if ($this->action == "new") {
             return "create";
         }
         else if ($this->action == "edit") {
             if ($this->has_event_id()) {
-                # Existing events should be updated
-                # after an edit.
+                // Existing events should be updated
+                // after an edit.
                 return "update";
             }
             else {
-                # New events should be created after
-                # an edit. (This can happen when the
-                # first create attempt failed because
-                # of invalid inputs.)
+                // New events should be created after
+                // an edit. (This can happen when the
+                // first create attempt failed because
+                // of invalid inputs.)
                 return "create";
             }
         }
@@ -1356,7 +1356,7 @@ class BfcEventSubmission {
         }
     }
 
-    # Produce a list of human-readable descriptions of changes.
+    // Produce a list of human-readable descriptions of changes.
     protected function assemble_changes() {
         if ($this->action != 'update') {
             die("Assembling changes when not doing an update");
@@ -1388,7 +1388,7 @@ class BfcEventSubmission {
             'hidecontact'   => 'Don\'t publish my other contact info online',
         );
 
-        # Convert from internal representation to something suitable to present to people.
+        // Convert from internal representation to something suitable to present to people.
         $human_readable_value_for = array(
             'audience'  => function($audience) {
                 switch ($audience) {
@@ -1411,28 +1411,28 @@ class BfcEventSubmission {
         foreach ($this->event_args_changes as $fieldname) {
             $value = $this->event_args[$fieldname];
 
-            # Convert value to human-readable, if appropriate
+            // Convert value to human-readable, if appropriate
             if (isset($human_readable_value_for[$fieldname])) {
                 $value = $human_readable_value_for[$fieldname]($value);
             }
 
-            # Choose a message to tell the user
+            // Choose a message to tell the user
             if ($value == '') {
                 $message_format = '%s removed';
             }
             else {
                 if ($fieldname == 'descr' || $fieldname == 'printdescr') {
-                    # These fields are long, so only say they changed,
-                    # not what they changed to.
+                    // These fields are long, so only say they changed,
+                    // not what they changed to.
                     $message_format = '%s changed';
                 }
                 else {
-                    # All other fields, show the name & new value
+                    // All other fields, show the name & new value
                     $message_format = '%s changed to: %s';
                 }
             }
 
-            # Add this to the log of changes
+            // Add this to the log of changes
             if (!isset($human_readable_name_for[$fieldname])) {
                 die($fieldname);
             }
@@ -1501,11 +1501,11 @@ class BfcEventSubmission {
         print "</ul>\n";
     }
 
-    # What kind of page should the caller show?
-    #
-    # edit-event     -- Show the form for making/updating an event
-    # event-updated  -- Show the results of making/updating an event
-    # event-deleted  -- Show the results of deleting an event
+    // What kind of page should the caller show?
+    //
+    // edit-event     -- Show the form for making/updating an event
+    // event-updated  -- Show the results of making/updating an event
+    // event-deleted  -- Show the results of deleting an event
     public function page_to_show() {
         if ($this->action == "new" ||
             $this->action == "edit") {
