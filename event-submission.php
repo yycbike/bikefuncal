@@ -1251,7 +1251,7 @@ class BfcEventSubmission {
             return false;
         }
         
-        if (!bfc_show_admin_options()) {
+        if (!current_user_can('bfc_edit_others_events')) {
             // Current user isn't an admin (or current user isn't logged in)
             return false;
         }

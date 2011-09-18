@@ -665,7 +665,7 @@ function fullentry($record, $for, $include_images)
     // Show the edit link to admin users.
     // Except if this is a preview; then it's meaningless
     // because they're already editing.
-    if (bfc_show_admin_options() && $for != 'preview') {
+    if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
         print "<a href=\"$edit_url\">Edit Event</a>";
     }
