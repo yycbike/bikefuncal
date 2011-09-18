@@ -561,8 +561,8 @@ function fullentry($record, $for, $include_images)
                                   $record["eventtime"],
                                   $record["address"]);
 	if ($transit_url) {
-	    print " <a href=\"$transit_url\" target=\"_BLANK\" " .
-                "title=\"Transit Trip Planner\">\n";
+	    printf(' <a href="%s "target="_BLANK" title="Transit Trip Planner">\n',
+                   htmlspecialchars($transit_url, ENT_QUOTES));
             $bus_url = plugins_url('bikefuncal/images/bus.gif');
             print "<img alt=\"By Bus\" src=\"${bus_url}\" border=0>\n";
             print "</a>";
@@ -625,7 +625,7 @@ function fullentry($record, $for, $include_images)
     }
  
     if ($weburl != "") {
-        print ", <a href=\"$weburl\">$webname</a>";
+        printf(', <a href="%s">%s</a>', htmlspecialchars($weburl, ENT_QUOTES), $webname);
     }
     if ($contact != "") {
         print ", ";
@@ -648,7 +648,7 @@ function fullentry($record, $for, $include_images)
             $comment_counts->approved .
             " message" .
             ($comment_counts->approved == 1 ? "" : "s");
-        $forumurl   = get_permalink($wordpress_id);
+        $forumurl   = htmlspecialchars(get_permalink($wordpress_id), ENT_QUOTES);
 
         // @@@ If there's been recent activity in the forum,
         // show forumflash.gif instead. (The old code did this,

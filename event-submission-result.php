@@ -23,7 +23,7 @@ Your changes have been saved.
  To make changes to your event, go here:
 <br>
 
-<a href="<?php print $edit_url; ?>">
+<a href="<?php print htmlspecialchars($edit_url, ENT_QUOTES); ?>">
 <?php print $edit_url; ?>
 </a>
 
@@ -33,7 +33,7 @@ Your changes have been saved.
 <p>
  To share your event with friends, send them here:
 <br>
-<a href="<?php print $permalink_url; ?>">
+<a href="<?php print htmlspecialchars($permalink_url, ENT_QUOTES); ?>">
 <?php print $permalink_url;  ?>
 </a>
 </p>
@@ -55,6 +55,7 @@ if (count($exceptions) > 0) {
         print "<li>";
 
         $edit_url = bfc_get_edit_url_for_event($exception['exceptionid']);
+        $edit_url = htmlspecialchars($edit_url, ENT_QUOTES);
         print "<a href='${edit_url}'>";
         print date("l, F j", strtotime($exception['sqldate']));
         print "</a>";
