@@ -362,7 +362,7 @@ class BfcEventSubmission {
         );
 
         if (!isset($this->event_id)) {
-            die("Event ID is not set");
+            die("Event ID is not set\n");
         }
 
         $sql = $wpdb->prepare("SELECT * FROM ${calevent_table_name} " .
@@ -470,7 +470,6 @@ class BfcEventSubmission {
         }
 
         global $wpdb;
-
         $wpdb->insert($table_name,
                       $args,
                       $types);
@@ -890,7 +889,7 @@ class BfcEventSubmission {
     
     protected function check_validity() {
         if ($this->event_args['dates'] == '') {
-            $this->errors[] = "Date is missing";
+            $this->errors[] = "You must choose a date";
         }
         else {
             // Check the date formatting. First, parse the dates.
@@ -904,7 +903,7 @@ class BfcEventSubmission {
         }
 
         if ($this->event_args['email'] == '') {
-            $this->errors[] = 'E-mail address is missing. '.
+            $this->errors[] = 'You need to supply an e-mail address. '.
                 '(We only use this to mail you information about updating your event. We won\'t spam you.)';
         }
         else if (filter_var($this->event_args['email'], FILTER_VALIDATE_EMAIL) === false) {
@@ -919,9 +918,25 @@ class BfcEventSubmission {
         }
 
         if ($this->event_args['title'] == '') {
-            $this->errors[] = "Title is missing";
+            $this->errors[] = "You need to supply a title";
         }
 
+        if ($this->event_args['tinytitle'] == '') {
+            $this->errors[] = "You need to supply a tiny title";
+        }
+
+        if ($this->event_args['eventtime'] == '') {
+            $this->errors[] = "You need to choose a time";
+        }
+
+        if ($this->event_args['name'] == '') {
+            $this->errors[] = "You need to provide a name (but a fake name will do)";
+        }
+
+        if ($this->event_args['descr'] == '') {
+            $this->errors[] = "You must provide a description";
+        }
+        
         if ($this->event_args['weburl'] !== '') {
             $scheme = parse_url($this->event_args['weburl'], PHP_URL_SCHEME);
             if ($scheme === NULL) {
