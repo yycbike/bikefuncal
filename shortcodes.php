@@ -148,8 +148,8 @@ function bfc_cal_date_navigation_shortcode($atts) {
             $prev_url = bfc_get_month_cal_url(date("m", $startdate), date("y", $startdate));
             $next_url = bfc_get_month_cal_url(date("m", $enddate), date("y", $enddate));
 
-            $prev_url = htmlspecialchars($prev_url, ENT_QUOTES);
-            $next_url = htmlspecialchars($next_url, ENT_QUOTES);
+            $prev_url = esc_url($prev_url);
+            $next_url = esc_url($next_url);
 
             $prev_month_name = date("F", $startdate);
             $next_month_name = date("F", $enddate);
@@ -172,9 +172,9 @@ function bfc_cal_date_navigation_shortcode($atts) {
             $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
             $curr_url = bfc_get_month_cal_url(date("m", $startdate),  date("y", $startdate));
 
-            $prev_url = htmlspecialchars($prev_url, ENT_QUOTES);
-            $next_url = htmlspecialchars($next_url, ENT_QUOTES);
-            $curr_url = htmlspecialchars($curr_url, ENT_QUOTES);
+            $prev_url = esc_url($prev_url);
+            $next_url = esc_url($next_url);
+            $curr_url = esc_url($curr_url);
 
             $prev_month_name = date("F", $prev_month);
             $next_month_name = date("F", $next_month);
@@ -208,8 +208,8 @@ function bfc_cal_date_navigation_shortcode($atts) {
         $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
         $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
 
-        $prev_url = htmlspecialchars($prev_url, ENT_QUOTES);
-        $next_url = htmlspecialchars($next_url, ENT_QUOTES);
+        $prev_url = esc_url($prev_url);
+        $next_url = esc_url($next_url);
 
         $prev_month_name = date("F", $prev_month);
         $next_month_name = date("F", $next_month);

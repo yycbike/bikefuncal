@@ -40,12 +40,6 @@ function address_link($address) {
     return $site . '?' . http_build_query($query_args);
 }
 
-// Return the URL for bus/train trip planner, or NULL if unreachable
-function transiturl($sqldate, $eventtime, $address)
-{
-    return NULL;
-}
-
 function class_for_special_day($thisdate) {
     // For Pedalpalooza, the Portland calendar highlights
     // special events, such as MCBF, Father's Day, and the Solstice.
@@ -66,23 +60,23 @@ function overview_calendar_day($thisdate, $preload_alldays) {
         $class .= " today";
     }
     
-    print "<td id=\"cal$dayofmonth\" class=\"${class}\">\n";
+    printf("<td id=\"%s\" class=\"%s\">\n", esc_attr('cal' . $dayofmonth), esc_attr($class));
 
     // For debugging
     //print "<p>" . date("Y-m-d h:m:s", $thisdate) . "</p>";
     
     // Output this day's tinytitles
     $sqldate = date("Y-m-d", $thisdate);
-    print "<a href=\"#".date("Fj",$thisdate)."\" ";
-    print "title=\"".date("M j, Y", $thisdate)."\" ";
+    printf("<a href='%s' ", esc_attr('#' . date("Fj", $thisdate)));
+    printf("title='%s' ", esc_attr(date("M j, Y", $thisdate)));
     print "class=\"date\" ";
     if (!$preload_alldays) {
         // If the days aren't all being loaded, add JS to load them
         // when the day is clicked.
-        print "onclick=\"loadday('$sqldate', true, 0); return false;\"";
+        printf("onclick=\"loadday('%s', true, 0); return false;\"", esc_js($sqldate));
     }
     print ">";
-    print date("j", $thisdate);
+    print esc_html(date("j", $thisdate));
     print "</a>\n";
     tinyentries($sqldate, TRUE, $preload_alldays );
     print "</td>\n";
@@ -134,7 +128,7 @@ function calendar_quote($days)
 // ages & adult rides.
 function palooza_overview_calendar_inset($days) {
 ?>    
-      <td colspan="<?php print $days ?>" class="palooza-overview-calendar-inset">
+      <td colspan="<?php print esc_attr($days) ?>" class="palooza-overview-calendar-inset">
         <br>
 	<a href="explain/audience.html" target="_BLANK" onClick="window.open('explain/audience.html', 'audience', 'width=600, height=500, menubar=no, status=no, location=no, toolbar=no, scrollbars=yes'); return false;">
 	  <span class="family-friendly">Family Friendly events have <strong>green</strong> times</span>
@@ -261,8 +255,8 @@ END_QUERY;
 	if ($exclude && $record["review"] == "E")
 	    continue;
 	$id = $record["id"];
-	$tinytitle = htmlspecialchars($record["tinytitle"]);
-	$title = htmlspecialchars($record["title"]);
+	$tinytitle = $record["tinytitle"];
+	$title = $record["title"];
         
         // CSS classes
         $titleclass = "event-tiny-title ";
@@ -307,13 +301,14 @@ END_QUERY;
 	    $onclick = "";
         }
         
-	print "<a href=\"#${dayofmonth}-${id}\" title=\"${title}\" $onclick>";
-        print "<span class=\"${titleclass}\">";
-	print "<strong class=\"${timeclass}\">${eventtime}</strong>";
+        $anchor = sprintf('#%s-%d', $dayofmonth, $id);
+	printf("<a href='%s' title='%s' $onclick>", esc_attr($anchor), esc_attr($title));
+        printf("<span class='%s'>", esc_attr($titleclass));
+	printf("<strong class='%s'>%s</strong>", esc_attr($timeclass), esc_html($eventtime));
 	if (strpos($record["descr"], "\$") != FALSE) {
 	    print "&nbsp;<strong>\$\$</strong>";
         }
-	print "&nbsp;${tinytitle}</span></a></div>";
+	printf("&nbsp;%s</span></a></div>", esc_html($tinytitle));
     }
 }
 
@@ -341,8 +336,8 @@ function event_listings($startdate,
         }
         
 	print "<h2 class=weeks>";
-        print "<a class=\"datehdr\" name=\"".date("Fj",$thisdate)."\">";
-        print date("l F j", $thisdate);
+        print "<a class=\"datehdr\" name=\"".esc_attr(date("Fj",$thisdate))."\">";
+        print esc_html(date("l F j", $thisdate));
         print "</a></h2>\n";
         
 	$ymd = date("Y-m-d", $thisdate);
@@ -432,20 +427,19 @@ function fullentry($record, $for, $include_images)
         $badgehint = sprintf('Adult Only (%d+)', get_option('bfc_drinking_age'));
     }
     
-    $address = htmlspecialchars($record["address"]);
+    $address = $record["address"];
     if ($record["locname"]) {
-	$address = htmlspecialchars($record["locname"]).", $address";
+	$address = $record["locname"] . ' , ' . $address;
     }
-    $locdetails = htmlspecialchars($record["locdetails"]);
-    $descr = htmldescription($record["descr"]);
-    $newsflash = htmlspecialchars($record["newsflash"]);
-    $name = htmlspecialchars(ucwords($record["name"]));
-    $email = $record["hideemail"] ? "" : htmlspecialchars($record["email"]);
-    $email = mangleemail($email);
-    $phone = $record["hidephone"] ? "" : htmlspecialchars($record["phone"]);
-    $contact = $record["hidecontact"] ? "" : htmlspecialchars($record["contact"]);
-    $weburl = esc_url($record["weburl"]);
-    $webname = htmlspecialchars($record["webname"]);
+    $locdetails = $record["locdetails"];
+    $descr = $record["descr"];
+    $newsflash = $record["newsflash"];
+    $name = ucwords($record["name"]);
+    $email = $record["hideemail"] ? "" : $record["email"];
+    $phone = $record["hidephone"] ? "" : $record["phone"];
+    $contact = $record["hidecontact"] ? "" : $record["contact"];
+    $weburl = $record["weburl"];
+    $webname = $record["webname"];
     if ($webname == "" || $for == 'printer') {
         // If they left out the name for their web site, or if
         // this is being shown for printing, show the URL insetad of the
@@ -484,10 +478,8 @@ function fullentry($record, $for, $include_images)
 	}
         
 	print "\n";
-        print "<img src=\"$image\" height=$imageheight " .
-            "width=$imagewidth align=\"right\" " .
-            "alt=\"\" class=\"ride-image\">";
-        print "\n";
+        printf("<img src='%s' height='%d' width='%d' align='right' alt='' class='ride-image'>\n",
+               esc_attr($image), $imageheight, $imagewidth);
     }
     
     // Don't show title & permalink on the
@@ -496,11 +488,11 @@ function fullentry($record, $for, $include_images)
         //////////////////////////////////////////
         // Title
         //
-        print "<a name=\"${dayofmonth}-${id}\" " .
-            "class=\"eventhdr $class\">";
-        print $title;
+        printf("<a name='%s' " .
+            "class='eventhdr %s'>", esc_attr($dayofmonth . '-' . $id),
+            esc_attr($class));
+        print esc_html($title);
         print "</a>\n";
-
 
         //////////////////////////////////////////
         // Permalink
@@ -511,8 +503,8 @@ function fullentry($record, $for, $include_images)
         else {
             $permalink = get_permalink($record['wordpress_id']);
         }
-        print "<a href=\"${permalink}\"> \n";
-        $chain_url = plugins_url('bikefuncal/images/chain.gif');
+        printf("<a href='%s'> \n", esc_url($permalink));
+        $chain_url = esc_url(plugins_url('bikefuncal/images/chain.gif'));
         print "<img border=0 src=\"${chain_url}\" " .
             "alt=\"Link\" title=\"Link to this event\">\n";
         print "</a>\n";
@@ -523,8 +515,8 @@ function fullentry($record, $for, $include_images)
     //
     if ($badge != "") {
         $badgeurl = plugins_url('bikefuncal/images/') . $badge;
-        print "<img align=left src=\"$badgeurl\" " .
-            "alt=\"$badgealt\" title=\"$badgehint\">\n";
+        printf("<img align=left src='%s' alt='%s' title='%s'>\n",
+               esc_url($badgeurl), esc_attr($badgealt), esc_attr($badgehint));
     }
 
     print "</dt>\n";
@@ -540,38 +532,25 @@ function fullentry($record, $for, $include_images)
 	    $imageheight = LEFTHEIGHT;
 	}
         
-        print "<img src=\"$image\" height=$imageheight " .
-            "width=$imagewidth align=\"left\" alt=\"\" ".
-            "class=\"ride-image\">\n";
+        printf("<img src='%s' height='%d' width='%d' align='left' alt='' class='ride-image'>\n",
+               esc_attr($image), $imageheight, $imagewidth);
+
     }
 
     //////////////////////////////////////////
     // Location
     //
     // (This div contains the location)
-    print "<div class=\"$class\">";
+    printf("<div class='%s'>", esc_attr($class));
 
     // Street address
     $address_url = address_link($record['address']);
-    print "<a href=\"$address_url\" target=\"_BLANK\">".$address.'</a>';
-    
-    // Transit directions
-    if ($for != 'printer') {
-	$transit_url = transiturl($record["eventdate"],
-                                  $record["eventtime"],
-                                  $record["address"]);
-	if ($transit_url) {
-	    printf(' <a href="%s "target="_BLANK" title="Transit Trip Planner">\n',
-                   htmlspecialchars($transit_url, ENT_QUOTES));
-            $bus_url = plugins_url('bikefuncal/images/bus.gif');
-            print "<img alt=\"By Bus\" src=\"${bus_url}\" border=0>\n";
-            print "</a>";
-        }
-    }
+    printf("<a href='%s' target=\"_BLANK\">%s</a>",
+           esc_url($address_url), esc_html($address));
     
     // Location details
     if ($locdetails != "") {
-        print " ($locdetails)";
+        printf(" (%s)", esc_attr($locdetails));
     }
     print "</div>\n";
 
@@ -580,25 +559,27 @@ function fullentry($record, $for, $include_images)
     // Time
     //
     print "<div>";
-    print "$eventtime";
+    print esc_html($eventtime);
     if ($eventtime == "CANCELED" && $newsflash != "") {
-	print " <span class=newsflash>$newsflash</span>";
+	printf(" <span class=newsflash>%s</span>", esc_html($newsflash));
     }
     if ($eventtime != "CANCELED") {
         // Print end time
 	if ($eventduration != 0) {
 	    print " - ";
-            print endtime($eventtime,$eventduration);
+            print esc_html(endtime($eventtime,$eventduration));
         }
         
 	if ($timedetails != "") {
-            print ", $timedetails";
+            print ", ";
+            print esc_html($timedetails);
         }
 
         // Print the dates (e.g., "every Tuesday") for repeating
         // events.
 	if ($record["datestype"] == "C" || $record["datestype"] == "S") {
-	    print ", " . $record['dates'];
+	    print ", ";
+            print esc_html($record['dates']);
         }
     }
     print "</div>";
@@ -606,33 +587,33 @@ function fullentry($record, $for, $include_images)
     //////////////////////////////////////////
     // Description
     //
-    print "<div class=\"$class\">\n";
-    print "<em>$descr</em>\n";
+    printf("<div class='%s'>\n", esc_attr($class));
+    printf("<em>%s</em>\n", htmldescription($descr));
     if ($newsflash != "" && $eventtime != "CANCELED") {
-	print "<span class=newsflash>$newsflash</span>";
+	printf("<span class=newsflash>%s</span>", esc_html($newsflash));
     }
 
     //////////////////////////////////////////
     // Contact info
     //
     print "<div class='contact-info'>\n";
-    print $name;
+    print esc_html($name);
     if (!strpbrk(substr(trim($name),strlen(trim($name))-1),".,:;-")) {
         print ",";
     }
     if ($email != "") {
-        print " $email";
+        echo " ", mangleemail(esc_html($email));
     }
  
     if ($weburl != "") {
-        printf(', <a href="%s">%s</a>', htmlspecialchars($weburl, ENT_QUOTES), $webname);
+        printf(', <a href="%s">%s</a>', esc_url($weburl), esc_html($webname));
     }
     if ($contact != "") {
         print ", ";
-        print mangleemail($contact);
+        print mangleemail(esc_html($contact));
     }
     if ($phone != "") {
-        print ", $phone";
+        echo ", ", esc_html($phone);
     }
     print "</div>\n";
 
@@ -640,7 +621,6 @@ function fullentry($record, $for, $include_images)
     // Forum link
     //
     if ($for != 'printer' && $for != 'event-page' && $wordpress_id > 0) {
-        // No forums, for now
         $comment_counts = wp_count_comments($wordpress_id);
 
         $forumimg = plugins_url("bikefuncal/images/forum.gif");
@@ -654,11 +634,10 @@ function fullentry($record, $for, $include_images)
         // show forumflash.gif instead. (The old code did this,
         // but it's not ported to WP yet.)
         
-        print "<a href='$forumurl' title='$forumtitle'>";
-        print "<img border=0 src='$forumimg' alt='forum'>";
+        printf("<a href='%s' title='%s'>", esc_url($forumurl), esc_attr($forumtitle));
+        printf("<img border=0 src='%s' alt='forum'>", esc_url($forumimg));
         print "</a>\n";
     }
-
 
     //////////////////////////////////////////
     // Edit link
@@ -668,7 +647,7 @@ function fullentry($record, $for, $include_images)
     // because they're already editing.
     if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        print "<a href=\"$edit_url\">Edit Event</a>";
+        printf("<a href='%s'>Edit Event</a>", esc_url($edit_url));
     }
 
     print "</dd>\n";

@@ -228,7 +228,7 @@ function bfc_init_action() {
 
             // Customizing the 'title' column lets us remove the edit link.
             printf("<a href='%s' title='View'><strong>%s</strong></a>",
-                   get_permalink($post->ID),
+                   esc_url(get_permalink($post->ID)),
                    esc_html($post->post_title));
         }
     };
@@ -315,13 +315,13 @@ function bfc_options_admin_page() {
         
             <p>
             Festival Start Date:
-            <input type='text' name='bfc_festival_start_date' value='<?php echo get_option('bfc_festival_start_date'); ?>'>
+            <input type='text' name='bfc_festival_start_date' value='<?php echo esc_attr(get_option('bfc_festival_start_date')); ?>'>
             <em>YYYY-MM-DD (e.g. 2011-06-02)</em>        
             </p>
 
             <p>
             Festival End Date:
-            <input type='text' name='bfc_festival_end_date' value='<?php echo get_option('bfc_festival_end_date'); ?>'>
+            <input type='text' name='bfc_festival_end_date' value='<?php echo esc_attr(get_option('bfc_festival_end_date')); ?>'>
             <em>YYYY-MM-DD</em>
             </p>
 
@@ -334,24 +334,24 @@ function bfc_options_admin_page() {
 
             <p>
             Your City:
-            <input type='text' id='bfc_city' name='bfc_city' value='<?php echo get_option('bfc_city'); ?>'>
+            <input type='text' id='bfc_city' name='bfc_city' value='<?php echo esc_attr(get_option('bfc_city')); ?>'>
             <em>e.g., Vancouver</em>
             </p>
 
             <p>
             Your Province (or State):
-            <input type='text' id='bfc_province' name='bfc_province' value='<?php echo get_option('bfc_province'); ?>'>
+            <input type='text' id='bfc_province' name='bfc_province' value='<?php echo esc_attr(get_option('bfc_province')); ?>'>
             <em>e.g., BC. Leave this blank if your country doesn't have provinces.</em>
             </p>
 
             <p>
             Your Country:
-            <input type='text' id='bfc_country' name='bfc_country' value='<?php echo get_option('bfc_country'); ?>'>
+            <input type='text' id='bfc_country' name='bfc_country' value='<?php echo esc_attr(get_option('bfc_country')); ?>'>
             <em>e.g., Canada</em>
 
             <!-- These will get filled in by the AJAX from google that looks up the lat & long based on the location -->
-            <input type='hidden' id='bfc_latitude' name='bfc_latitude' value='<?php echo get_option('bfc_latitude'); ?>'>
-            <input type='hidden' id='bfc_longitude' name='bfc_longitude' value='<?php echo get_option('bfc_longitude'); ?>'>
+            <input type='hidden' id='bfc_latitude' name='bfc_latitude' value='<?php echo esc_attr(get_option('bfc_latitude')); ?>'>
+            <input type='hidden' id='bfc_longitude' name='bfc_longitude' value='<?php echo esc_attr(get_option('bfc_longitude')); ?>'>
 
             <!-- Report Google's AJAX results to the user -->
             <div id='bfc_latlong_results'>
@@ -364,7 +364,7 @@ function bfc_options_admin_page() {
         
             <p>
             Calendar crew e-mail address:
-            <input type='text' name='bfc_calendar_email' value='<?php echo get_option('bfc_calendar_email'); ?>'>
+            <input type='text' name='bfc_calendar_email' value='<?php echo esc_attr(get_option('bfc_calendar_email')); ?>'>
             <em>The people at this address help when ride leaders have problems making an event. And when people create an event, they get an
             e-mail from this address.
             </em>
@@ -374,7 +374,7 @@ function bfc_options_admin_page() {
 
             <p>
             Drinking Age:
-            <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'>
+            <input type='text' name='bfc_drinking_age' value='<?php echo esc_attr(get_option('bfc_drinking_age')); ?>'>
             <em>People coming on adults-only rides need to be at least this old</em>
             </p>
  
@@ -449,7 +449,7 @@ END_QUERY;
 
             // Add a link for editing comments
             if (current_user_can('moderate_comments')) {
-                $comments_url = admin_url(sprintf('edit-comments.php?p=%d', $wp_query->post->ID));
+                $comments_url = admin_url(sprintf('edit-comments.php?p=%d', esc_attr($wp_query->post->ID)));
                 $listing .= "<p><a href='${comments_url}'>Edit Comments</a></p>";
             }
 

@@ -84,41 +84,40 @@ function bfc_verify_dates_ajax_action() {
         # If an id was passed, include it in the response
         if (isset($_POST['id'])) {
             print "  <id>";
-            print $_POST['id'];
+            print ent2ncr(esc_html($_POST['id']));
             print "</id>\n";
         }
 
         # Output a canonical version of the date
-        print "  <canonical>$canonical</canonical>\n";
+        printf("  <canonical>%s</canonical>\n", ent2ncr(esc_html($canonical)));
 
         # Classify the date type
-        print "  <datestype>$datestype</datestype>\n";
+        printf("  <datestype>%s</datestype>\n", ent2ncr(esc_html($datestype)));
 
         # Output the list of dates
         print "  <datelist>\n";
 
         foreach ($newdates as $date) {
-            print "    <date>\n";
-            print "      <timestamp>".$date["timestamp"]."</timestamp>\n";
-            print "      <hrdate>".date("D M j", $date["timestamp"])."</hrdate>\n";
-            print "      <suffix>".$date["suffix"]."</suffix>\n";
-            print "      <status>".$date["status"]."</status>\n";
-            print "      <exception-url>";
+            printf("    <date>\n");
+            printf("      <timestamp>%s</timestamp>\n", ent2ncr(esc_html($date['timestamp'])));
+            printf("      <hrdate>%s</hrdate>\n", ent2ncr(esc_html(date("D M j", $date["timestamp"]))));
+            printf("      <suffix>%s</suffix>\n", ent2ncr(esc_html($date["suffix"])));
+            printf("      <status>%s</status>\n", ent2ncr(esc_html($date["status"])));
+            printf("      <exception-url>");
             if (isset($date["exceptionid"])) {
                 $url = bfc_get_edit_url_for_event($date["exceptionid"]);
-                print htmlentities($url);
+                print ent2ncr(esc_url($url));
             }
             print "</exception-url>\n";
 
-            
             print "      <newsflash>";
             if (isset($date["newsflash"])) {
-                print htmlspecialchars($date["newsflash"]);
+                print ent2ncr(esc_html($date["newsflash"]));
             }
             print "</newsflash>\n";
-            print "      <change>".$date["changed"]."</change>\n";
-            print "      <newdate>".$date["newdate"]."</newdate>\n";
-            print "      <olddate>".$date["olddate"]."</olddate>\n";
+            printf("      <change>%s</change>\n", ent2ncr(esc_html($date['changed'])));
+            printf("      <newdate>%s</newdate>\n", ent2ncr(esc_html($date['newdate'])));
+            printf("      <olddate>%s</olddate>\n", ent2ncr(esc_html($date['olddate'])));
             print "    </date>\n";
         }
         print "  </datelist>\n";

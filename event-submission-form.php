@@ -5,11 +5,11 @@ function bfc_generatetime($event_submission, $time, $label)
 {
     $formatted = hmmpm($time);
 
-    print "<option value=\"$time\" ";
+    printf("<option value=\"%s\" ", esc_attr($time));
     $event_submission->print_selected_for_eventtime($time);
-    print ">$formatted $label</option>\n";
+    printf(">%s %s</option>\n",
+           esc_html($formatted), esc_html($label));
 }
-
 
 # Print the event submission/editing form
 # 
@@ -26,7 +26,7 @@ function bfc_print_event_submission_form($event_submission) {
     </div>                                         
     <?php } # endif -- is valid ?>
 
-    <form action="<?php print get_permalink(); # go back to this form when submitting ?>"
+    <form action="<?php print esc_attr(get_permalink()); # go back to this form when submitting ?>"
           method="post"
           enctype="multipart/form-data"
           id="event-submission-form"
@@ -58,7 +58,7 @@ function bfc_print_event_submission_form($event_submission) {
       <input type="radio" name="event_audience"
              <?php $event_submission->print_checked_for_adult_audience() ?>
              id="audience_adult" value="A">
-             <label for="audience_adult">Adults (<?php print get_option('bfc_drinking_age')  ?>+ only)</label>
+             <label for="audience_adult">Adults (<?php print esc_html(get_option('bfc_drinking_age'))  ?>+ only)</label>
     </div>
 
     <h4>Description</h4>
@@ -322,7 +322,7 @@ function bfc_print_event_submission_form($event_submission) {
     if ($event_submission->has_event_id()) {
     ?>
         <input type="hidden" id="submission_event_id" name="submission_event_id"
-            value="<?php print $event_submission->event_id(); ?>">
+            value="<?php print esc_attr($event_submission->event_id()); ?>">
     <?php
     } # end if
     ?>
@@ -331,14 +331,14 @@ function bfc_print_event_submission_form($event_submission) {
     if ($event_submission->has_editcode()) {
     ?>
         <input type="hidden" id="event_editcode" name="event_editcode"
-            value="<?php print $event_submission->editcode(); ?>">
+            value="<?php print esc_attr($event_submission->editcode()); ?>">
     <?php
     } # end if
     ?>
 
 
     <input type="submit" id="submission_action" name="submission_action"
-         value="<?php print $event_submission->next_action(); ?>">
+         value="<?php print esc_attr($event_submission->next_action()); ?>">
 
     <?php
     if ($event_submission->has_delete()) {

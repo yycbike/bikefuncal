@@ -1086,8 +1086,8 @@ class BfcEventSubmission {
 
     protected function print_value_for_text_input($argname) {
         if (isset($this->event_args[$argname])) {
-            $value = htmlspecialchars($this->event_args[$argname], ENT_QUOTES);
-            printf("value=\"%s\"", $value);
+            $value = $this->event_args[$argname];
+            printf('value="%s"', esc_attr($value));
         }
     }
 
@@ -1145,7 +1145,7 @@ class BfcEventSubmission {
     
     public function print_descr() {
         if (isset($this->event_args['descr'])) {
-            print htmlspecialchars($this->event_args['descr'], ENT_QUOTES);
+            print esc_textarea($this->event_args['descr']);
         }
     }
 
@@ -1311,7 +1311,7 @@ class BfcEventSubmission {
 
             foreach ($this->errors as $error) {
                 print "<li>";
-                print $error;
+                print esc_html($error);
                 print "</li>";
             }
             
@@ -1462,7 +1462,7 @@ class BfcEventSubmission {
 
         foreach ($changes as $change) {
             print "<li>";
-            print $change;
+            print esc_html($change);
             print "</li>";
         }
 
@@ -1498,7 +1498,11 @@ class BfcEventSubmission {
  * Returns the BfcEventSubmission object for this page.
  *
  * The first time through, create the object & do the action.
- * Other times, return the resulting object.
+ * Other times, return the resulting object. This way,
+ * the code that uses the submission state can live
+ * in two different places -- one in the theme for setting
+ * the page title & another in the plugin for displaying the
+ * contents of the page.
  */
 function bfc_event_submission() {
     static $event_submission = null;

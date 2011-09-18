@@ -83,6 +83,10 @@ function mangleemail($email)
 	return "";
     }
 
+    if (!is_email($email)) {
+        return "";
+    }
+
     $image_dir = plugins_url('bikefuncal/images');
 
     $mangle = str_replace("@", "<img border=0 src='${image_dir}/at.gif' alt=' at '>", $email);
@@ -102,6 +106,8 @@ function mangleemail($email)
 // asterisks as boldface markers, replacing convering URLs to links.
 function htmldescription($descr)
 {
+    $image_dir = plugins_url('bikefuncal/images');
+
     $html = preg_replace("/\n\t ]+$/", "", $descr);
     $html = str_replace("&", "&amp;", $html);
     $html = str_replace("<", "&lt;", $html);
@@ -110,9 +116,10 @@ function htmldescription($descr)
     $html = str_replace("\n\n", "<p>", $html);
     $html = str_replace("\n", "<br>", $html);
     $html = preg_replace("/\*([0-9a-zA-Z][0-9a-zA-Z,.!?'\" ]*[0-9a-zA-Z,.!?'\"])\*/", "<strong>$1</strong>", $html);
-    $html = str_replace("@", "<img src=\"images/at.gif\" alt=\"[at]\">", $html);
     $html = preg_replace("/(http:\/\/[^ \t\r\n\"]*[a-zA-Z0-9\/])/", "<a href=\"$1\" class=\"smallhref\">$1</a>", $html);
     $html = preg_replace("/([^\\/])(www\\.[0-9a-zA-Z-.]*[0-9a-zA-Z-])($|[^\\/])/", "$1<a href=\"http://$2/\" class=\"smallhref\">$2</a>$3", $html);
+    // Needs to come after the link replacement
+    $html = str_replace("@", "<img src='${image_dir}/at.gif' alt='[at]'>", $html);
 
     return $html;
 }
