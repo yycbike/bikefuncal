@@ -73,13 +73,17 @@ class TestSubmissionDelete extends BfcTestCase {
         $this->delete_event($exception->event_id(), $exception->db_editcode());
         $this->assert_event_deleted($exception->event_id(), $exception->wordpress_id());
 
-        // Exception survives the main event being deleted
-        // @@@ Evan isn't sure if that's the best approach for the user.
         $this->assertEquals(1, $this->count_calevent_by_id($main_event->event_id()));
 
         // Number of instances of the main event goes down by one, on account of
         // deleting the exception.
         $this->assertEquals($main_event_count - 1, $this->count_caldaily_by_id($main_event->event_id()));
+
+        // Main event's image still exists (make sure the exception didn't delete it).
+        $upload_dirinfo = wp_upload_dir();
+        $image_filename = $upload_dirinfo['basedir'] . $main_event->image();
+        $this->assertTrue(file_exists($image_filename));
+        
     }
 
     function test_event_delete_removes_file() {
