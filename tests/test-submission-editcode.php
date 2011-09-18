@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 require_once('test-case.php');
 
 /**
@@ -41,7 +40,7 @@ class TestSubmissionEditcode extends BfcTestCase {
      * Ensure that the editcode is present in the URL for editing an event.
      */
     function test_edit_url_includes_editcode($event) {
-        $edit_url = get_edit_url_for_event($event->event_id(), $event->editcode());
+        $edit_url = bfc_get_edit_url_for_event($event->event_id(), $event->editcode());
 
         $this->assertTrue(strpos($edit_url, $event->editcode()) !== false);
 

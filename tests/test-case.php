@@ -1,10 +1,9 @@
 <?php
-namespace bike_fun_cal;
 
 /**
  * Generic base class for other tests.
  */
-abstract class BfcTestCase extends \WPTestCase {
+abstract class BfcTestCase extends WPTestCase {
     function setUp() {
         parent::setUp();
         bfc_install();
@@ -261,7 +260,7 @@ abstract class BfcTestCase extends \WPTestCase {
         $submission_args = array(
             'submission_action' => 'edit',
             'submission_event_id' => $event_id,
-            'event_editcode' => get_editcode_for_event($event_id),
+            'event_editcode' => bfc_get_editcode_for_event($event_id),
         );
         $submission->populate_from_query($submission_args, array());
         $submission->do_action();

@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 require_once('test-case.php');
 
 class TestSubmissionNextAction extends BfcTestCase {
