@@ -3,7 +3,7 @@
 # Print the results of submitting an event
 # 
 # $event_submission -- A BfcEventSubmission object.
-function print_event_deletion_result($event_submission) {
+function bfc_print_event_deletion_result($event_submission) {
 
 ?>
 

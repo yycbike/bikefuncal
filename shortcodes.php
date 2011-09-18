@@ -266,11 +266,8 @@ function bfc_get_month_cal_url($month = null, $year = null) {
 # Print the event sumission form (or the results)
 add_shortcode('bfc_event_submission', 'bfc_event_submission_shortcode');
 function bfc_event_submission_shortcode($atts) {
-    global $wp_query;
-    $event_submission = new BfcEventSubmission();
-    $event_submission->populate_from_query($wp_query->query_vars, $_FILES);
-    $event_submission->do_action();
-
+    $event_submission = bfc_event_submission();
+    
     if ($event_submission->page_to_show() == "edit-event") {
         // We have to load the javascript in the footer, because by now
         // the header has already been output and it's too late for that.

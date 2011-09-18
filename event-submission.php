@@ -1478,4 +1478,26 @@ class BfcEventSubmission {
         }
     }
 }
+
+/**
+ * Returns the BfcEventSubmission object for this page.
+ *
+ * The first time through, create the object & do the action.
+ * Other times, return the resulting object.
+ */
+function bfc_event_submission() {
+    static $event_submission = null;
+
+    if ($event_submission === null) {
+        global $wp_query;
+        $event_submission = new BfcEventSubmission();
+        $event_submission->populate_from_query($wp_query->query_vars, $_FILES);
+        $event_submission->do_action();
+    }
+
+    return $event_submission;
+}
+
+
+
 ?>
