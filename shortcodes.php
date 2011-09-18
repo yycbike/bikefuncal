@@ -261,12 +261,22 @@ function bfc_get_month_cal_url($month = null, $year = null) {
     $edit_page = get_page_by_title($edit_page_title);
     $url = get_permalink($edit_page->ID); 
 
+    // If the URL already has a query string, add additional queries with
+    // '&'. Otherwise, initiate a query with '?'
+    $has_query = (parse_url($url, PHP_URL_FRAGMENT) !== null);
+    
     if ($month !== null) {
-        $url .= '&calmonth=' . $month;
+        $url .= sprintf('%scalmonth=%s',
+                        $has_query ? '&' : '?',
+                        $month);
+        $has_query = true;
     }
 
     if ($year !== null) {
-        $url .= '&calyear=' . $year;
+        $url .= sprintf('%scalyear=%s',
+                        $has_query ? '&' : '?',
+                        $year);
+        $has_query = true;
     }
 
     return $url;
