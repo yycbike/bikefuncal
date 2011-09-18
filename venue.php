@@ -10,8 +10,8 @@ namespace bike_fun_cal;
  */
 function venues_admin_page() {
 
-    # We can just call this directly; no futzing around with making it part
-    # of the footer.
+    // We can just call this directly; no futzing around with making it part
+    // of the footer.
     load_venue_list_javascript();
     
 ?>
@@ -80,7 +80,8 @@ Don't worry about the <em>Lock</em> field. Just leave it checked.
 <?php    
 }
 
-add_action('wp_ajax_get-known-venues', function() {
+add_action('wp_ajax_get-known-venues', 'bike_fun_cal\get_known_venues_ajax_action');
+function get_known_venues_ajax_action() {
     // Don't bother checking a nonce, because this is a nondestructive
     // action.
 
@@ -100,9 +101,10 @@ add_action('wp_ajax_get-known-venues', function() {
     echo $json, "\n";
 
     exit;
-});
+}
 
-add_action('wp_ajax_edit-venue', function() {
+add_action('wp_ajax_edit-venue', 'bike_fun_cal\edit_venue_ajax_action');
+function edit_venue_ajax_action() {
     $result = array();
     $args = array();
 
@@ -198,9 +200,10 @@ add_action('wp_ajax_edit-venue', function() {
 
     print json_encode($result);
     exit;
-});
+}
 
-add_action('wp_ajax_delete-venue', function() {
+add_action('wp_ajax_delete-venue', 'bike_fun_cal\delete_venue_ajax_action');
+function delete_venue_ajax_action() {
     $result = array();
 
     if (!wp_verify_nonce($_POST['nonce'], 'bfc-venue')) {
@@ -233,7 +236,7 @@ add_action('wp_ajax_delete-venue', function() {
 
     print json_encode($result);
     exit;
-});
+}
 
 #
 # Load the JavaScript code that the event submission page needs.

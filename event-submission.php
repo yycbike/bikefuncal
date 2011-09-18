@@ -1388,32 +1388,37 @@ class BfcEventSubmission {
             'hidecontact'   => 'Don\'t publish my other contact info online',
         );
 
-        // Convert from internal representation to something suitable to present to people.
-        $human_readable_value_for = array(
-            'audience'  => function($audience) {
-                switch ($audience) {
-                    case "G": return 'General';
-                    case "F": return 'Family Friendly';
-                    case "A": return 'Adults Only';
-                    default: die();
-                }
-            },
-            'eventtime' => function($eventtime) { return hmmpm($eventtime); },
-            'eventduration' => function($minutes) { return sprintf('%d minutes', $minutes); },
-            'hidephone' => function($value)  { return $value ? 'Yes' : 'No'; },
-            'hideemail' => function($value)  { return $value ? 'Yes' : 'No'; },
-            'hidecontact' => function($value)  { return $value ? 'Yes' : 'No'; },
-
-            // Make URL suitable for showing in the browser
-            'weburl'      => function($value)  { return esc_url($value); },
-        );
-
         foreach ($this->event_args_changes as $fieldname) {
             $value = $this->event_args[$fieldname];
 
             // Convert value to human-readable, if appropriate
-            if (isset($human_readable_value_for[$fieldname])) {
-                $value = $human_readable_value_for[$fieldname]($value);
+            switch($fieldname) {
+                case 'audience':
+                    switch($value) {
+                        case "G": $value = 'General'; break;
+                        case "F": $value = 'Family Friendly'; break;
+                        case "A": $value = 'Adults Only'; break;
+                        default: die();
+                    }
+                    break;
+
+                case 'eventtime':
+                    $value = hmmpm($value);
+                    break;
+
+                case 'eventduration':
+                    $value = sprintf('%d minutes', $value);
+                    break;
+
+                case 'hidephone':
+                case 'hideemail':
+                case 'hidecontact':
+                    $value = $value ? 'Yes' : 'No';
+                    break;
+
+                default:
+                    // Don't need to change the value. Do nothing.
+                    break;
             }
 
             // Choose a message to tell the user

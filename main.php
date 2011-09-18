@@ -36,7 +36,8 @@ register_activation_hook(__FILE__,'bfc_install');
 //
 // We try to prefix the parameters with things like "cal" or "event", to avoid conflicts
 // with any parametrs WordPress may use internally.
-add_filter('query_vars', function($qvars) {
+add_filter('query_vars', 'bike_fun_cal\query_vars_filter');
+function query_vars_filter($qvars) {
     // Query vars for browsing the calendar.
     $qvars[] = 'calyear';
     $qvars[] = 'calmonth';
@@ -109,10 +110,11 @@ add_filter('query_vars', function($qvars) {
     }
     
     return $qvars;
-});
+};
 
 // Create the custom post type for bfc-events
-add_action('init', function() {
+add_action('init', 'bike_fun_cal\init_action');
+function init_action() {
     register_post_type('bfc-event', array(
         'description' => 'Events in the bike fun calendar',
         'public' => true,
@@ -147,15 +149,17 @@ add_action('init', function() {
         
     // Remove entries from the drop-down list of "bulk actions", on the
     // edit page in the admin menu.
-    add_action('bulk_actions-edit-bfc-event', function($actions) {
+    add_action('bulk_actions-edit-bfc-event', 'bike_fun_cal\edit_bfc_event_action');
+    function edit_bfc_event_action($actions) {
         unset($actions['edit']);
         unset($actions['trash']);
 
         return $actions;
-    });
+    }
 
     // CSS to hide certain things from the admin page.
-    add_action('admin_print_styles', function() {
+    add_action('admin_print_styles', 'bike_fun_cal\admin_print_styles_action');
+    function admin_print_styles_action() {
         global $current_screen;
         if ('edit-bfc-event' != $current_screen->id) {
             return;
@@ -174,10 +178,11 @@ add_action('init', function() {
             }
         </style>
         <?php
-    });
+    }
 
     // Customize the columns in the list of bike events.
-    add_filter("manage_bfc-event_posts_columns", function($old_cols) {
+    add_filter("manage_bfc-event_posts_columns", 'bike_fun_cal\bfc_event_posts_columns_filter');
+    function bfc_event_posts_columns_filter($old_cols) {
         $new_cols = array(
             'cb' => $old_cols['cb'], // Checkbox
 
@@ -191,10 +196,11 @@ add_action('init', function() {
         );
 
         return $new_cols;
-    });
+    };
 
     // Display custom columns in the list of bike events.
-    add_action("manage_bfc-event_posts_custom_column", function($col) {
+    add_action("manage_bfc-event_posts_custom_column", 'bike_fun_cal\bfc_event_posts_custom_column_action');
+    function bfc_event_posts_custom_column_action($col) {
         global $post;
 
         if ($col == 'bfc_title' && get_post_type($post->ID) == 'bfc-event') {
@@ -204,29 +210,32 @@ add_action('init', function() {
                    get_permalink($post->ID),
                    esc_html($post->post_title));
         }
-    });
+    };
 
     // There is a drop-down of common actions. Remove the new event link
     // from it.
-    add_filter('favorite_actions', function($actions) {
+    add_filter('favorite_actions', 'bike_fun_cal\bfc_favorite_actions_filter');
+    function bfc_favorite_actions_filter($actions) {
         $new_link = 'post-new.php?post_type=bfc-event';
         if (isset($actions[$new_link])) {
             unset($actions[$new_link]);
         }
         return $actions;
-    });
-});
+    };
+};
 
 // Change links for editing bike events to go to the regular edit page,
 // not the one WordPress generated.
-add_filter('get_edit_post_link', function($url, $post_id, $context) {
+add_filter('get_edit_post_link', 'bike_fun_cal\get_edit_post_link_filter',
+           10, 3); // 10 = priority (default); 3 = pass in all 3 arguments.
+function get_edit_post_link_filter($url, $post_id, $context) {
     if (get_post_type($post_id) == 'bfc-event') {
         return get_edit_url_for_wordpress_id($post_id);
     }
     else {
         return $url;
     }
-}, 10, 3); // 10 = priority (default); 3 = pass in all 3 arguments.
+}
 
 // Return whether or not to show options for administering the calendar,
 // such as editing other people's events.
@@ -267,17 +276,17 @@ add_action('admin_menu', function() {
 
 function options_admin_page() {
     // Attach javascript
-    add_action('admin_footer', function() {
-            // Register the google maps API.
-            wp_register_script('google-maps', 'http://maps.googleapis.com/maps/api/js?sensor=false', null);
+    add_action('admin_footer', 'bike_fun_cal\admin_footer_action');
+    function admin_footer_action() {
+        // Register the google maps API.
+        wp_register_script('google-maps', 'http://maps.googleapis.com/maps/api/js?sensor=false', null);
 
-            wp_register_script('bfc-options',
-                               plugins_url('bikefuncal/options.js'),
-                               array('google-maps'));
+        wp_register_script('bfc-options',
+                           plugins_url('bikefuncal/options.js'),
+                           array('google-maps'));
 
-            wp_print_scripts('bfc-options');
-        });
-
+        wp_print_scripts('bfc-options');
+    };
 
     ?>
     <div class="wrap">
@@ -357,7 +366,6 @@ function options_admin_page() {
             <em>People coming on adults-only rides need to be at least this old</em>
             </p>
         
-
             <p>
             <input type='submit' value='save'>
             </p>
@@ -369,7 +377,8 @@ function options_admin_page() {
 /**
  * When showing a post of type bfc-event, show the event details as the body of the page.
  */
-add_filter('the_content', function($content) {
+add_filter('the_content', 'bike_fun_cal\the_content_filter');
+function the_content_filter($content) {
     if (get_post_type() == 'bfc-event') {
         // This is a calendar event.
         // Show the event listing in the body.
@@ -425,9 +434,10 @@ END_QUERY;
         // This is some other kind of page. Don't mess with it.
         return $content;
     }
-});
+}
 
-add_action('admin_init', function() {
+add_action('admin_init', 'bike_fun_cal\admin_init_action');
+function admin_init_action() {
     register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bike_fun_cal\sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bike_fun_cal\sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');
@@ -437,7 +447,7 @@ add_action('admin_init', function() {
     register_setting('bikefuncal-options', 'bfc_latitude');
     register_setting('bikefuncal-options', 'bfc_longitude');
     register_setting('bikefuncal-options', 'bfc_calendar_email');
-});
+}
 
 /**
  * Ensure that the festival date is a well-formatted date.

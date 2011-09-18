@@ -10,7 +10,8 @@ namespace bike_fun_cal;
 
 // Add the calevent table to a search query, so that we can use its
 // fields in 'posts_join'
-add_filter('posts_join', function($join) {
+add_filter('posts_join', 'bike_fun_cal\posts_join_filter');
+function posts_join_filter($join) {
     global $wp_query, $wpdb;        
     global $calevent_table_name;
 
@@ -20,11 +21,12 @@ add_filter('posts_join', function($join) {
     }
 
     return $join;
-});
+}
 
 // Rewrite searches so that they search both the usual WordPress fields, but also the
 // custom fields.
-add_filter('posts_where', function($old_where) {
+add_filter('posts_where', 'bike_fun_cal\posts_where_filter');
+function posts_where_filter($old_where) {
     global $wp_query, $wpdb;        
     global $calevent_table_name;
 
@@ -55,7 +57,6 @@ add_filter('posts_where', function($old_where) {
     else {
         return $old_where;
     }
-});
-
+}
 
 ?>
