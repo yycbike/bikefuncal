@@ -1,6 +1,4 @@
 <?php
-namespace bike_fun_cal;
-
 // Functions related to creating & updating calendar events.
 //
 // This is a loose port of calform.php & calsubmit.php from the old
@@ -475,7 +473,7 @@ class BfcEventSubmission {
                     return '0';
                 }
                 else {
-                    throw new \Exception("Bad value for $field_name: $value");
+                    throw new Exception("Bad value for $field_name: $value");
                 }
 
             default:
@@ -871,7 +869,7 @@ class BfcEventSubmission {
             if (count($exceptions) > 0) {
                 $body .= "It has exceptions on these days. (Follow the links to edit the exceptions.)\n";
                 foreach ($exceptions as $exception) {
-                    $edit_url = get_edit_url_for_event($exception['exceptionid']);
+                    $edit_url = bfc_get_edit_url_for_event($exception['exceptionid']);
                     $date = date('l, F j', strtotime($exception['sqldate']));
                     $body .= sprintf("* %s %s\n", $date, $edit_url);
                 }
@@ -894,7 +892,7 @@ class BfcEventSubmission {
 
         // Provide links
         if ($this->action != 'delete') {
-            $edit_url = get_edit_url_for_event($this->event_id(), $this->editcode());
+            $edit_url = bfc_get_edit_url_for_event($this->event_id(), $this->editcode());
             $permalink_url = get_permalink($this->wordpress_id());
 
             $body .= sprintf("To make changes to your event, go here: %s\n", $edit_url);
@@ -1303,7 +1301,7 @@ class BfcEventSubmission {
             return false;
         }
         
-        if (!show_admin_options()) {
+        if (!bfc_show_admin_options()) {
             // Current user isn't an admin (or current user isn't logged in)
             return false;
         }

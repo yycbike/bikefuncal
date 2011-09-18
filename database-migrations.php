@@ -1,6 +1,4 @@
 <?php
-namespace bike_fun_cal;
-
 # Functions related to installing the datbase, and migrating between versions.
 
 # Names of tables in the database.
@@ -16,7 +14,7 @@ $caladdress_table_name =
 
 #
 # Create the tables in the WordPress database.
-function install_db_1() {
+function bfc_install_db_1() {
     global $calevent_table_name;
     global $caldaily_table_name;
     global $wpdb;
@@ -105,7 +103,7 @@ function install_db_1() {
     return true;
 }
 
-function install_db_2() {
+function bfc_install_db_2() {
     global $calevent_table_name;
     global $wpdb;
 
@@ -119,7 +117,7 @@ function install_db_2() {
     return true;
 }
 
-function install_db_3() {
+function bfc_install_db_3() {
     global $caladdress_table_name;
     global $wpdb;
 
@@ -145,7 +143,7 @@ function install_db_3() {
     return true;
 }
 
-function install_db_4() {
+function bfc_install_db_4() {
     global $calevent_table_name;
     global $wpdb;
 
@@ -173,10 +171,10 @@ function bfc_install() {
         $db_version = (int) $db_version;
     }
 
-    $install_functions = array('bike_fun_cal\install_db_1',
-                               'bike_fun_cal\install_db_2',
-                               'bike_fun_cal\install_db_3',
-                               'bike_fun_cal\install_db_4',
+    $install_functions = array('bfc_install_db_1',
+                               'bfc_install_db_2',
+                               'bfc_install_db_3',
+                               'bfc_install_db_4',
                                );
 
     for ($db_level = $db_version;

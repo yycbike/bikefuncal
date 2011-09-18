@@ -1,13 +1,12 @@
 <?php
-namespace bike_fun_cal;
 
 # Print the results of submitting an event
 # 
 # $event_submission -- A BfcEventSubmission object.
-function print_event_submission_result($event_submission) {
+function bfc_print_event_submission_result($event_submission) {
 
-$edit_url = get_edit_url_for_event($event_submission->event_id(),
-                                   $event_submission->editcode());
+$edit_url = bfc_get_edit_url_for_event($event_submission->event_id(),
+                                       $event_submission->editcode());
 
 $permalink_url = get_permalink($event_submission->wordpress_id());                                       
 ?>
@@ -55,7 +54,7 @@ if (count($exceptions) > 0) {
     foreach ($exceptions as $exception) {
         print "<li>";
 
-        $edit_url = get_edit_url_for_event($exception['exceptionid']);
+        $edit_url = bfc_get_edit_url_for_event($exception['exceptionid']);
         print "<a href='${edit_url}'>";
         print date("l, F j", strtotime($exception['sqldate']));
         print "</a>";

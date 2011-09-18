@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 
 /**
  * Make the built-in WordPress search also seach for events in the calendar.
@@ -10,8 +9,8 @@ namespace bike_fun_cal;
 
 // Add the calevent table to a search query, so that we can use its
 // fields in 'posts_join'
-add_filter('posts_join', 'bike_fun_cal\posts_join_filter');
-function posts_join_filter($join) {
+add_filter('posts_join', 'bfc_posts_join_filter');
+function bfc_posts_join_filter($join) {
     global $wp_query, $wpdb;        
     global $calevent_table_name;
 
@@ -25,8 +24,8 @@ function posts_join_filter($join) {
 
 // Rewrite searches so that they search both the usual WordPress fields, but also the
 // custom fields.
-add_filter('posts_where', 'bike_fun_cal\posts_where_filter');
-function posts_where_filter($old_where) {
+add_filter('posts_where', 'bfc_posts_where_filter');
+function bfc_posts_where_filter($old_where) {
     global $wp_query, $wpdb;        
     global $calevent_table_name;
 

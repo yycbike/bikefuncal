@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 
 // This file comes from the old, pre-wordpress code (where it was named view.php).
 //
@@ -666,8 +665,8 @@ function fullentry($record, $for, $include_images)
     // Show the edit link to admin users.
     // Except if this is a preview; then it's meaningless
     // because they're already editing.
-    if (show_admin_options() && $for != 'preview') {
-        $edit_url = get_edit_url_for_event($id, $record['editcode']);
+    if (bfc_show_admin_options() && $for != 'preview') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
         print "<a href=\"$edit_url\">Edit Event</a>";
     }
 
@@ -736,7 +735,7 @@ END_QUERY;
  * Get a URL for editing an event, based upon the wordpress_id for that
  * event.
  */
-function get_edit_url_for_wordpress_id($wordpress_id) {
+function bfc_get_edit_url_for_wordpress_id($wordpress_id) {
     global $wpdb;
     global $calevent_table_name;
     $sql = $wpdb->prepare("SELECT id, editcode FROM ${calevent_table_name} " .
@@ -746,13 +745,13 @@ function get_edit_url_for_wordpress_id($wordpress_id) {
     if ($wpdb->num_rows != 1) {
         die();
     }
-    return get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
+    return bfc_get_edit_url_for_event($records[0]['id'], $records[0]['editcode']);
 }
 
 /**
  * Look up an event's editcode from the datbase.
  */
-function get_editcode_for_event($id) {
+function bfc_get_editcode_for_event($id) {
     global $wpdb;
     global $calevent_table_name;
     $sql = $wpdb->prepare("SELECT editcode FROM ${calevent_table_name} " .
@@ -770,9 +769,9 @@ function get_editcode_for_event($id) {
  * Get a URL for editing an event, based upon the id for that
  * event.
  */
-function get_edit_url_for_event($id, $editcode = null) {
+function bfc_get_edit_url_for_event($id, $editcode = null) {
     if (!isset($id)) {
-        die("get_edit_url_for_event: id is unset");
+        die("bfc_get_edit_url_for_event: id is unset");
     }
 
     $edit_page_title = 'New Event';
@@ -781,7 +780,7 @@ function get_edit_url_for_event($id, $editcode = null) {
     
     // No editcode provided; look it up in the database
     if ($editcode === null) {
-        $editcode = get_editcode_for_event($id);
+        $editcode = bfc_get_editcode_for_event($id);
     }
 
     return $base_url .
@@ -792,7 +791,7 @@ function get_edit_url_for_event($id, $editcode = null) {
 
 // This is called by the event submission form to preview the
 // event listing.
-function preview_event_submission() {
+function bfc_preview_event_submission() {
     // This sends a plain-text response, so no
     // header is needed.
 
@@ -829,9 +828,9 @@ function preview_event_submission() {
 
 // Add this to WordPress' registry of AJAX actions.
 add_action('wp_ajax_nopriv_preview-event-submission',
-           'bike_fun_cal\preview_event_submission');
+           'bfc_preview_event_submission');
 add_action('wp_ajax_preview-event-submission',
-           'bike_fun_cal\preview_event_submission');
+           'bfc_preview_event_submission');
 
 //ex:set sw=4 embedlimit=60000:
 ?>

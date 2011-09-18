@@ -1,6 +1,4 @@
 <?php
-namespace bike_fun_cal;
-
 /*
  * Plugin Name: Bike fun calendar
  */
@@ -36,8 +34,8 @@ register_activation_hook(__FILE__,'bfc_install');
 //
 // We try to prefix the parameters with things like "cal" or "event", to avoid conflicts
 // with any parametrs WordPress may use internally.
-add_filter('query_vars', 'bike_fun_cal\query_vars_filter');
-function query_vars_filter($qvars) {
+add_filter('query_vars', 'bfc_query_vars_filter');
+function bfc_query_vars_filter($qvars) {
     // Query vars for browsing the calendar.
     $qvars[] = 'calyear';
     $qvars[] = 'calmonth';
@@ -113,8 +111,8 @@ function query_vars_filter($qvars) {
 };
 
 // Create the custom post type for bfc-events
-add_action('init', 'bike_fun_cal\init_action');
-function init_action() {
+add_action('init', 'bfc_init_action');
+function bfc_init_action() {
     register_post_type('bfc-event', array(
         'description' => 'Events in the bike fun calendar',
         'public' => true,
@@ -149,8 +147,8 @@ function init_action() {
         
     // Remove entries from the drop-down list of "bulk actions", on the
     // edit page in the admin menu.
-    add_action('bulk_actions-edit-bfc-event', 'bike_fun_cal\edit_bfc_event_action');
-    function edit_bfc_event_action($actions) {
+    add_action('bulk_actions-edit-bfc-event', 'bfc_edit_bfc_event_action');
+    function bfc_edit_bfc_event_action($actions) {
         unset($actions['edit']);
         unset($actions['trash']);
 
@@ -158,8 +156,8 @@ function init_action() {
     }
 
     // CSS to hide certain things from the admin page.
-    add_action('admin_print_styles', 'bike_fun_cal\admin_print_styles_action');
-    function admin_print_styles_action() {
+    add_action('admin_print_styles', 'bfc_admin_print_styles_action');
+    function bfc_admin_print_styles_action() {
         global $current_screen;
         if ('edit-bfc-event' != $current_screen->id) {
             return;
@@ -181,7 +179,7 @@ function init_action() {
     }
 
     // Customize the columns in the list of bike events.
-    add_filter("manage_bfc-event_posts_columns", 'bike_fun_cal\bfc_event_posts_columns_filter');
+    add_filter("manage_bfc-event_posts_columns", 'bfc_event_posts_columns_filter');
     function bfc_event_posts_columns_filter($old_cols) {
         $new_cols = array(
             'cb' => $old_cols['cb'], // Checkbox
@@ -199,7 +197,7 @@ function init_action() {
     };
 
     // Display custom columns in the list of bike events.
-    add_action("manage_bfc-event_posts_custom_column", 'bike_fun_cal\bfc_event_posts_custom_column_action');
+    add_action("manage_bfc-event_posts_custom_column", 'bfc_event_posts_custom_column_action');
     function bfc_event_posts_custom_column_action($col) {
         global $post;
 
@@ -214,7 +212,7 @@ function init_action() {
 
     // There is a drop-down of common actions. Remove the new event link
     // from it.
-    add_filter('favorite_actions', 'bike_fun_cal\bfc_favorite_actions_filter');
+    add_filter('favorite_actions', 'bfc_favorite_actions_filter');
     function bfc_favorite_actions_filter($actions) {
         $new_link = 'post-new.php?post_type=bfc-event';
         if (isset($actions[$new_link])) {
@@ -226,11 +224,11 @@ function init_action() {
 
 // Change links for editing bike events to go to the regular edit page,
 // not the one WordPress generated.
-add_filter('get_edit_post_link', 'bike_fun_cal\get_edit_post_link_filter',
+add_filter('get_edit_post_link', 'bfc_get_edit_post_link_filter',
            10, 3); // 10 = priority (default); 3 = pass in all 3 arguments.
-function get_edit_post_link_filter($url, $post_id, $context) {
+function bfc_get_edit_post_link_filter($url, $post_id, $context) {
     if (get_post_type($post_id) == 'bfc-event') {
-        return get_edit_url_for_wordpress_id($post_id);
+        return bfc_get_edit_url_for_wordpress_id($post_id);
     }
     else {
         return $url;
@@ -244,40 +242,42 @@ function get_edit_post_link_filter($url, $post_id, $context) {
 // a plugin define its own set of capability levels. That could be useful
 // if we ever want to have multiple kinds of admins/editors.
 // See: http://codex.wordpress.org/Roles_and_Capabilities
-function show_admin_options() {
+function bfc_show_admin_options() {
     return current_user_can('edit_posts');
 }
 
 // Add options to the WordPress admin menu
-add_action('admin_menu', function() {
+add_action('admin_menu', 'bfc_admin_menu_action');
+function bfc_admin_menu_action() {
     add_menu_page('Bike Fun Cal', // Page title
-                         'Bike Fun Cal', // Menu title
-                         'manage_options', // capability
-                         'bfc-top',   // menu slug
-                         function() {
-                             echo "<p>TBD</p>";
-                         });
+                  'Bike Fun Cal', // Menu title
+                  'manage_options', // capability
+                  'bfc-top',   // menu slug
+                  'bfc_top_admin_page');
 
     add_submenu_page('bfc-top', // parent
                      'Edit Known Venues', // title
                      'Venues',
                      'manage_options', // capability
                      'bfc-venues',   // menu slug
-                     'bike_fun_cal\venues_admin_page');  // function callback
+                     'bfc_venues_admin_page');  // function callback
 
     add_submenu_page('bfc-top', // parent
                      'Bike Fun Cal Options', // title
                      'Options',
                      'manage_options', // capability
                      'bfc-options',   // menu slug
-                     'bike_fun_cal\options_admin_page');  // function callback
-                     
-});
+                     'bfc_options_admin_page');  // function callback
+}
 
-function options_admin_page() {
+function bfc_top_admin_page() {
+    echo "<p>TBD</p>";
+}
+
+function bfc_options_admin_page() {
     // Attach javascript
-    add_action('admin_footer', 'bike_fun_cal\admin_footer_action');
-    function admin_footer_action() {
+    add_action('admin_footer', 'bfc_admin_footer_action');
+    function bfc_admin_footer_action() {
         // Register the google maps API.
         wp_register_script('google-maps', 'http://maps.googleapis.com/maps/api/js?sensor=false', null);
 
@@ -377,8 +377,8 @@ function options_admin_page() {
 /**
  * When showing a post of type bfc-event, show the event details as the body of the page.
  */
-add_filter('the_content', 'bike_fun_cal\the_content_filter');
-function the_content_filter($content) {
+add_filter('the_content', 'bfc_the_content_filter');
+function bfc_the_content_filter($content) {
     if (get_post_type() == 'bfc-event') {
         // This is a calendar event.
         // Show the event listing in the body.
@@ -436,10 +436,10 @@ END_QUERY;
     }
 }
 
-add_action('admin_init', 'bike_fun_cal\admin_init_action');
-function admin_init_action() {
-    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bike_fun_cal\sanitize_festival_date');
-    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bike_fun_cal\sanitize_festival_date');
+add_action('admin_init', 'bfc_admin_init_action');
+function bfc_admin_init_action() {
+    register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
+    register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');
     register_setting('bikefuncal-options', 'bfc_city');
     register_setting('bikefuncal-options', 'bfc_province');
@@ -452,7 +452,7 @@ function admin_init_action() {
 /**
  * Ensure that the festival date is a well-formatted date.
  */
-function sanitize_festival_date($input) {
+function bfc_sanitize_festival_date($input) {
     $date = strtotime($input);
     if ($date === false) {
         return "";

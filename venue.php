@@ -1,5 +1,5 @@
 <?php
-namespace bike_fun_cal;
+
 /**
  * Functions related to the known-venues list
  */
@@ -8,11 +8,11 @@ namespace bike_fun_cal;
 /**
  * Display the known-venues list for editing
  */
-function venues_admin_page() {
+function bfc_venues_admin_page() {
 
     // We can just call this directly; no futzing around with making it part
     // of the footer.
-    load_venue_list_javascript();
+    bfc_load_venue_list_javascript();
     
 ?>
 
@@ -26,7 +26,7 @@ database knows about that venue. Add known venues here.
 </p>
 
 <p>
-Don't worry about the <em>Lock</em> field. Just leave it checked.
+Don't worry about the <em>Lock</em> field. Just leave it alone.
 </p>
 
 <table id='known-venues'>
@@ -80,8 +80,8 @@ Don't worry about the <em>Lock</em> field. Just leave it checked.
 <?php    
 }
 
-add_action('wp_ajax_get-known-venues', 'bike_fun_cal\get_known_venues_ajax_action');
-function get_known_venues_ajax_action() {
+add_action('wp_ajax_get-known-venues', 'bfc_get_known_venues_ajax_action');
+function bfc_get_known_venues_ajax_action() {
     // Don't bother checking a nonce, because this is a nondestructive
     // action.
 
@@ -103,8 +103,8 @@ function get_known_venues_ajax_action() {
     exit;
 }
 
-add_action('wp_ajax_edit-venue', 'bike_fun_cal\edit_venue_ajax_action');
-function edit_venue_ajax_action() {
+add_action('wp_ajax_edit-venue', 'bfc_edit_venue_ajax_action');
+function bfc_edit_venue_ajax_action() {
     $result = array();
     $args = array();
 
@@ -202,8 +202,8 @@ function edit_venue_ajax_action() {
     exit;
 }
 
-add_action('wp_ajax_delete-venue', 'bike_fun_cal\delete_venue_ajax_action');
-function delete_venue_ajax_action() {
+add_action('wp_ajax_delete-venue', 'bfc_delete_venue_ajax_action');
+function bfc_delete_venue_ajax_action() {
     $result = array();
 
     if (!wp_verify_nonce($_POST['nonce'], 'bfc-venue')) {
@@ -242,7 +242,7 @@ function delete_venue_ajax_action() {
 # Load the JavaScript code that the event submission page needs.
 #
 # This is designed to be run in the wp_footer action.
-function load_venue_list_javascript() {
+function bfc_load_venue_list_javascript() {
     # WordPress ships with a crappy old version of jquery hotkeys. It breaks
     # when binding return. Use the newer version.
     $hotkeys_js_url = plugins_url('bikefuncal/jquery.hotkeys/jquery.hotkeys.js');
@@ -264,7 +264,7 @@ function load_venue_list_javascript() {
 
 # Return an associative array of location names 
 # mapped to addresses.
-function venue_list() {
+function bfc_venue_list() {
     global $wpdb;
     global $caladdress_table_name;
 

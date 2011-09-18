@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 
 #
 # Functions for shortcodes.
@@ -7,7 +6,7 @@ namespace bike_fun_cal;
 # Reference: http://codex.wordpress.org/Shortcode_API
 
 # Return the dates a calendar covers
-function get_cal_dates($atts) {
+function bfc_get_cal_dates($atts) {
     if ($atts['for'] == 'palooza') {
         # Start and End can be specified to show archived Paloozas
         $start = isset($atts['start']) ? $atts['start'] : get_option('bfc_festival_start_date');
@@ -68,7 +67,7 @@ function get_cal_dates($atts) {
 # Parameters:
 # $type -- What to print. Either 'overview' or 'listings'
 # $atts -- The attributes passed in to the shortcode handler.
-function overview_or_event_listings($type, $atts) {
+function bfc_overview_or_event_listings($type, $atts) {
     if (!isset($atts['for'])) {
         die("Did an overview calendar or event listing without specifying 'for'");
     }
@@ -86,7 +85,7 @@ function overview_or_event_listings($type, $atts) {
         die("Bad value of for: " . $atts['for']);
     }
 
-    list($startdate, $enddate) = get_cal_dates($atts);
+    list($startdate, $enddate) = bfc_get_cal_dates($atts);
 
     # WordPress wants shortcodes to return their content as a string,
     # not output it with print statements. But all of the existing code
@@ -123,31 +122,31 @@ function overview_or_event_listings($type, $atts) {
 # Print the overview calendar that goes on a page.
 #
 # This assumes you'll also put an event listing on the same page.
-add_shortcode('bfc_overview_calendar', 'bike_fun_cal\bfc_overview_calendar_shortcode');
+add_shortcode('bfc_overview_calendar', 'bfc_overview_calendar_shortcode');
 function bfc_overview_calendar_shortcode($atts) {
-    return overview_or_event_listings('overview', $atts);
+    return bfc_overview_or_event_listings('overview', $atts);
 }
 
 #
 # Print the event listings. 
-add_shortcode('bfc_event_listings', 'bike_fun_cal\bfc_event_listings_shortcode');
+add_shortcode('bfc_event_listings', 'bfc_event_listings_shortcode');
 function bfc_event_listings_shortcode($atts) {
-    return overview_or_event_listings('listings', $atts);
+    return bfc_overview_or_event_listings('listings', $atts);
 }
 
 #
 # Print the button to navigate to the previous set of dates
 # in the calendar. 
-add_shortcode('bfc_cal_date_navigation', 'bike_fun_cal\bfc_cal_date_navigation_shortcode');
+add_shortcode('bfc_cal_date_navigation', 'bfc_cal_date_navigation_shortcode');
 function bfc_cal_date_navigation_shortcode($atts) {
     if ($atts['for'] == 'current') {
-        list($startdate, $enddate) = get_cal_dates($atts);
+        list($startdate, $enddate) = bfc_get_cal_dates($atts);
         
         if (date("F", $startdate) != date("F", $enddate)) {
             # start & end dates are on different months
 
-            $prev_url = get_month_cal_url(date("m", $startdate), date("y", $startdate));
-            $next_url = get_month_cal_url(date("m", $enddate), date("y", $enddate));
+            $prev_url = bfc_get_month_cal_url(date("m", $startdate), date("y", $startdate));
+            $next_url = bfc_get_month_cal_url(date("m", $enddate), date("y", $enddate));
 
             $prev_month_name = date("F", $startdate);
             $next_month_name = date("F", $enddate);
@@ -166,9 +165,9 @@ function bfc_cal_date_navigation_shortcode($atts) {
             $prev_month = $startdate - (86400 * 28);
             $next_month = $enddate   + (86400 * 28);
 
-            $prev_url = get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
-            $next_url = get_month_cal_url(date("m", $next_month), date("y", $next_month));
-            $curr_url = get_month_cal_url(date("m", $startdate),  date("y", $startdate));
+            $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
+            $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
+            $curr_url = bfc_get_month_cal_url(date("m", $startdate),  date("y", $startdate));
 
             $prev_month_name = date("F", $prev_month);
             $next_month_name = date("F", $next_month);
@@ -188,7 +187,7 @@ function bfc_cal_date_navigation_shortcode($atts) {
         }
     }
     else if ($atts['for'] == 'month') {
-        list($startdate, $enddate) = get_cal_dates($atts);
+        list($startdate, $enddate) = bfc_get_cal_dates($atts);
 
         $prev_month = mktime(0, 0, 0,
                              date('m', $startdate) - 1,
@@ -199,8 +198,8 @@ function bfc_cal_date_navigation_shortcode($atts) {
                              1,
                              date('Y', $startdate));
 
-        $prev_url = get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
-        $next_url = get_month_cal_url(date("m", $next_month), date("y", $next_month));
+        $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
+        $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
                                      
         $prev_month_name = date("F", $prev_month);
         $next_month_name = date("F", $next_month);
@@ -220,11 +219,11 @@ function bfc_cal_date_navigation_shortcode($atts) {
 
 # A shorttag that returns the number of events. It's meant to show how many
 # events are in a palooza (current or archived).
-add_shortcode('bfc_cal_count', 'bike_fun_cal\bfc_cal_count_shortcode');
+add_shortcode('bfc_cal_count', 'bfc_cal_count_shortcode');
 function bfc_cal_count_shortcode($atts) {
     # Start and End can be specified to show archived Paloozas.
     #
-    # get_cal_dates() returns times as integers and we want strings,
+    # bfc_get_cal_dates() returns times as integers and we want strings,
     # so don't bother calling it.
     $start = isset($atts['start']) ? $atts['start'] : get_option('bfc_festival_start_date');
     $end   = isset($atts['end'])   ? $atts['end']   : get_option('bfc_festival_end_date');
@@ -247,7 +246,7 @@ function bfc_cal_count_shortcode($atts) {
     return $count;
 }
 
-function get_month_cal_url($month = null, $year = null) {
+function bfc_get_month_cal_url($month = null, $year = null) {
     $edit_page_title = 'Monthly Calendar';
     $edit_page = get_page_by_title($edit_page_title);
     $url = get_permalink($edit_page->ID); 
@@ -265,7 +264,7 @@ function get_month_cal_url($month = null, $year = null) {
 
 #
 # Print the event sumission form (or the results)
-add_shortcode('bfc_event_submission', 'bike_fun_cal\bfc_event_submission_shortcode');
+add_shortcode('bfc_event_submission', 'bfc_event_submission_shortcode');
 function bfc_event_submission_shortcode($atts) {
     global $wp_query;
     $event_submission = new BfcEventSubmission();
@@ -275,14 +274,14 @@ function bfc_event_submission_shortcode($atts) {
     if ($event_submission->page_to_show() == "edit-event") {
         // We have to load the javascript in the footer, because by now
         // the header has already been output and it's too late for that.
-        add_action('wp_footer', 'bike_fun_cal\load_event_submission_form_javascript');
-        print_event_submission_form($event_submission);
+        add_action('wp_footer', 'load_event_submission_form_javascript');
+        bfc_print_event_submission_form($event_submission);
     }
     else if ($event_submission->page_to_show() == "event-updated") {
-        print_event_submission_result($event_submission);
+        bfc_print_event_submission_result($event_submission);
     }
     else if ($event_submission->page_to_show() == "event-deleted") {
-        print_event_deletion_result($event_submission);
+        bfc_print_event_deletion_result($event_submission);
     }
     else {
         die();
@@ -322,7 +321,7 @@ function load_event_submission_form_javascript() {
         # We have to use l10n_print_after to pass JSON-encoded data.
         # See: http://wordpress.stackexchange.com/q/8655
         'l10n_print_after' =>
-            'BikeFunAjax.venues = ' . json_encode(venue_list()) . ';',
+            'BikeFunAjax.venues = ' . json_encode(bfc_venue_list()) . ';',
         );
     wp_localize_script('event-submission', 'BikeFunAjax', $ajax_options);
                        
@@ -333,7 +332,7 @@ function load_event_submission_form_javascript() {
 /**
  * Print the days in the festival (e.g., 'June 3 to 18, 2010').
  */
-add_shortcode('bfc_festival_dates', 'bike_fun_cal\bfc_festival_dates_shortcode');
+add_shortcode('bfc_festival_dates', 'bfc_festival_dates_shortcode');
 function bfc_festival_dates_shortcode($atts) {
     $start = get_option('bfc_festival_start_date');
     $end   = get_option('bfc_festival_end_date');
@@ -363,10 +362,10 @@ function bfc_festival_dates_shortcode($atts) {
 /**
  * Print the number of days in the festival
  */
-add_shortcode('bfc_festival_count_days', 'bike_fun_cal\bfc_festival_count_days_shortcode');
+add_shortcode('bfc_festival_count_days', 'bfc_festival_count_days_shortcode');
 function bfc_festival_count_days_shortcode($atts) {
-    $start = new \DateTime(get_option('bfc_festival_start_date'));
-    $end = new \DateTime(get_option('bfc_festival_end_date'));
+    $start = new DateTime(get_option('bfc_festival_start_date'));
+    $end = new DateTime(get_option('bfc_festival_end_date'));
 
     $interval = $start->diff($end);
 

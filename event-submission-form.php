@@ -1,8 +1,7 @@
 <?php
-namespace bike_fun_cal;
 
 # Output a line for the time selector
-function generatetime($event_submission, $time, $label)
+function bfc_generatetime($event_submission, $time, $label)
 {
     $formatted = hmmpm($time);
 
@@ -15,7 +14,7 @@ function generatetime($event_submission, $time, $label)
 # Print the event submission/editing form
 # 
 # $event_submission -- A BfcEventSubmission object.
-function print_event_submission_form($event_submission) {
+function bfc_print_event_submission_form($event_submission) {
 ?>
 
     <div class="new-event-form">
@@ -26,7 +25,6 @@ function print_event_submission_form($event_submission) {
       <?php $event_submission->print_errors() ?>
     </div>                                         
     <?php } # endif -- is valid ?>
-
 
     <form action="<?php print get_permalink(); # go back to this form when submitting ?>"
           method="post"
@@ -103,91 +101,91 @@ function print_event_submission_form($event_submission) {
 	<select name="event_eventtime" id="event_eventtime">         
 	  <option value="">Choose a time</option>
 	  <?php
-	    generatetime($event_submission, "00:30:00", "Just after midnight");
-	    generatetime($event_submission, "01:00:00", "");
-	    generatetime($event_submission, "01:30:00", "");
-	    generatetime($event_submission, "02:00:00", "");
-	    generatetime($event_submission, "02:30:00", "");
-	    generatetime($event_submission, "03:00:00", "");
-	    generatetime($event_submission, "03:30:00", "");
-	    generatetime($event_submission, "04:00:00", "");
-	    generatetime($event_submission, "04:30:00", "");
-	    generatetime($event_submission, "05:00:00", "");
-	    generatetime($event_submission, "05:30:00", "Early morning");
-	    generatetime($event_submission, "05:45:00", "");
-	    generatetime($event_submission, "06:00:00", "");
-	    generatetime($event_submission, "06:15:00", "");
-	    generatetime($event_submission, "06:30:00", "");
-	    generatetime($event_submission, "06:45:00", "");
-	    generatetime($event_submission, "07:00:00", "");
-	    generatetime($event_submission, "07:15:00", "");
-	    generatetime($event_submission, "07:30:00", "Mid-morning");
-	    generatetime($event_submission, "07:45:00", "");
-	    generatetime($event_submission, "08:00:00", "");
-	    generatetime($event_submission, "08:15:00", "");
-	    generatetime($event_submission, "08:30:00", "");
-	    generatetime($event_submission, "08:45:00", "");
-	    generatetime($event_submission, "09:00:00", "");
-	    generatetime($event_submission, "09:15:00", "");
-	    generatetime($event_submission, "09:30:00", "");
-	    generatetime($event_submission, "09:45:00", "");
-	    generatetime($event_submission, "10:00:00", "Late morning");
-	    generatetime($event_submission, "10:15:00", "");
-	    generatetime($event_submission, "10:30:00", "");
-	    generatetime($event_submission, "10:45:00", "");
-	    generatetime($event_submission, "11:00:00", "");
-	    generatetime($event_submission, "11:15:00", "");
-	    generatetime($event_submission, "11:30:00", "");
-	    generatetime($event_submission, "11:45:00", "");
-	    generatetime($event_submission, "12:00:00", "Noon");
-	    generatetime($event_submission, "12:15:00", "");
-	    generatetime($event_submission, "12:30:00", "");
-	    generatetime($event_submission, "12:45:00", "");
-	    generatetime($event_submission, "13:00:00", "");
-	    generatetime($event_submission, "13:15:00", "");
-	    generatetime($event_submission, "13:30:00", "");
-	    generatetime($event_submission, "13:45:00", "");
-	    generatetime($event_submission, "14:00:00", "Early Afternoon");
-	    generatetime($event_submission, "14:15:00", "");
-	    generatetime($event_submission, "14:30:00", "");
-	    generatetime($event_submission, "14:45:00", "");
-	    generatetime($event_submission, "15:00:00", "");
-	    generatetime($event_submission, "15:15:00", "");
-	    generatetime($event_submission, "15:30:00", "");
-	    generatetime($event_submission, "15:45:00", "");
-	    generatetime($event_submission, "16:00:00", "Late Afternoon");
-	    generatetime($event_submission, "16:15:00", "");
-	    generatetime($event_submission, "16:30:00", "");
-	    generatetime($event_submission, "16:45:00", "");
-	    generatetime($event_submission, "17:00:00", "");
-	    generatetime($event_submission, "17:15:00", "");
-	    generatetime($event_submission, "17:30:00", "");
-	    generatetime($event_submission, "17:45:00", "");
-	    generatetime($event_submission, "18:00:00", "Early Evening");
-	    generatetime($event_submission, "18:15:00", "");
-	    generatetime($event_submission, "18:30:00", "");
-	    generatetime($event_submission, "18:45:00", "");
-	    generatetime($event_submission, "19:00:00", "");
-	    generatetime($event_submission, "19:15:00", "");
-	    generatetime($event_submission, "19:30:00", "");
-	    generatetime($event_submission, "19:45:00", "");
-	    generatetime($event_submission, "20:00:00", "Mid-Evening");
-	    generatetime($event_submission, "20:15:00", "");
-	    generatetime($event_submission, "20:30:00", "");
-	    generatetime($event_submission, "20:45:00", "");
-	    generatetime($event_submission, "21:00:00", "");
-	    generatetime($event_submission, "21:15:00", "");
-	    generatetime($event_submission, "21:30:00", "");
-	    generatetime($event_submission, "21:45:00", "");
-	    generatetime($event_submission, "22:00:00", "Late Evening");
-	    generatetime($event_submission, "22:15:00", "");
-	    generatetime($event_submission, "22:30:00", "");
-	    generatetime($event_submission, "22:45:00", "");
-	    generatetime($event_submission, "23:00:00", "");
-	    generatetime($event_submission, "23:15:00", "");
-	    generatetime($event_submission, "23:30:00", "");
-	    generatetime($event_submission, "23:45:00", "");
-	    generatetime($event_submission, "23:59:00", "Midnight-ish");
+	    bfc_generatetime($event_submission, "00:30:00", "Just after midnight");
+	    bfc_generatetime($event_submission, "01:00:00", "");
+	    bfc_generatetime($event_submission, "01:30:00", "");
+	    bfc_generatetime($event_submission, "02:00:00", "");
+	    bfc_generatetime($event_submission, "02:30:00", "");
+	    bfc_generatetime($event_submission, "03:00:00", "");
+	    bfc_generatetime($event_submission, "03:30:00", "");
+	    bfc_generatetime($event_submission, "04:00:00", "");
+	    bfc_generatetime($event_submission, "04:30:00", "");
+	    bfc_generatetime($event_submission, "05:00:00", "");
+	    bfc_generatetime($event_submission, "05:30:00", "Early morning");
+	    bfc_generatetime($event_submission, "05:45:00", "");
+	    bfc_generatetime($event_submission, "06:00:00", "");
+	    bfc_generatetime($event_submission, "06:15:00", "");
+	    bfc_generatetime($event_submission, "06:30:00", "");
+	    bfc_generatetime($event_submission, "06:45:00", "");
+	    bfc_generatetime($event_submission, "07:00:00", "");
+	    bfc_generatetime($event_submission, "07:15:00", "");
+	    bfc_generatetime($event_submission, "07:30:00", "Mid-morning");
+	    bfc_generatetime($event_submission, "07:45:00", "");
+	    bfc_generatetime($event_submission, "08:00:00", "");
+	    bfc_generatetime($event_submission, "08:15:00", "");
+	    bfc_generatetime($event_submission, "08:30:00", "");
+	    bfc_generatetime($event_submission, "08:45:00", "");
+	    bfc_generatetime($event_submission, "09:00:00", "");
+	    bfc_generatetime($event_submission, "09:15:00", "");
+	    bfc_generatetime($event_submission, "09:30:00", "");
+	    bfc_generatetime($event_submission, "09:45:00", "");
+	    bfc_generatetime($event_submission, "10:00:00", "Late morning");
+	    bfc_generatetime($event_submission, "10:15:00", "");
+	    bfc_generatetime($event_submission, "10:30:00", "");
+	    bfc_generatetime($event_submission, "10:45:00", "");
+	    bfc_generatetime($event_submission, "11:00:00", "");
+	    bfc_generatetime($event_submission, "11:15:00", "");
+	    bfc_generatetime($event_submission, "11:30:00", "");
+	    bfc_generatetime($event_submission, "11:45:00", "");
+	    bfc_generatetime($event_submission, "12:00:00", "Noon");
+	    bfc_generatetime($event_submission, "12:15:00", "");
+	    bfc_generatetime($event_submission, "12:30:00", "");
+	    bfc_generatetime($event_submission, "12:45:00", "");
+	    bfc_generatetime($event_submission, "13:00:00", "");
+	    bfc_generatetime($event_submission, "13:15:00", "");
+	    bfc_generatetime($event_submission, "13:30:00", "");
+	    bfc_generatetime($event_submission, "13:45:00", "");
+	    bfc_generatetime($event_submission, "14:00:00", "Early Afternoon");
+	    bfc_generatetime($event_submission, "14:15:00", "");
+	    bfc_generatetime($event_submission, "14:30:00", "");
+	    bfc_generatetime($event_submission, "14:45:00", "");
+	    bfc_generatetime($event_submission, "15:00:00", "");
+	    bfc_generatetime($event_submission, "15:15:00", "");
+	    bfc_generatetime($event_submission, "15:30:00", "");
+	    bfc_generatetime($event_submission, "15:45:00", "");
+	    bfc_generatetime($event_submission, "16:00:00", "Late Afternoon");
+	    bfc_generatetime($event_submission, "16:15:00", "");
+	    bfc_generatetime($event_submission, "16:30:00", "");
+	    bfc_generatetime($event_submission, "16:45:00", "");
+	    bfc_generatetime($event_submission, "17:00:00", "");
+	    bfc_generatetime($event_submission, "17:15:00", "");
+	    bfc_generatetime($event_submission, "17:30:00", "");
+	    bfc_generatetime($event_submission, "17:45:00", "");
+	    bfc_generatetime($event_submission, "18:00:00", "Early Evening");
+	    bfc_generatetime($event_submission, "18:15:00", "");
+	    bfc_generatetime($event_submission, "18:30:00", "");
+	    bfc_generatetime($event_submission, "18:45:00", "");
+	    bfc_generatetime($event_submission, "19:00:00", "");
+	    bfc_generatetime($event_submission, "19:15:00", "");
+	    bfc_generatetime($event_submission, "19:30:00", "");
+	    bfc_generatetime($event_submission, "19:45:00", "");
+	    bfc_generatetime($event_submission, "20:00:00", "Mid-Evening");
+	    bfc_generatetime($event_submission, "20:15:00", "");
+	    bfc_generatetime($event_submission, "20:30:00", "");
+	    bfc_generatetime($event_submission, "20:45:00", "");
+	    bfc_generatetime($event_submission, "21:00:00", "");
+	    bfc_generatetime($event_submission, "21:15:00", "");
+	    bfc_generatetime($event_submission, "21:30:00", "");
+	    bfc_generatetime($event_submission, "21:45:00", "");
+	    bfc_generatetime($event_submission, "22:00:00", "Late Evening");
+	    bfc_generatetime($event_submission, "22:15:00", "");
+	    bfc_generatetime($event_submission, "22:30:00", "");
+	    bfc_generatetime($event_submission, "22:45:00", "");
+	    bfc_generatetime($event_submission, "23:00:00", "");
+	    bfc_generatetime($event_submission, "23:15:00", "");
+	    bfc_generatetime($event_submission, "23:30:00", "");
+	    bfc_generatetime($event_submission, "23:45:00", "");
+	    bfc_generatetime($event_submission, "23:59:00", "Midnight-ish");
 	  ?>
 	</select>
 

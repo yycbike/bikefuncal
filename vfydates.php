@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 
 # This is an AJAX request.  It is passed a "dates" string, which it decodes.
 # It can also be passed the id of an existing event, in which case it'll merge
@@ -21,10 +20,10 @@ require_once("repeat.php");
 require_once("daily.php");
 
 # Add this to WordPress' registry of AJAX actions.
-add_action('wp_ajax_nopriv_verify-dates', 'bike_fun_cal\verify_dates');
-add_action('wp_ajax_verify-dates', 'bike_fun_cal\verify_dates');
+add_action('wp_ajax_nopriv_verify-dates', 'bfc_verify_dates_ajax_action');
+add_action('wp_ajax_verify-dates', 'bfc_verify_dates_ajax_action');
 
-function verify_dates() {
+function bfc_verify_dates_ajax_action() {
     # Turn on plain text PHP errors for the remainder of the AJAX request
     ini_set('html_errors', 'Off');
 
@@ -106,7 +105,7 @@ function verify_dates() {
             print "      <status>".$date["status"]."</status>\n";
             print "      <exception-url>";
             if (isset($date["exceptionid"])) {
-                $url = get_edit_url_for_event($date["exceptionid"]);
+                $url = bfc_get_edit_url_for_event($date["exceptionid"]);
                 print htmlentities($url);
             }
             print "</exception-url>\n";

@@ -1,5 +1,4 @@
 <?php
-namespace bike_fun_cal;
 
 // Utility functions
 //
