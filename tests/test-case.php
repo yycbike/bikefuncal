@@ -267,5 +267,51 @@ abstract class BfcTestCase extends WPTestCase {
 
         return $submission;
     }
+
+    /**
+     * Delete an existing event
+     */
+    function delete_event($event_id, $editcode) {
+        $del_submission = new BfcEventSubmissionForTest;
+        $del_submission_args = array(
+            'submission_action' => 'delete',
+            'submission_event_id' => $event_id,
+            'event_editcode' => $editcode,
+           );
+
+        $this->simulate_query_vars($del_submission_args);
+        $del_submission->populate_from_query($del_submission_args, array());
+        $del_submission->do_action();
+    }
+
+    /*
+     * Produce an event and its exception, for use in other tests.
+     */
+    function make_event_and_exception() {
+        $main_event = $this->make_valid_submission(array(
+            // No title -- let make_valid_submission() generate one.
+            'event_dates' => 'August 5 - 10',
+            'event_audience' => 'G',
+            'event_descr' => "My event is so rad!\n\nYou'll have a great time!",
+            'event_printdescr' => "My event is so rad!!!",
+            'event_hidephone'  => 'Y',
+            'event_contact'    => 'Smoke signals',
+            'event_phone'      => '555-FILM',
+            'event_eventtime'  => '07:00:00',
+            'event_eventduraton' => '120',
+        ));
+        $main_event = $this->update_submission($main_event, array(), $this->make_files_args());
+        
+        $main_event = $this->update_submission($main_event, array(
+            'event_statusAug5' => 'Exception',
+        ));
+
+        $exceptions = $main_event->get_exceptions();
+
+        $this->assertEquals(1, count($exceptions));
+        $exception = $this->load_submission_for_edit($exceptions[0]['exceptionid']);
+
+        return array($main_event, $exception);
+    }
 }    
     

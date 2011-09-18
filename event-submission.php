@@ -215,24 +215,18 @@ class BfcEventSubmission {
         $this->suppress_email = isset($query_vars['submission_suppress_email']);
         $this->changed_by_admin = isset($query_vars['submission_changed_by_admin']);
         
-        // If this event already exists, grab it from the database
-        if ($this->action == "edit" || $this->action == "update") {
+        if ($this->action == 'edit' || $this->action == 'update' || $this->action == 'delete') {
+            // If this event already exists, grab it from the database
+            //
             // For edit, need to load everything to present it back to the user
             // For update, need to know the old values to create the change log
+            // For delete, need to know title & e-mail to notify the event organizer
             $this->load_from_db();
-        }
-        else if ($this->action == "delete") {
-            // Only load the db_editcode and a few other things.
-            // @@@ We might not need this anymore -- who cares how much we load
-            // when we're deleting?
-            $this->load_modification_fields_from_db();
-        }
 
-        if ($this->action == 'edit' || $this->action == 'update' || $this->action == 'delete') {
+            // Check the edit code
             if (!isset($query_vars['event_editcode'])) {
                 die("Missing editcode");
             }
-
             $this->user_editcode = $query_vars['event_editcode'];
         }
 
@@ -397,49 +391,6 @@ class BfcEventSubmission {
         // in as part of the form.
     }
 
-    // Load just the fields that are needed for editing or deleting this
-    // event.
-    protected function load_modification_fields_from_db() {
-        global $calevent_table_name;
-        global $caldaily_table_name;
-        global $wpdb;
-
-        if (!isset($this->event_id)) {
-            die('Event ID is unset');
-        }
-
-        $sql = $wpdb->prepare("SELECT editcode, image, wordpress_id " .
-                              "FROM ${calevent_table_name} " .
-                              "WHERE id=%d",
-                              $this->event_id);
-        $results = $wpdb->get_results($sql, ARRAY_A);
-        
-        if ($wpdb->num_rows != 1) {
-            die("Load mod fields: Wrong number of DB results: $wpdb->num_rows");
-        }
-        else {
-            $result = $results[0];
-            $this->db_editcode = $result['editcode'];
-            $this->event_args['image'] = $result['image'];
-            $this->event_args['wordpress_id'] = $result['wordpress_id'];
-        }
-
-        $sql = $wpdb->prepare("SELECT eventdate, exceptionid " .
-                              "FROM ${caldaily_table_name} " .
-                              "WHERE id=%d",
-                              $this->event_id);
-        $results = $wpdb->get_results($sql, ARRAY_A);
-        foreach ($results as $result) {
-            // @@@ This will break if the event ever recurs past one year.
-            // I think the suffix should change to include a four-digit year...
-            //
-            // And, while we're at it, encapsulate the making of suffixes into
-            // a function.
-            $suffix = date("Mj", strtotime($result['eventdate']));
-
-            $this->daily_args[$suffix]['exceptionid'] = $result['exceptionid'];
-        }
-    }
 
     // A new event has mostly blank default values. But for the values
     // that are non-blank by default, set them here.
@@ -784,7 +735,6 @@ class BfcEventSubmission {
         
         // (We could make a WordPress attachment out of this. But what would
         // the benefit be?)
-
     }
 
     // Delete the image file for this event, if it has one.

@@ -70,12 +70,18 @@ class TestSubmissionImage extends BfcTestCase {
     function test_delete_image() {
         $event1 = $this->make_valid_submission(array(), $this->make_files_args('png-1'));
 
+        // Find the image's path
+        $upload_dirinfo = wp_upload_dir();
+        $image_filename = $upload_dirinfo['basedir'] . $event1->image();
+        $this->assertTrue(file_exists($image_filename));
+
         $query_args = array('submission_image_action' => 'delete');
         $event2 = $this->update_submission($event1, $query_args, array());
 
         $this->assertEquals('', $event2->image());
         $this->assertEquals(0,  $event2->imagewidth());
         $this->assertEquals(0,  $event2->imageheight());
+        $this->assertFalse(file_exists($image_filename));
     }
 
     /**
