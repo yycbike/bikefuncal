@@ -774,19 +774,27 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
         die("bfc_get_edit_url_for_event: id is unset");
     }
 
-    $edit_page_title = 'New Event';
-    $edit_page = get_page_by_title($edit_page_title);
-    $base_url = get_permalink($edit_page->ID); 
-    
     // No editcode provided; look it up in the database
     if ($editcode === null) {
         $editcode = bfc_get_editcode_for_event($id);
     }
 
-    return $base_url .
-        "&submission_event_id=${id}" .
-        "&submission_action=edit&" .
-        "event_editcode=${editcode}";
+    if (get_option('bfc_edit_url_style') == 'pretty') {
+        return site_url(sprintf('edit/%d/%s', $id, $editcode));
+    }
+    else {
+        // @@@ Could also look these up by slug (with
+        // get_page_by_path()), to give more flexibility
+        // in the page title.
+        $edit_page_title = 'New Event';
+        $edit_page = get_page_by_title($edit_page_title);
+        $base_url = get_permalink($edit_page->ID); 
+
+        return $base_url .
+            "&submission_event_id=${id}" .
+            "&submission_action=edit&" .
+            "event_editcode=${editcode}";
+    }
 }
 
 // This is called by the event submission form to preview the

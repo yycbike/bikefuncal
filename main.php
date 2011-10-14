@@ -365,7 +365,27 @@ function bfc_options_admin_page() {
             <input type='text' name='bfc_drinking_age' value='<?php echo get_option('bfc_drinking_age'); ?>'>
             <em>People coming on adults-only rides need to be at least this old</em>
             </p>
-        
+ 
+           <p>
+           URL style (advanced)
+           <br>
+           <input type='radio' name='bfc_edit_url_style'
+                value='default'
+                id='url_style_default'
+                <?php if (get_option('bfc_edit_url_style') == 'default') { print 'checked'; } ?>
+                >
+           <label for='url_style_default'>Default</label>
+           <br>
+           <input type='radio' name='bfc_edit_url_style'
+                value='pretty'
+                id='url_style_pretty'
+                <?php if (get_option('bfc_edit_url_style') == 'pretty') { print 'checked'; } ?>
+                >
+           <label for='url_style_pretty'>Pretty. (Requires editing .htaccess file. Only check
+           if you know what you're doing.)
+           </label>
+           </p>                                                                                                                
+       
             <p>
             <input type='submit' value='save'>
             </p>
@@ -447,6 +467,7 @@ function bfc_admin_init_action() {
     register_setting('bikefuncal-options', 'bfc_latitude');
     register_setting('bikefuncal-options', 'bfc_longitude');
     register_setting('bikefuncal-options', 'bfc_calendar_email');
+    register_setting('bikefuncal-options', 'bfc_edit_url_style');
 }
 
 /**
