@@ -25,16 +25,12 @@ When people are adding a ride to the calendar, the venue name (and address) can 
 database knows about that venue. Add known venues here.
 </p>
 
-<p>
-Don't worry about the <em>Lock</em> field. Just leave it alone.
-</p>
 
 <table id='known-venues'>
 <thead>
 <tr>
 <th>Name of Business or Park</th>
 <th>Address</th>
-<th>Lock</th>
 <th>Edit</th>
 <th><!-- results of save go here --></th>
 </tr>
@@ -46,7 +42,7 @@ Don't worry about the <em>Lock</em> field. Just leave it alone.
 
 <tfoot>
 <tr>
-<td colspan=3>
+<td colspan=2>
 <strong>Add a new venue:</strong>
 </td>
 </tr>
@@ -58,10 +54,6 @@ Don't worry about the <em>Lock</em> field. Just leave it alone.
 
 <td>
 <input type=text id=venue_address>
-</td>
-
-<td>
-<input type=checkbox id=venue_locked checked>
 </td>
 
 <td>
@@ -90,11 +82,6 @@ function bfc_get_known_venues_ajax_action() {
 
     $sql = "select * from ${caladdress_table_name} order by locname ASC";
     $venues = $wpdb->get_results($sql, ARRAY_A);
-
-    // Convert locked to a boolean
-    foreach ($venues as &$venue) {
-        $venue['locked'] = ($venue['locked'] == 1);
-    }
     
     $json = json_encode($venues);
 
@@ -122,14 +109,14 @@ function bfc_edit_venue_ajax_action() {
     }
 
     if ($_POST['type'] == 'create') {
-        $mandatory_fields = array('address',
-            'locname', 'locked');
-        $arg_types = array('%s', '%s', '%d');
+        $mandatory_fields =
+            array('address', 'locname');
+        $arg_types = array('%s', '%s');
     }
     else if ($_POST['type'] == 'update') {
-        $mandatory_fields = array('id', 'address',
-            'locname', 'locked');
-        $arg_types = array('%d', '%s', '%s', '%d');
+        $mandatory_fields =
+            array('id', 'address', 'locname');
+        $arg_types = array('%d', '%s', '%s');
     }
     else {
         $result['status'] = 0;
@@ -162,9 +149,6 @@ function bfc_edit_venue_ajax_action() {
             }
         }
     }
-
-    # convert boolean from string to int
-    $args['locked'] = $args['locked'] == 'true' ? 1 : 0;
 
     # Do the database update
     global $wpdb;

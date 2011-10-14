@@ -2,14 +2,13 @@
 // Remember the name of the new venue in this variable.
 var locname_to_flash;
 
-function add_venue(name_input, address_input, locked_input, error_result_cell) {
+function add_venue(name_input, address_input, error_result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
           'type'    : 'create',
           'nonce'   : BikeFunAjax.nonce,
           'locname' : name_input.val(),          
           'address' : address_input.val(),       
-          'locked'  : locked_input.attr('checked'),          
     };
     locname_to_flash = name_input.val();
 
@@ -20,7 +19,6 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
             // Clear out the inputs
             name_input.val('');
             address_input.val('');
-            locked_input.attr('checked', true);
         }
         else {
             var error_message;
@@ -48,7 +46,7 @@ function add_venue(name_input, address_input, locked_input, error_result_cell) {
         );    
 }
 
-function save_edits(id, name, address, locked, result_cell) {
+function save_edits(id, name, address, result_cell) {
     var ajax_params = {
           'action'  : 'edit-venue',
           'type'    : 'update',
@@ -56,7 +54,6 @@ function save_edits(id, name, address, locked, result_cell) {
           'id'      : id,         
           'locname' : name,          
           'address' : address,       
-          'locked'  : locked,          
     };
 
     var show_result = function(result) {
@@ -149,12 +146,6 @@ function display_known_venues(known_venues) {
         name_cell.append(address_input);
         tr.append(address_input);
 
-        var locked_cell = jQuery('<td></td>');
-        var locked_input = jQuery('<input type=checkbox>');
-        locked_input.attr('checked', known_venues[idx].locked);
-        locked_cell.append(locked_input);
-        tr.append(locked_cell);
-
         var edit_cell = jQuery('<td></td>');
         var save_button = jQuery('<input type=submit value=save>');
         edit_cell.append(save_button);
@@ -172,17 +163,15 @@ function display_known_venues(known_venues) {
         }
 
         var do_save = (function(name_input_copy, address_input_copy,
-                                locked_input_copy,
                                 id_copy, result_cell_copy) {
 
             return function() {
                 save_edits(id_copy, name_input_copy.val(),
                            address_input_copy.val(),
-                           locked_input_copy.attr('checked'),
                            result_cell_copy);
             }
 
-        })(name_input, address_input, locked_input, known_venues[idx].id,
+        })(name_input, address_input, known_venues[idx].id,
            result_cell); 
         save_button.click(do_save);
         name_input.bind('keyup', 'return', do_save);
@@ -236,10 +225,9 @@ function load_known_venues() {
 function save_new_venue() {
     var name = jQuery('#venue_name');
     var address = jQuery('#venue_address');
-    var locked = jQuery('#venue_locked');
     var result = jQuery('#new_venue_result');
 
-    add_venue(name, address, locked, result);
+    add_venue(name, address, result);
 }
 
 // Initialize event handlers
