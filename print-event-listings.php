@@ -248,12 +248,13 @@ SELECT ${calevent_table_name}.id, newsflash,title, tinytitle, eventtime,
        audience, eventstatus, descr, review
 FROM ${calevent_table_name}, ${caldaily_table_name}
 WHERE ${calevent_table_name}.id=${caldaily_table_name}.id AND
-      eventdate   =  "${day}" AND
-      eventstatus <> "E"      AND
+      eventdate   =  %s   AND
+      eventstatus <> "E"  AND
       eventstatus <> "S"     
 ORDER BY eventtime
 
 END_QUERY;
+    $query = $wpdb->prepare($query, $day);
     $records = $wpdb->get_results($query, ARRAY_A);
 
     foreach ($records as $record) {
@@ -706,12 +707,12 @@ function fullentries($day,
 SELECT *
 FROM ${calevent_table_name}, ${caldaily_table_name}
 WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-      eventdate = "${day}" AND
+      eventdate = %s AND
       eventstatus <> "E" AND
       eventstatus <> "S"
 ORDER BY eventtime
 END_QUERY;
-
+    $query = $wpdb->prepare($query, $day);
     $records = $wpdb->get_results($query, ARRAY_A);
     $num_records = count($records);
     

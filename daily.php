@@ -38,8 +38,9 @@ function dailystatus($id)
     # fetch the caldaily records
     global $wpdb;
     global $caldaily_table_name;
-    $sql = "SELECT * FROM ${caldaily_table_name} " .
-        "WHERE id=$id AND eventdate>=\"$sqltoday\" ORDER BY eventdate";
+    $sql = $wpdb->prepare("SELECT * FROM ${caldaily_table_name} " .
+                          "WHERE id=%d AND eventdate  >= %s " .
+                          "ORDER BY eventdate", $id, $sqltoday);
     $records = $wpdb->get_results($sql, ARRAY_A);
     
     if ($wpdb->num_rows == 0) {
@@ -67,7 +68,6 @@ function dailystatus($id)
     # return the list
     return $days;
 }
-
 
 # This function merges two date lists.  Both lists are assumed to be sorted
 # in ascending order by sqldate.  This also adds a "changed" flag to each

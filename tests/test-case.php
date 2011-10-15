@@ -116,6 +116,9 @@ abstract class BfcTestCase extends WPTestCase {
             // Generate a unique title to avoid clashing with anything else
             // in the database that might have that title.
             'event_title' => 'Title ' . uniqid(),
+            'event_tinytitle' => 'tiny',
+            'event_descr' => 'Description',
+            'event_name' => 'Earl',
             'event_email' => 'hi@hello.ca',
             'event_eventtime' => '19:15:00',
             );
