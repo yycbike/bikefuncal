@@ -91,6 +91,7 @@ function mangleemail($email)
     $mangle = str_replace(".net", "<img border=0 src='${image_dir}/dotnet.gif' alt=' daht nett'>", $mangle);
     $mangle = str_replace(".edu", "<img border=0 src='${image_dir}/dotedu.gif' alt=' daht eedee you'>", $mangle);
     $mangle = str_replace(".us", "<img border=0 src='${image_dir}/dotus.gif' alt=' daht you ess'>", $mangle);
+    $mangle = str_replace(".ca", "<img border=0 src='${image_dir}/dotca.gif' alt=' daht see eh'>", $mangle);
     $mangle = substr($mangle,0,1)."<span>".substr($mangle,1)."</span>";
     return $mangle;
 }
