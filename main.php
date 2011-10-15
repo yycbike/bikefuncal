@@ -113,6 +113,29 @@ function bfc_query_vars_filter($qvars) {
 // Create the custom post type for bfc-events
 add_action('init', 'bfc_init_action');
 function bfc_init_action() {
+    // Make a new calendar editor role. Someone who can work on the calendar, but not
+    // much else.
+    $cal_editor = get_role('bfc_calendar_editor');
+    if ($cal_editor === null) {
+        add_role('bfc_calendar_editor', 'Calendar Editor', array());
+    }
+    $cal_editor->add_cap('edit_posts');
+    $cal_editor->add_cap('delete_posts');
+    $cal_editor->add_cap('read');
+    $cal_editor->add_cap('moderate_comments');
+
+    // Add the custom capabilities
+    $role_names = array('administrator', 'editor', 'author', 'bfc_calendar_editor');
+    foreach ($role_names as $role_name) {
+        $role = get_role($role_name);
+
+        // Edit events without being given an editcode
+        $role->add_cap('bfc_edit_others_events');
+
+        // Edit the known-venues list (add, update, delete)
+        $role->add_cap('bfc_edit_known_venues');
+    }
+                 
     register_post_type('bfc-event', array(
         'description' => 'Events in the bike fun calendar',
         'public' => true,
@@ -123,7 +146,7 @@ function bfc_init_action() {
         'capabilities' => array(
             // Have to allow an edit_post capability, because otherwise you
             // cannot edit comments.
-            'edit_post'     => 'moderate_comments',
+            'edit_post'     => 'bfc_edit_others_events',
             'publish_posts' => 'do_not_allow',
             'read_post'     => 'read',
             'delete_post'   => 'do_not_allow',
@@ -235,30 +258,19 @@ function bfc_get_edit_post_link_filter($url, $post_id, $context) {
     }
 }
 
-// Return whether or not to show options for administering the calendar,
-// such as editing other people's events.
-//
-// Right now, this is tied into the ability to edit posts. WordPress lets
-// a plugin define its own set of capability levels. That could be useful
-// if we ever want to have multiple kinds of admins/editors.
-// See: http://codex.wordpress.org/Roles_and_Capabilities
-function bfc_show_admin_options() {
-    return current_user_can('edit_posts');
-}
-
 // Add options to the WordPress admin menu
 add_action('admin_menu', 'bfc_admin_menu_action');
 function bfc_admin_menu_action() {
     add_menu_page('Bike Fun Cal', // Page title
                   'Bike Fun Cal', // Menu title
-                  'manage_options', // capability
+                  'bfc_edit_known_venues', // capability
                   'bfc-top',   // menu slug
                   'bfc_top_admin_page');
 
     add_submenu_page('bfc-top', // parent
                      'Edit Known Venues', // title
                      'Venues',
-                     'manage_options', // capability
+                     'bfc_edit_known_venues', // capability
                      'bfc-venues',   // menu slug
                      'bfc_venues_admin_page');  // function callback
 
