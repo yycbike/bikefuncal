@@ -408,8 +408,12 @@ function bfc_options_admin_page() {
 
 /**
  * When showing a post of type bfc-event, show the event details as the body of the page.
+ *
+ * the_content is used when displaying the page for the event. the_excerpt is used
+ * in search results. In both cases, show the event details.
  */
 add_filter('the_content', 'bfc_the_content_filter');
+add_filter('the_excerpt', 'bfc_the_content_filter');
 function bfc_the_content_filter($content) {
     if (get_post_type() == 'bfc-event') {
         // This is a calendar event.
