@@ -32,7 +32,7 @@ function address_link($address) {
     $latitude = get_option('bfc_latitude');
     $longitude = get_option('bfc_longitude');
     if (strlen($latitude) > 0 && strlen($longitude) > 0) {
-        // sll = search lat/long. Tells Google where to center the
+        // sll = search lat/long. Tells Google where to centre the
         // search coordinates.
         $query_args['sll'] = $latitude . ',' . $longitude;
     }
@@ -130,11 +130,9 @@ function palooza_overview_calendar_inset($days) {
 ?>    
       <td colspan="<?php print esc_attr($days) ?>" class="palooza-overview-calendar-inset">
         <br>
-	<a href="explain/audience.html" target="_BLANK" onClick="window.open('explain/audience.html', 'audience', 'width=600, height=500, menubar=no, status=no, location=no, toolbar=no, scrollbars=yes'); return false;">
 	  <span class="family-friendly">Family Friendly events have <strong>green</strong> times</span>
           <br>
 	  <span class="adults-only">Adult Only (19+) events have <strong>red</strong> times</span>
-	</a>
 	<p>In all cases, you are encouraged to read the detailed event
         descriptions below.  If you still aren't sure whether an event
 	is appropriate for you, then contact the event organizer.
