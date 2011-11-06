@@ -145,8 +145,8 @@ function bfc_cal_date_navigation_shortcode($atts) {
         if (date("F", $startdate) != date("F", $enddate)) {
             # start & end dates are on different months
 
-            $prev_url = bfc_get_month_cal_url(date("m", $startdate), date("y", $startdate));
-            $next_url = bfc_get_month_cal_url(date("m", $enddate), date("y", $enddate));
+            $prev_url = bfc_get_month_cal_url(date("m", $startdate), date("Y", $startdate));
+            $next_url = bfc_get_month_cal_url(date("m", $enddate), date("Y", $enddate));
 
             $prev_url = esc_url($prev_url);
             $next_url = esc_url($next_url);
@@ -168,9 +168,9 @@ function bfc_cal_date_navigation_shortcode($atts) {
             $prev_month = $startdate - (86400 * 28);
             $next_month = $enddate   + (86400 * 28);
 
-            $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
-            $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
-            $curr_url = bfc_get_month_cal_url(date("m", $startdate),  date("y", $startdate));
+            $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("Y", $prev_month));
+            $next_url = bfc_get_month_cal_url(date("m", $next_month), date("Y", $next_month));
+            $curr_url = bfc_get_month_cal_url(date("m", $startdate),  date("Y", $startdate));
 
             $prev_url = esc_url($prev_url);
             $next_url = esc_url($next_url);
@@ -205,8 +205,8 @@ function bfc_cal_date_navigation_shortcode($atts) {
                              1,
                              date('Y', $startdate));
 
-        $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("y", $prev_month));
-        $next_url = bfc_get_month_cal_url(date("m", $next_month), date("y", $next_month));
+        $prev_url = bfc_get_month_cal_url(date("m", $prev_month), date("Y", $prev_month));
+        $next_url = bfc_get_month_cal_url(date("m", $next_month), date("Y", $next_month));
 
         $prev_url = esc_url($prev_url);
         $next_url = esc_url($next_url);
@@ -263,7 +263,7 @@ function bfc_get_month_cal_url($month = null, $year = null) {
 
     // If the URL already has a query string, add additional queries with
     // '&'. Otherwise, initiate a query with '?'
-    $has_query = (parse_url($url, PHP_URL_FRAGMENT) !== null);
+    $has_query = (parse_url($url, PHP_URL_QUERY) !== null);
     
     if ($month !== null) {
         $url .= sprintf('%scalmonth=%s',
