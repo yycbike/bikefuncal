@@ -117,7 +117,7 @@ function bfc_init_action() {
     // much else.
     $cal_editor = get_role('bfc_calendar_editor');
     if ($cal_editor === null) {
-        add_role('bfc_calendar_editor', 'Calendar Editor', array());
+        $cal_editor = add_role('bfc_calendar_editor', 'Calendar Editor', array());
     }
     $cal_editor->add_cap('edit_posts');
     $cal_editor->add_cap('delete_posts');
