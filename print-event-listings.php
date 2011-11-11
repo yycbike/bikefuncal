@@ -757,7 +757,9 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
         $editcode = bfc_get_editcode_for_event($id);
     }
 
-    if (get_option('bfc_edit_url_style') == 'pretty') {
+    global $wp_rewrite;
+    if ($wp_rewrite->using_permalinks()) {
+        // If permalinks are on, use pretty URL
         return site_url(sprintf('edit/%d/%s', $id, $editcode));
     }
     else {

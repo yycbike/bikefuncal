@@ -243,7 +243,7 @@ function bfc_init_action() {
         }
         return $actions;
     };
-};
+}
 
 // Change links for editing bike events to go to the regular edit page,
 // not the one WordPress generated.
@@ -377,27 +377,6 @@ function bfc_options_admin_page() {
             <input type='text' name='bfc_drinking_age' value='<?php echo esc_attr(get_option('bfc_drinking_age')); ?>'>
             <em>People coming on adults-only rides need to be at least this old</em>
             </p>
- 
-           <p>
-           URL style (advanced)
-           <br>
-           <input type='radio' name='bfc_edit_url_style'
-                value='default'
-                id='url_style_default'
-                <?php if (get_option('bfc_edit_url_style') == 'default') { print 'checked'; } ?>
-                >
-           <label for='url_style_default'>Default</label>
-           <br>
-           <input type='radio' name='bfc_edit_url_style'
-                value='pretty'
-                id='url_style_pretty'
-                <?php if (get_option('bfc_edit_url_style') == 'pretty') { print 'checked'; } ?>
-                >
-           <label for='url_style_pretty'>Pretty. (Requires editing .htaccess file. Only check
-           if you know what you're doing.)
-           </label>
-           </p>                                                                                                                
-       
             <p>
             <input type='submit' value='save'>
             </p>
@@ -483,7 +462,6 @@ function bfc_admin_init_action() {
     register_setting('bikefuncal-options', 'bfc_latitude');
     register_setting('bikefuncal-options', 'bfc_longitude');
     register_setting('bikefuncal-options', 'bfc_calendar_email');
-    register_setting('bikefuncal-options', 'bfc_edit_url_style');
 }
 
 /**
@@ -496,6 +474,24 @@ function bfc_sanitize_festival_date($input) {
     }
     else {
         return $input;
+    }
+}
+
+// Use pretty URLs for editing events
+add_filter('rewrite_rules_array', 'bfc_rewrite_rules_array_filter');
+function bfc_rewrite_rules_array_filter($rules) {
+    $newrules = array();
+    $newrules['edit/(\d+)/(\w+)$'] = 'index.php?pagename=event&submission_action=edit&submission_event_id=$matches[1]&event_editcode=$matches[2]';
+    return $newrules + $rules;
+}
+
+add_filter('wp_loaded', 'bfc_wp_loaded_filter');
+function bfc_wp_loaded_filter() {
+    $rules = get_option('rewrite_rules');
+
+    if (!isset($rules['edit/(\d+)/(\w+)$'])) {
+        global $wp_rewrite;
+        $wp_rewrite->flush_rules();
     }
 }
 
