@@ -87,7 +87,10 @@ function mangleemail($email)
         return "";
     }
 
+    // Take the hostname out of the URL. Otherwise we replace the '.com' in the hostname with
+    // dotcom.gif, and the HTML gets all messed up.
     $image_dir = plugins_url('bikefuncal/images');
+    $image_dir = str_replace(home_url(), '', $image_dir);
 
     $mangle = str_replace("@", "<img border=0 src='${image_dir}/at.gif' alt=' at '>", $email);
     $mangle = str_replace(".com", "<img border=0 src='${image_dir}/dotcom.gif' alt=' daht comm'>", $mangle);
