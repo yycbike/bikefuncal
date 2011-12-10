@@ -49,7 +49,6 @@ function class_for_special_day($thisdate) {
 
 // Output the TD for one day in the overview calendar
 function overview_calendar_day($thisdate, $preload_alldays) {
-
     $dayofmonth = date("j",$thisdate);
 
     // If today is special...
@@ -66,18 +65,10 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     //print "<p>" . date("Y-m-d h:m:s", $thisdate) . "</p>";
     
     // Output this day's tinytitles
-    $sqldate = date("Y-m-d", $thisdate);
-    printf("<a href='%s' ", esc_attr('#' . date("Fj", $thisdate)));
-    printf("title='%s' ", esc_attr(date("M j, Y", $thisdate)));
-    print "class=\"date\" ";
-    if (!$preload_alldays) {
-        // If the days aren't all being loaded, add JS to load them
-        // when the day is clicked.
-        printf("onclick=\"loadday('%s', true, 0); return false;\"", esc_js($sqldate));
-    }
-    print ">";
+    print "<span class='date'>";
     print esc_html(date("j", $thisdate));
-    print "</a>\n";
+    print "</span>\n";
+    $sqldate = date("Y-m-d", $thisdate);
     tinyentries($sqldate, TRUE, $preload_alldays );
     print "</td>\n";
 }   
@@ -151,15 +142,15 @@ function overview_calendar(
     $startdate, $enddate, $for, $preload_alldays) {
 ?>
 
-  <table class="grid">
+  <table class="overview-calendar">
     <tr>
-      <th class="weeks">Sunday</th>
-      <th class="weeks">Monday</th>
-      <th class="weeks">Tuesday</th>
-      <th class="weeks">Wednesday</th>
-      <th class="weeks">Thursday</th>
-      <th class="weeks">Friday</th>
-      <th class="weeks">Saturday</th>
+      <th class="weekday-name">Sunday</th>
+      <th class="weekday-name">Monday</th>
+      <th class="weekday-name">Tuesday</th>
+      <th class="weekday-name">Wednesday</th>
+      <th class="weekday-name">Thursday</th>
+      <th class="weekday-name">Friday</th>
+      <th class="weekday-name">Saturday</th>
    </tr>
     <tr>
     <?php
@@ -250,8 +241,9 @@ END_QUERY;
     $records = $wpdb->get_results($query, ARRAY_A);
 
     foreach ($records as $record) {
-	if ($exclude && $record["review"] == "E")
+	if ($exclude && $record["review"] == "E") {
 	    continue;
+        }
 	$id = $record["id"];
 	$tinytitle = $record["tinytitle"];
 	$title = $record["title"];
@@ -261,18 +253,21 @@ END_QUERY;
         $timeclass  = "";
         
 	if ($record["eventstatus"] == "C") {
-	    $eventtime = "Cancel";
+	    $eventtime = "Canceled";
             $titleclass .= "canceled ";
-	} else {
+	}
+        else {
 	    $eventtime = hmmpm($record["eventtime"]);
 	}
 
 	if ($record["audience"] == "F") {
             $timeclass .= "family-friendly ";
             
-	} elseif ($record["audience"] == "G") {
+	}
+        elseif ($record["audience"] == "G") {
             // Nothing to do here
-	} else {
+	}
+        else {
             $timeclass .= "adults-only ";
 	}
         
@@ -280,33 +275,12 @@ END_QUERY;
             $titleclass .= "newsflash ";
         }
 
-        // Portland's Multnomah County Bike Fair
-        // gets printed in larger type.
-        if ($tinytitle == "MCBF") {
-	    print "<div>";
-        }
-	else if (strlen(strtok($tinytitle, " ")) < 10) {
-	    print "<div class=\"tiny\">";
-        }
-	else {
-	    print "<div class=\"tinier\">";
-        }
-        
-	if ($loadday) {
-	    $onclick = " onclick=\"loadday('$day', ".($exclude?"true":"false").", $id); return false;\"";
-        }
-	else {
-	    $onclick = "";
-        }
-        
-        $anchor = sprintf('#%s-%d', $dayofmonth, $id);
-	printf("<a href='%s' title='%s' $onclick>", esc_attr($anchor), esc_attr($title));
-        printf("<span class='%s'>", esc_attr($titleclass));
-	printf("<strong class='%s'>%s</strong>", esc_attr($timeclass), esc_html($eventtime));
-	if (strpos($record["descr"], "\$") != FALSE) {
-	    print "&nbsp;<strong>\$\$</strong>";
-        }
-	printf("&nbsp;%s</span></a></div>", esc_html($tinytitle));
+        print "<div class='event-title'>";
+
+        printf("<div class='%s'>", esc_attr($titleclass));
+        printf("<div class='event-time'>%s</div>", esc_html($eventtime));
+        printf("<div class='event-title'><a data-id='%d' data-date='%s' href='#'>%s</a></div>", esc_attr($id), esc_attr($day), esc_html($title));
+        printf("</div>");
     }
 }
 
@@ -819,6 +793,64 @@ add_action('wp_ajax_nopriv_preview-event-submission',
            'bfc_preview_event_submission');
 add_action('wp_ajax_preview-event-submission',
            'bfc_preview_event_submission');
+
+
+function bfc_event_popup() {
+    // This sends a plain-text response, so no
+    // header is needed.
+    global $calevent_table_name;
+    global $caldaily_table_name;
+    global $wpdb;
+
+    $id = $_POST['id'];
+    $sqldate = $_POST['date'];
+
+    $query = <<<END_QUERY
+SELECT *
+FROM ${calevent_table_name}, ${caldaily_table_name}
+WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
+      ${calevent_table_name}.id = %d AND
+      eventdate = %s AND
+      eventstatus <> "E" AND
+      eventstatus <> "S"
+ORDER BY eventtime
+END_QUERY;
+    $query = $wpdb->prepare($query, $id, $sqldate);
+    $records = $wpdb->get_results($query, ARRAY_A);
+    if ($wpdb->num_rows != 1) {
+        die();
+    }
+    $record = $records[0];
+
+    print "<div class='controls'>";
+    print "<p class='simplemodal-close'>Close</p>";
+    print "</div>";
+
+    print "<div class='event-info'>";
+
+    // Date & time
+    $date = date('l, F j', strtotime($sqldate));
+    $time = hmmpm($record['eventtime']);
+    printf("<div class='time'>%s at %s</div>",
+           $date, $time);
+    // @@@ Need to handle canceled, end time, repeat, and other stuff...
+
+    // Title
+    printf("<div class='title'>%s</div>", esc_html($record['title']));
+
+    // Location
+    // @@@ Todo
+    
+    print "</div>";
+
+    exit;
+}
+
+// Add this to WordPress' registry of AJAX actions.
+add_action('wp_ajax_nopriv_event-popup',
+           'bfc_event_popup');
+add_action('wp_ajax_event-popup',
+           'bfc_event_popup');
 
 //ex:set sw=4 embedlimit=60000:
 ?>

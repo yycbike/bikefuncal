@@ -100,6 +100,8 @@ function bfc_overview_or_event_listings($type, $atts) {
                           $enddate,
                           $caltype,
                           TRUE); # preload all days
+                          
+        add_action('wp_footer', 'load_overview_calendar_javascript');                                         
     }
     else if ($type == 'listings') {
         event_listings($startdate,
@@ -345,6 +347,23 @@ function load_event_submission_form_javascript() {
     wp_print_styles('bfc-jquery-ui-style');
     wp_print_scripts('event-submission');                       
 }
+
+function load_overview_calendar_javascript() {
+    $simplemodal_js_url = plugins_url('bikefuncal/jquery.simplemodal.js');
+    wp_register_script('jquery-simplemodal', $simplemodal_js_url, array('jquery'));
+
+    $overview_cal_js_url = plugins_url('bikefuncal/overview-calendar.js');
+    wp_register_script('overview-calendar', $overview_cal_js_url, array('jquery', 'jquery-simplemodal'));
+
+    $ajax_options = array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+    );
+    wp_localize_script('overview-calendar', 'BikeFunAjax', $ajax_options);
+
+    wp_print_scripts('overview-calendar');
+}
+
+
 
 /**
  * Print the days in the festival (e.g., 'June 3 to 18, 2010').
