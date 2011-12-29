@@ -838,9 +838,30 @@ END_QUERY;
     // Title
     printf("<div class='title'>%s</div>", esc_html($record['title']));
 
-    // Location
-    // @@@ Todo
+    // Ride leader
+    printf("<div class='contact-info'>");
+    printf("<span class='host'>Your host: %s</span>", esc_html($record['name']));
+    printf("</span>");
+    printf("</div>");
     
+    // Location
+    printf("<div class='location'>");
+    $address_url = address_link($record['address']);
+    printf("<a href='%s'>%s</a>", esc_url($address_url), esc_html($record['address']));
+    if ($record['locdetails'] != "") {
+        printf(" (%s)", esc_attr($record['locdetails']));
+    }
+    printf("</div>"); 
+    
+    // Description
+    printf("<div class='description'>");
+    print htmldescription($record['descr']);
+    printf("</div>");
+
+    // Link for details
+    printf("<div class='details'><a href='%s'>Details</a></div>",
+           esc_url(get_permalink($record['wordpress_id'])));
+
     print "</div>";
 
     exit;
