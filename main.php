@@ -144,6 +144,7 @@ function bfc_init_action() {
         'show_in_menu' => 'bfc-top',
         'menu_position' => 100, // below 2nd seperator
         'supports' => array('title', 'comments'),
+        'rewrite' => array('slug' => 'event'),
         'capabilities' => array(
             // Have to allow an edit_post capability, because otherwise you
             // cannot edit comments.
