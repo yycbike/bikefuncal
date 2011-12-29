@@ -356,7 +356,8 @@ function load_overview_calendar_javascript() {
     wp_register_script('overview-calendar', $overview_cal_js_url, array('jquery', 'jquery-simplemodal'));
 
     $ajax_options = array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
+        'ajaxURL' => admin_url('admin-ajax.php'),
+        'spinnerURL' => plugins_url('bikefuncal/images/ajax-loader.gif'),
     );
     wp_localize_script('overview-calendar', 'BikeFunAjax', $ajax_options);
 
