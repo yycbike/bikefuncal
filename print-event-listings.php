@@ -73,65 +73,6 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     print "</td>\n";
 }   
 
-// This function is used in the weekly grid portion of the calendar,
-// to skip multiple days in the column.  If a large number of days
-// are to be skipped, it may put something useful in there.
-//
-// @@@ This is all commented-out because the quotations file hasn't
-// been ported to WordPress yet.
-function calendar_quote($days)
-{
-//     if ($days == 1)
-//         print "<td>&nbsp;</td>\n";
-//     else if ($days > 3 && file_exists("Quotations")) {
-//         mt_srand ((double) microtime() * 1000000);
-//         $lines = file("Quotations");
-//         $line_number = mt_rand(0,sizeof($lines)-1);
-//         $quotation = htmlspecialchars($lines[$line_number]);
-//         $quotation = preg_replace(
-//             '/^(.*)~/',
-//             '<span class=quotation-text>$1</span><br>--',
-//             $quotation);
-//         $length = strlen($lines[$line_number]);
-//         $class = "quotation ";
-//         if ($length / $days > 80) {
-//             $class .= "size-0 ";
-//         }
-//         else if ($length / $days > 50) {
-//             $class .= "size-1 ";
-//         }
-//         else if ($length / $days > 35) {
-//             $class .= "size-2 ";
-//         }
-//         else {
-//             $class .= "size-3 ";
-//         }
-//         print "<td colspan=$days class=\"$class\">$quotation</td>\n";
-//     } else {
-//         print "<td colspan=$days>&nbsp;</td>\n";
-//     }
-
-    print "<td colspan=$days>&nbsp;</td>\n";
-}
-
-// Generate the inset that goes in the palooza
-// calendar. This is the text that explains all
-// ages & adult rides.
-function palooza_overview_calendar_inset($days) {
-?>    
-      <td colspan="<?php print esc_attr($days) ?>" class="palooza-overview-calendar-inset">
-        <br>
-	  <span class="family-friendly">Family Friendly events have <strong>green</strong> times</span>
-          <br>
-	  <span class="adults-only">Adult Only (19+) events have <strong>red</strong> times</span>
-	<p>In all cases, you are encouraged to read the detailed event
-        descriptions below.  If you still aren't sure whether an event
-	is appropriate for you, then contact the event organizer.
-        </p>
-      </td>
-<?php
-}
-
 // Print an overview calendar, that lists the events in a grid.
 //
 // $startdate, $enddate -- The range of dates to show in the calendar.
@@ -158,16 +99,23 @@ function overview_calendar(
     // If month doesn't start on Sunday, then skip earlier days
     $weekday = getdate($startdate);
     $weekday = $weekday["wday"];
-    if ($weekday != 0) {
+    if ($weekday !== 0) {
         // Fill the extra space with something.
-        // Palooza gets a special overview; other calendars
-        // get a bike-related quotation.
-        if ($for == "cal") {
-            calendar_quote($weekday);
-        }
-        else {
-            palooza_overview_calendar_inset($weekday);
-        }
+        $filter_args = array(
+            // for: 'palooza' or 'cal' -- is this a palooza or a regular calendar
+            'for' => $for,
+            
+            // Number of table columns used
+            'cols' => $weekday,
+            
+            // Is this appearing before the start of the events, or after the end of the
+            // events?
+            'location' => 'before',
+             );
+        $output = apply_filters('bfc-overview-cal-padding', '', $filter_args);
+        printf("<td colspan='%d'>", $filter_args['cols']);
+        print $output;
+        print '</td>';
     }
 
     // Loop through each day between $startdate and $enddate.
@@ -204,8 +152,19 @@ function overview_calendar(
 
     $last_day = date('w', $enddate);
     // If the calendar doesn't end on Saturday
-    if ($last_day != 6) { 
-        calendar_quote(7 - $last_day);
+    if ($last_day !== 6) { 
+        // Fill the extra space with something.
+        // See above for explanation of arguments.
+        $filter_args = array(
+            'for' => $for,
+            'cols' => 6 - $last_day,
+            'location' => 'after',
+             );
+
+        $output = apply_filters('bfc-overview-cal-padding', '', $filter_args);
+        printf("<td colspan='%d'>", $filter_args['cols']);
+        print $output;
+        print '</td>';
     }
 ?>
     </tr>
