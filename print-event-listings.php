@@ -249,36 +249,54 @@ END_QUERY;
 	$title = $record["title"];
         
         // CSS classes
-        $titleclass = "event-tiny-title ";
-        $timeclass  = "";
+        $cssclass = "event-overview ";
         
 	if ($record["eventstatus"] == "C") {
 	    $eventtime = "Canceled";
-            $titleclass .= "canceled ";
+            $cssclass .= "canceled ";
 	}
         else {
 	    $eventtime = hmmpm($record["eventtime"]);
 	}
 
 	if ($record["audience"] == "F") {
-            $timeclass .= "family-friendly ";
-            
+            $cssclass .= "family-friendly ";
 	}
         elseif ($record["audience"] == "G") {
-            // Nothing to do here
+            $cssclass .= "general-audience ";
 	}
         else {
-            $timeclass .= "adults-only ";
+            $cssclass .= "adults-only ";
 	}
         
 	if ($record["newsflash"] != "") {
-            $titleclass .= "newsflash ";
+            $cssclass .= "newsflash ";
         }
 
-        print "<div class='event-title'>";
+        // If a fee is mentioned in the description
+        $has_fee = strpos($record['descr'], "\$") !== false;
 
-        printf("<div class='%s'>", esc_attr($titleclass));
-        printf("<div class='event-time'>%s</div>", esc_html($eventtime));
+        if ($has_fee) {
+            $cssclass .= "fee ";
+        }
+
+        printf("<div class='%s'>", esc_attr($cssclass));
+        //printf("<div class='event-time'>%s</div>", esc_html($eventtime));
+        printf("<div class='event-time'>");
+        printf("<span class='time'>%s</span>", esc_html($eventtime));
+        if ($record['audience'] == 'A') {
+            printf(" <span class='audience adult'>%d+</span>", esc_html(get_option('bfc_drinking_age')));
+        }
+        else if ($record['audience'] == 'F') {
+            printf(" <span class='audience family'>FF</span>");
+        }
+
+        if ($has_fee) {
+            printf(" <span class='fee'>$$</span>");
+        }
+        
+        print "</div>";
+        
         printf("<div class='event-title'><a data-id='%d' data-date='%s' href='#'>%s</a></div>", esc_attr($id), esc_attr($day), esc_html($title));
         printf("</div>");
     }

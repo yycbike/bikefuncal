@@ -406,7 +406,7 @@ function bfc_import_admin_page() {
     
     ?>
     <p>Use this <strong>once</strong> to import the old site.
-    You should know what youp're doing here!
+    You should know what you're doing here!
     </p>
 
     <form method='post'>
