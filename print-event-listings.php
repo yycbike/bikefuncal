@@ -26,7 +26,11 @@ function address_link($address) {
     }
 
     // Start building arguments to pass to google maps
-    $query_args = array('q' => $address);
+    $query_args = array(
+        'q' => $address,
+        't' => 'm', // Type = map
+        'lci' => 'bike', // Show bike tiles
+        );
 
     // Get the lat & long 
     $latitude = get_option('bfc_latitude');
