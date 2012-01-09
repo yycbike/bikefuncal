@@ -69,9 +69,9 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     //print "<p>" . date("Y-m-d h:m:s", $thisdate) . "</p>";
     
     // Output this day's tinytitles
-    print "<span class='date'>";
+    print "<div class='date'>";
     print esc_html(date("j", $thisdate));
-    print "</span>\n";
+    print "</div>\n";
     $sqldate = date("Y-m-d", $thisdate);
     tinyentries($sqldate, TRUE, $preload_alldays );
     print "</td>\n";
@@ -88,6 +88,7 @@ function overview_calendar(
 ?>
 
   <table class="overview-calendar">
+    <thead>
     <tr>
       <th class="weekday-name">Sunday</th>
       <th class="weekday-name">Monday</th>
@@ -97,6 +98,8 @@ function overview_calendar(
       <th class="weekday-name">Friday</th>
       <th class="weekday-name">Saturday</th>
    </tr>
+   </thead>
+   <tbody>
     <tr>
     <?php
 
@@ -172,6 +175,7 @@ function overview_calendar(
     }
 ?>
     </tr>
+    </tbody>
   </table>
 
     
