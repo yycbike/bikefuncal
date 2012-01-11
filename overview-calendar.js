@@ -1,6 +1,12 @@
 // The popup library comes from here:
 // http://www.ericmmartin.com/projects/simplemodal/
 
+function rot13(text) {
+    return text.replace(/[a-zA-Z]/g, function(c){
+        return String.fromCharCode((c <= "Z" ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
+    });
+}
+
 // Use the same set of options twice: Once when loading the
 // spinner and once when loading the real content.
 var BfcPopupOptions = {
@@ -22,6 +28,17 @@ function update_popup(popup_content_html) {
     // If you use way #1 here, the popup is too small and the
     // content gets clipped.
     jQuery.modal(popup_content_html, BfcPopupOptions);
+
+    // Attach click-to-email actions
+    jQuery('.leader-email > a').each(function(index, element) {
+        element = jQuery(element);
+        var before_at = element.attr('data-ba');
+        var after_at = element.attr('data-aa');
+        var address = rot13(before_at) + '@' + rot13(after_at);
+        var url = 'mailto:' + address;
+        element.attr('href', url);
+        element.text(address);
+    });
 }
 
 jQuery(document).ready(function() {

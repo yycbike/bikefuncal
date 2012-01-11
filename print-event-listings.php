@@ -887,7 +887,14 @@ END_QUERY;
     printf("<div class='contact-info'>");
     printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
     if ($record['email'] != '') {
-        printf("<div class='leader-email'>%s</div>", mangleemail(esc_html($record['email'])));
+        // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
+        // together again.
+        
+        $parts = explode('@', $record['email'], 2);
+        // data-aa = after at sign
+        // data-ba = before at sign
+        printf("<div class=leader-email><a data-aa='%s' href='#' data-ba='%s'>e-mail</a></div>",
+               str_rot13($parts[1]), str_rot13($parts[0]));
     }
     if ($record['weburl'] != '') {
         $webname = $record['webname'] != '' ? $record['webname'] : $record['weburl'];
