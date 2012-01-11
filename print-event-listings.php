@@ -807,48 +807,154 @@ END_QUERY;
     }
     $record = $records[0];
 
-    print "<div class='controls'>";
-    print "<p class='simplemodal-close'>Close</p>";
-    print "</div>";
-
     print "<div class='event-info'>";
 
+    $is_canceled = ($record['eventstatus'] == 'C');
+    $cancel_class = $is_canceled ? 'cancel' : '';
+
+    ///////////
+    // Audience
+    if ($record['audience'] == 'A' || $record['audience'] == 'F') {
+        if ($record['audience'] == 'A') {
+            $badge = 'beer.gif';
+            $message = sprintf('Adults Only (%d+)', get_option('bfc_drinking_age'));
+        }
+        else if ($record['audience'] == 'F') {
+            $badge = "ff.gif";
+            $message = 'Family Friendly';
+        }
+        $badge_url = plugins_url('bikefuncal/images/') . $badge;
+        printf("<div class=audience><img src='%s' alt='%s' title='%s'></div>\n",
+               esc_url($badge_url), esc_attr($message), esc_attr($message));
+    }
+
+    //////////////
+    // Title
+    if ($is_canceled) {
+        printf("<div class='title'>CANCELED: <span class='cancel'>%s</span></div>",
+               esc_html($record['title']));
+    }
+    else {
+        printf("<div class='title'>%s</div>", esc_html($record['title']));
+    }
+
+    //////////////
+    // Newsflash
+    if ($record['newsflash'] != '') {
+        // If the event was canceled, add the cancel class
+        printf("<div class='newsflash %s'>%s</div>",
+               $cancel_class, esc_html($record['newsflash']));
+    }
+
+    //////////////
     // Date & time
+    //
+    // Requirements:
+    // - If the instance is canceled, prefix the date & time with 'Was: '
+    // - If there's no end time, use the format "[date] at [start]"
+    // - If there is an end time, use the format "[date], [start] - [end]"
+    //   (Use these formats because they read better)
+    // 
     $date = date('l, F j', strtotime($sqldate));
     $time = hmmpm($record['eventtime']);
-    printf("<div class='time'>%s at %s</div>",
-           $date, $time);
-    // @@@ Need to handle canceled, end time, repeat, and other stuff...
+    print "<div class='time'>";
+    if ($is_canceled) {
+        print "Was: ";
+        print "<span class='cancel'>";
+    }
+    if ($record['eventduration'] != 0) {
+        // Format: [date], [start] - [end]
+        printf("%s, %s - %s", esc_html($date), esc_html($time),
+              esc_html(endtime($record['eventtime'], $record['eventduration'])));
+    }
+    else {
+        printf("%s at %s", esc_html($date), esc_html($time));
+    }                   
+    if ($is_canceled) {
+        print "</span>";
+    }
+    print "</div>\n";
 
-    // Title
-    printf("<div class='title'>%s</div>", esc_html($record['title']));
+    //////////////
+    // Recurrence
+    if ($record['datestype'] == 'S' || $record['datestype'] == 'C') {
+        printf("<div class='time repeat %s'>Repeats: %s</div>",
+               $cancel_class, esc_html($record['dates']));
+    }
 
-    // Ride leader
+    /////////////////////////////
+    // Ride leader & contact info
     printf("<div class='contact-info'>");
-    printf("<span class='host'>Your host: %s</span>", esc_html($record['name']));
-    printf("</span>");
-    printf("</div>");
+    printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
+    if ($record['email'] != '') {
+        printf("<div class='leader-email'>%s</div>", mangleemail(esc_html($record['email'])));
+    }
+    if ($record['weburl'] != '') {
+        $webname = $record['webname'] != '' ? $record['webname'] : $record['weburl'];
+        printf("<div class='leader-website'><a href='%s'>%s</a></div>",
+               esc_url($record['weburl']), esc_html($webname));
+    }
+    if ($record['phone'] != '') {
+        printf("<div class='leader-phone'>%s</div>", esc_html($record['phone']));
+    }
+    if ($record['contact'] != '') {
+        // Other contact info
+        printf("<div class='leader-other-contact'>%s</div>", esc_html($record['contact']));
+    }
+    printf("</div>"); // class='contact-info'
     
+    ///////////
     // Location
     printf("<div class='location'>");
-    $address_url = address_link($record['address']);
-    printf("<a href='%s'>%s</a>", esc_url($address_url), esc_html($record['address']));
-    if ($record['locdetails'] != "") {
-        printf(" (%s)", esc_attr($record['locdetails']));
-    }
-    printf("</div>"); 
+    $address_html = sprintf("<a href=%s>%s</a>",
+                            esc_url(address_link($record['address'])),
+                            esc_html($record['address']));
     
-    // Description
-    printf("<div class='description'>");
-    print htmldescription($record['descr']);
-    printf("</div>");
+    if ($record['locname'] != '') {
+        // Show both location name and address
+        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
+               $cancel_class, esc_html($record['locname']));
+        printf("<div class='location-address %s'>%s</div>",
+               $cancel_class, $address_html);
+    }
+    else {
+        // Show address in place of locname
+        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
+               $cancel_class, $address_html);
+    }
 
-    // Link for details
-    printf("<div class='details'><a href='%s'>Details</a></div>",
-           esc_url(get_permalink($record['wordpress_id'])));
+    if ($record['locdetails'] != '') {
+        printf("<div class='location-details %s'>%s</div>",
+               $cancel_class, 
+               esc_html($record['locdetails']));
+    }
 
-    print "</div>";
+    printf("</div>"); // class='location'
 
+    ///////////
+    // Image
+    if ($record['image']) {
+        // The image field has the path relative to the uploads dir.
+        $upload_dirinfo = wp_upload_dir();
+        $image = $upload_dirinfo['baseurl'] . $record["image"];
+        
+        printf("<div class=event-image><img src='%s' alt=''></div>\n",
+               esc_attr($image));
+    }
+
+    ////////////////////
+    // Event description
+    printf("<div class='event-description %s'>%s</div>\n",
+           $cancel_class,
+           htmldescription($record['descr']));
+
+    ////////////
+    // Permalink
+    $permalink_url = get_permalink($record['wordpress_id']);
+    print "<div class='permalink'>";
+    printf("<a href='%s'>Permalink & Comments</a>", esc_url($permalink_url));
+    print "</div>\n";
+           
     exit;
 }
 
