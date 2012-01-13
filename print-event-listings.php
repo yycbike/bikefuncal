@@ -328,19 +328,17 @@ function event_listings($startdate,
 //   'preview'         -- The preview when creating/editing an event
 //   'event-page'      -- The page for the event
 //
-// $include_images -- TRUE to include images, FALSE to leave them out
+// $include_images -- TRUE to include images, FALSE to leave them out.
+//  @@@ $include_images isn't used; remove it!
 function fullentry($record, $for, $include_images)
 {
+    // @@@ Delete for = printer. It's not used. Eventually, the printable version
+    // should be done w/ CSS media queries.
+
     // Check arguments
     if (!in_array($for, Array('listing', 'printer', 'preview', 'event-page'))) {
         die("Bad entry 'for': $for");
     }
-
-    global $imageover;
-
-    // 24 hours ago.  We compare timestamps to this in order to
-    // detect recently changed entries.
-    $yesterday = date("Y-m-d H:i:s", strtotime("yesterday"));
 
     // extract info from the record
     if ($for != 'preview') {
@@ -355,248 +353,165 @@ function fullentry($record, $for, $include_images)
         // lookups.
         $id = 'PREVIEW';
     }
-    $wordpress_id = $record["wordpress_id"];
-    $title = htmlspecialchars(strtoupper($record["title"]));
-    if ($record["eventstatus"] == "C") {
-	$eventtime = "CANCELED";
-	$eventduration = 0;
-    } else {
-	$eventtime = hmmpm($record["eventtime"]);
-	$eventduration = $record["eventduration"];
-    }
-    
-    $dayofmonth = substr($record["eventdate"], -2);
-    $timedetails = $record["timedetails"];
-    
-    if ($record["audience"] == "F") {
-	$badge = "ff.gif";
-	$badgealt = "FF";
-	$badgehint = "Family Friendly";
-    }
-    if ($record["audience"] == "G") {
-	$badge = "";
-	$badgealt = "";
-	$badgehint = "";
-    }
-    if ($record["audience"] == "A") {
-	$badge = "beer.gif";
-	$badgealt = sprintf('%d+', get_option('bfc_drinking_age'));
-        $badgehint = sprintf('Adult Only (%d+)', get_option('bfc_drinking_age'));
-    }
-    
-    $address = $record["address"];
-    if ($record["locname"]) {
-	$address = $record["locname"] . ' , ' . $address;
-    }
-    $locdetails = $record["locdetails"];
-    $descr = $record["descr"];
-    $newsflash = $record["newsflash"];
-    $name = ucwords($record["name"]);
-    $email = $record["hideemail"] ? "" : $record["email"];
-    $phone = $record["hidephone"] ? "" : $record["phone"];
-    $contact = $record["hidecontact"] ? "" : $record["contact"];
-    $weburl = $record["weburl"];
-    $webname = $record["webname"];
-    if ($webname == "" || $for == 'printer') {
-        // If they left out the name for their web site, or if
-        // this is being shown for printing, show the URL insetad of the
-        // site name.
-	$webname = $weburl;
+
+    print "<div class='event-info'>";
+
+    $is_canceled = ($record['eventstatus'] == 'C');
+    $cancel_class = $is_canceled ? 'cancel' : '';
+
+    ///////////
+    // Audience
+    if ($record['audience'] == 'A' || $record['audience'] == 'F') {
+        if ($record['audience'] == 'A') {
+            $badge = 'beer.gif';
+            $message = sprintf('Adults Only (%d+)', get_option('bfc_drinking_age'));
+        }
+        else if ($record['audience'] == 'F') {
+            $badge = "ff.gif";
+            $message = 'Family Friendly';
+        }
+        $badge_url = plugins_url('bikefuncal/images/') . $badge;
+        printf("<div class=audience><img src='%s' alt='%s' title='%s'></div>\n",
+               esc_url($badge_url), esc_attr($message), esc_attr($message));
     }
 
-    // get the image info
-    $image = "";
-    if ($include_images && $for != 'preview' && $record["image"]) {
+    //////////////
+    // Title
+    if ($is_canceled) {
+        printf("<div class='title'>CANCELED: <span class='cancel'>%s</span></div>",
+               esc_html($record['title']));
+    }
+    else {
+        printf("<div class='title'>%s</div>", esc_html($record['title']));
+    }
+
+    //////////////
+    // Newsflash
+    if ($record['newsflash'] != '') {
+        // If the event was canceled, add the cancel class
+        printf("<div class='newsflash %s'>%s</div>",
+               $cancel_class, esc_html($record['newsflash']));
+    }
+
+    //////////////
+    // Date & time
+    //
+    // Requirements:
+    // - If the instance is canceled, prefix the date & time with 'Was: '
+    // - If there's no end time, use the format "[date] at [start]"
+    // - If there is an end time, use the format "[date], [start] - [end]"
+    //   (Use these formats because they read better)
+    // 
+    $date = date('l, F j', strtotime($record['eventdate']));
+    $time = hmmpm($record['eventtime']);
+    print "<div class='time'>";
+    if ($is_canceled) {
+        print "Was: ";
+        print "<span class='cancel'>";
+    }
+    if ($record['eventduration'] != 0) {
+        // Format: [date], [start] - [end]
+        printf("%s, %s - %s", esc_html($date), esc_html($time),
+              esc_html(endtime($record['eventtime'], $record['eventduration'])));
+    }
+    else {
+        printf("%s at %s", esc_html($date), esc_html($time));
+    }                   
+    if ($is_canceled) {
+        print "</span>";
+    }
+    print "</div>\n";
+
+    //////////////
+    // Recurrence
+    if ($record['datestype'] == 'S' || $record['datestype'] == 'C') {
+        printf("<div class='time repeat %s'>Repeats: %s</div>",
+               $cancel_class, esc_html($record['dates']));
+    }
+
+    /////////////////////////////
+    // Ride leader & contact info
+    printf("<div class='contact-info'>");
+    printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
+    if ($record['email'] != '') {
+        // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
+        // together again.
+        
+        $parts = explode('@', $record['email'], 2);
+        // data-aa = after at sign
+        // data-ba = before at sign
+        printf("<div class=leader-email><a data-aa='%s' href='#' data-ba='%s'>e-mail</a></div>",
+               str_rot13($parts[1]), str_rot13($parts[0]));
+    }
+    if ($record['weburl'] != '') {
+        $webname = $record['webname'] != '' ? $record['webname'] : $record['weburl'];
+        printf("<div class='leader-website'><a href='%s'>%s</a></div>",
+               esc_url($record['weburl']), esc_html($webname));
+    }
+    if ($record['phone'] != '') {
+        printf("<div class='leader-phone'>%s</div>", esc_html($record['phone']));
+    }
+    if ($record['contact'] != '') {
+        // Other contact info
+        printf("<div class='leader-other-contact'>%s</div>", esc_html($record['contact']));
+    }
+    printf("</div>"); // class='contact-info'
+    
+    ///////////
+    // Location
+    printf("<div class='location'>");
+    $address_html = sprintf("<a href=%s>%s</a>",
+                            esc_url(address_link($record['address'])),
+                            esc_html($record['address']));
+    
+    if ($record['locname'] != '') {
+        // Show both location name and address
+        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
+               $cancel_class, esc_html($record['locname']));
+        printf("<div class='location-address %s'>%s</div>",
+               $cancel_class, $address_html);
+    }
+    else {
+        // Show address in place of locname
+        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
+               $cancel_class, $address_html);
+    }
+
+    if ($record['locdetails'] != '') {
+        printf("<div class='location-details %s'>%s</div>",
+               $cancel_class, 
+               esc_html($record['locdetails']));
+    }
+
+    printf("</div>"); // class='location'
+
+    ///////////
+    // Image
+    if ($for != 'preview' && $record['image']) {
         // The image field has the path relative to the uploads dir.
         $upload_dirinfo = wp_upload_dir();
         $image = $upload_dirinfo['baseurl'] . $record["image"];
         
-	$imageheight = $record["imageheight"];
-	$imagewidth = $record["imagewidth"];
+        printf("<div class=event-image><img src='%s' alt=''></div>\n",
+               esc_attr($image));
     }
-    
-    if ($eventtime == "CANCELED") {
-	$class = "canceled";
-    }
-    else {
-        $class = "";
-    }
-    
-    print "<dt class=\"${class}\">";
 
-    //////////////////////////////////////////
-    // Image (if right-aligned)
-    //
-    if ($image && $imageover <= 0 && $imageheight > RIGHTHEIGHT / 2) {
-        // Put the image's width & height in bounds
-	if ($imageheight > RIGHTHEIGHT) {
-	    $imagewidth = $imagewidth * RIGHTHEIGHT / $imageheight;
-	    $imageheight = RIGHTHEIGHT;
-	}
-        
-	print "\n";
-        printf("<img src='%s' height='%d' width='%d' align='right' alt='' class='ride-image'>\n",
-               esc_attr($image), $imageheight, $imagewidth);
-    }
-    
-    // Don't show title & permalink on the
-    // event page.
+    ////////////////////
+    // Event description
+    printf("<div class='event-description %s'>%s</div>\n",
+           $cancel_class,
+           htmldescription($record['descr']));
+
+    ////////////
+    // Permalink
     if ($for != 'event-page') {
-        //////////////////////////////////////////
-        // Title
-        //
-        printf("<a name='%s' " .
-            "class='eventhdr %s'>", esc_attr($dayofmonth . '-' . $id),
-            esc_attr($class));
-        print esc_html($title);
-        print "</a>\n";
-
-        //////////////////////////////////////////
-        // Permalink
-        //
-        if ($for == 'preview') {
-            $permalink = '#';
-        }
-        else {
-            $permalink = get_permalink($record['wordpress_id']);
-        }
-        printf("<a href='%s'> \n", esc_url($permalink));
-        $chain_url = esc_url(plugins_url('bikefuncal/images/chain.gif'));
-        print "<img border=0 src=\"${chain_url}\" " .
-            "alt=\"Link\" title=\"Link to this event\">\n";
-        print "</a>\n";
+        $permalink_url = get_permalink($record['wordpress_id']);
+        print "<div class='permalink'>";
+        printf("<a href='%s'>Permalink & Comments</a>", esc_url($permalink_url));
+        print "</div>\n";
     }
 
-    //////////////////////////////////////////
-    // Audience badge
-    //
-    if ($badge != "") {
-        $badgeurl = plugins_url('bikefuncal/images/') . $badge;
-        printf("<img align=left src='%s' alt='%s' title='%s'>\n",
-               esc_url($badgeurl), esc_attr($badgealt), esc_attr($badgehint));
-    }
-
-    print "</dt>\n";
-    print "<dd>";
-
-    //////////////////////////////////////////
-    // Image (if left-aligned)
-    //
-    if ($image && ($imageover > 0 || $imageheight <= RIGHTHEIGHT / 2)) {
-        // Put the image's width & height in bounds
-	if ($imageheight > LEFTHEIGHT) {
-	    $imagewidth = $imagewidth * LEFTHEIGHT / $imageheight;
-	    $imageheight = LEFTHEIGHT;
-	}
-        
-        printf("<img src='%s' height='%d' width='%d' align='left' alt='' class='ride-image'>\n",
-               esc_attr($image), $imageheight, $imagewidth);
-
-    }
-
-    //////////////////////////////////////////
-    // Location
-    //
-    // (This div contains the location)
-    printf("<div class='%s'>", esc_attr($class));
-
-    // Street address
-    $address_url = address_link($record['address']);
-    printf("<a href='%s' target=\"_BLANK\">%s</a>",
-           esc_url($address_url), esc_html($address));
-    
-    // Location details
-    if ($locdetails != "") {
-        printf(" (%s)", esc_attr($locdetails));
-    }
-    print "</div>\n";
-
-    
-    //////////////////////////////////////////
-    // Time
-    //
-    print "<div>";
-    print esc_html($eventtime);
-    if ($eventtime == "CANCELED" && $newsflash != "") {
-	printf(" <span class=newsflash>%s</span>", esc_html($newsflash));
-    }
-    if ($eventtime != "CANCELED") {
-        // Print end time
-	if ($eventduration != 0) {
-	    print " - ";
-            print esc_html(endtime($eventtime,$eventduration));
-        }
-        
-	if ($timedetails != "") {
-            print ", ";
-            print esc_html($timedetails);
-        }
-
-        // Print the dates (e.g., "every Tuesday") for repeating
-        // events.
-	if ($record["datestype"] == "C" || $record["datestype"] == "S") {
-	    print ", ";
-            print esc_html($record['dates']);
-        }
-    }
-    print "</div>";
-
-    //////////////////////////////////////////
-    // Description
-    //
-    printf("<div class='%s'>\n", esc_attr($class));
-    printf("<em>%s</em>\n", htmldescription($descr));
-    if ($newsflash != "" && $eventtime != "CANCELED") {
-	printf("<span class=newsflash>%s</span>", esc_html($newsflash));
-    }
-
-    //////////////////////////////////////////
-    // Contact info
-    //
-    print "<div class='contact-info'>\n";
-    print esc_html($name);
-    if (!strpbrk(substr(trim($name),strlen(trim($name))-1),".,:;-")) {
-        print ",";
-    }
-    if ($email != "") {
-        echo " ", mangleemail(esc_html($email));
-    }
- 
-    if ($weburl != "") {
-        printf(', <a href="%s">%s</a>', esc_url($weburl), esc_html($webname));
-    }
-    if ($contact != "") {
-        print ", ";
-        print mangleemail(esc_html($contact));
-    }
-    if ($phone != "") {
-        echo ", ", esc_html($phone);
-    }
-    print "</div>\n";
-
-    //////////////////////////////////////////
-    // Forum link
-    //
-    if ($for != 'printer' && $for != 'event-page' && $wordpress_id > 0) {
-        $comment_counts = wp_count_comments($wordpress_id);
-
-        $forumimg = plugins_url("bikefuncal/images/forum.gif");
-        $forumtitle =
-            $comment_counts->approved .
-            " message" .
-            ($comment_counts->approved == 1 ? "" : "s");
-        $forumurl   = htmlspecialchars(get_permalink($wordpress_id), ENT_QUOTES);
-
-        // @@@ If there's been recent activity in the forum,
-        // show forumflash.gif instead. (The old code did this,
-        // but it's not ported to WP yet.)
-        
-        printf("<a href='%s' title='%s'>", esc_url($forumurl), esc_attr($forumtitle));
-        printf("<img border=0 src='%s' alt='forum'>", esc_url($forumimg));
-        print "</a>\n";
-    }
-
-    //////////////////////////////////////////
+    ////////////
     // Edit link
     //
     // Show the edit link to admin users.
@@ -604,18 +519,8 @@ function fullentry($record, $for, $include_images)
     // because they're already editing.
     if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        printf("<a href='%s'>Edit Event</a>", esc_url($edit_url));
-    }
-
-    print "</dd>\n";
-
-    // if this event has no image, then the next event's
-    // image can be left-aligned.
-    if ($image == "" || $imageover > 0 || $imageheight <= RIGHTHEIGHT / 2) {
-	$imageover = 0;
-    }
-    else {
-	$imageover = $imageheight - RIGHTHEIGHT / 2;
+        printf("<div class='admin-edit-link'><a href='%s'>Edit Event</a></div>",
+               esc_url($edit_url));
     }
 }
 
@@ -807,160 +712,7 @@ END_QUERY;
     }
     $record = $records[0];
 
-    print "<div class='event-info'>";
-
-    $is_canceled = ($record['eventstatus'] == 'C');
-    $cancel_class = $is_canceled ? 'cancel' : '';
-
-    ///////////
-    // Audience
-    if ($record['audience'] == 'A' || $record['audience'] == 'F') {
-        if ($record['audience'] == 'A') {
-            $badge = 'beer.gif';
-            $message = sprintf('Adults Only (%d+)', get_option('bfc_drinking_age'));
-        }
-        else if ($record['audience'] == 'F') {
-            $badge = "ff.gif";
-            $message = 'Family Friendly';
-        }
-        $badge_url = plugins_url('bikefuncal/images/') . $badge;
-        printf("<div class=audience><img src='%s' alt='%s' title='%s'></div>\n",
-               esc_url($badge_url), esc_attr($message), esc_attr($message));
-    }
-
-    //////////////
-    // Title
-    if ($is_canceled) {
-        printf("<div class='title'>CANCELED: <span class='cancel'>%s</span></div>",
-               esc_html($record['title']));
-    }
-    else {
-        printf("<div class='title'>%s</div>", esc_html($record['title']));
-    }
-
-    //////////////
-    // Newsflash
-    if ($record['newsflash'] != '') {
-        // If the event was canceled, add the cancel class
-        printf("<div class='newsflash %s'>%s</div>",
-               $cancel_class, esc_html($record['newsflash']));
-    }
-
-    //////////////
-    // Date & time
-    //
-    // Requirements:
-    // - If the instance is canceled, prefix the date & time with 'Was: '
-    // - If there's no end time, use the format "[date] at [start]"
-    // - If there is an end time, use the format "[date], [start] - [end]"
-    //   (Use these formats because they read better)
-    // 
-    $date = date('l, F j', strtotime($sqldate));
-    $time = hmmpm($record['eventtime']);
-    print "<div class='time'>";
-    if ($is_canceled) {
-        print "Was: ";
-        print "<span class='cancel'>";
-    }
-    if ($record['eventduration'] != 0) {
-        // Format: [date], [start] - [end]
-        printf("%s, %s - %s", esc_html($date), esc_html($time),
-              esc_html(endtime($record['eventtime'], $record['eventduration'])));
-    }
-    else {
-        printf("%s at %s", esc_html($date), esc_html($time));
-    }                   
-    if ($is_canceled) {
-        print "</span>";
-    }
-    print "</div>\n";
-
-    //////////////
-    // Recurrence
-    if ($record['datestype'] == 'S' || $record['datestype'] == 'C') {
-        printf("<div class='time repeat %s'>Repeats: %s</div>",
-               $cancel_class, esc_html($record['dates']));
-    }
-
-    /////////////////////////////
-    // Ride leader & contact info
-    printf("<div class='contact-info'>");
-    printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
-    if ($record['email'] != '') {
-        // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
-        // together again.
-        
-        $parts = explode('@', $record['email'], 2);
-        // data-aa = after at sign
-        // data-ba = before at sign
-        printf("<div class=leader-email><a data-aa='%s' href='#' data-ba='%s'>e-mail</a></div>",
-               str_rot13($parts[1]), str_rot13($parts[0]));
-    }
-    if ($record['weburl'] != '') {
-        $webname = $record['webname'] != '' ? $record['webname'] : $record['weburl'];
-        printf("<div class='leader-website'><a href='%s'>%s</a></div>",
-               esc_url($record['weburl']), esc_html($webname));
-    }
-    if ($record['phone'] != '') {
-        printf("<div class='leader-phone'>%s</div>", esc_html($record['phone']));
-    }
-    if ($record['contact'] != '') {
-        // Other contact info
-        printf("<div class='leader-other-contact'>%s</div>", esc_html($record['contact']));
-    }
-    printf("</div>"); // class='contact-info'
-    
-    ///////////
-    // Location
-    printf("<div class='location'>");
-    $address_html = sprintf("<a href=%s>%s</a>",
-                            esc_url(address_link($record['address'])),
-                            esc_html($record['address']));
-    
-    if ($record['locname'] != '') {
-        // Show both location name and address
-        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
-               $cancel_class, esc_html($record['locname']));
-        printf("<div class='location-address %s'>%s</div>",
-               $cancel_class, $address_html);
-    }
-    else {
-        // Show address in place of locname
-        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
-               $cancel_class, $address_html);
-    }
-
-    if ($record['locdetails'] != '') {
-        printf("<div class='location-details %s'>%s</div>",
-               $cancel_class, 
-               esc_html($record['locdetails']));
-    }
-
-    printf("</div>"); // class='location'
-
-    ///////////
-    // Image
-    if ($record['image']) {
-        // The image field has the path relative to the uploads dir.
-        $upload_dirinfo = wp_upload_dir();
-        $image = $upload_dirinfo['baseurl'] . $record["image"];
-        
-        printf("<div class=event-image><img src='%s' alt=''></div>\n",
-               esc_attr($image));
-    }
-
-    ////////////////////
-    // Event description
-    printf("<div class='event-description %s'>%s</div>\n",
-           $cancel_class,
-           htmldescription($record['descr']));
-
-    ////////////
-    // Permalink
-    $permalink_url = get_permalink($record['wordpress_id']);
-    print "<div class='permalink'>";
-    printf("<a href='%s'>Permalink & Comments</a>", esc_url($permalink_url));
-    print "</div>\n";
+    fullentry($record, 'listing', true);
            
     exit;
 }
