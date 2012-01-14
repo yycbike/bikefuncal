@@ -313,58 +313,13 @@ function bfc_event_submission_shortcode($atts) {
  * This is designed to be run in the wp_footer action.
  */
 function load_event_submission_form_javascript() {
-    # First, register jquery UI (the custom version)
-    $jquery_js_url = 
-        plugins_url('bikefuncal/jquery-ui/js/jquery-ui-1.8.11.custom.min.js');
-    wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
-
-    $jquery_css_url =
-        plugins_url('bikefuncal/jquery-ui/css/ui-lightness/jquery-ui-1.8.11.custom.css');
-    wp_register_style('bfc-jquery-ui-style', $jquery_css_url, null);
-
-    # Second, register the JS for bikefuncal
-                       
-    # @@@ Evan isn't sure how to do this without hard-coding
-    # 'bikefuncal' into the URL.
-    $event_submission_js_url = plugins_url('bikefuncal/event-submission.js');
-    
-    $required_scripts = array('jquery', 'bfc-jquery-ui');
-    wp_register_script('event-submission',
-                       $event_submission_js_url,
-                       $required_scripts);
-
-    # Create the BikeFunAjax object in the page, to send data from
-    # PHP to JavaScript.
-    $ajax_options = array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        # We have to use l10n_print_after to pass JSON-encoded data.
-        # See: http://wordpress.stackexchange.com/q/8655
-        'l10n_print_after' =>
-            'BikeFunAjax.venues = ' . json_encode(bfc_venue_list()) . ';',
-        );
-    wp_localize_script('event-submission', 'BikeFunAjax', $ajax_options);
-                       
     wp_print_styles('bfc-jquery-ui-style');
-    wp_print_scripts('event-submission');                       
+    wp_print_scripts('bfc-event-submission');                       
 }
 
 function load_overview_calendar_javascript() {
-    $simplemodal_js_url = plugins_url('bikefuncal/jquery.simplemodal.js');
-    wp_register_script('jquery-simplemodal', $simplemodal_js_url, array('jquery'));
-
-    $overview_cal_js_url = plugins_url('bikefuncal/overview-calendar.js');
-    wp_register_script('overview-calendar', $overview_cal_js_url, array('jquery', 'jquery-simplemodal'));
-
-    $ajax_options = array(
-        'ajaxURL' => admin_url('admin-ajax.php'),
-        'spinnerURL' => plugins_url('bikefuncal/images/ajax-loader.gif'),
-    );
-    wp_localize_script('overview-calendar', 'BikeFunAjax', $ajax_options);
-
-    wp_print_scripts('overview-calendar');
+    wp_print_scripts('bfc-overview-calendar');
 }
-
-
 
 /**
  * Print the days in the festival (e.g., 'June 3 to 18, 2010').

@@ -1,5 +1,4 @@
 <?php
-
 // This file comes from the old, pre-wordpress code (where it was named view.php).
 //
 // It prints out events -- the overviews and the individual listings
@@ -23,14 +22,13 @@ function bfc_excerpt($text, $excerpt_more)
     //$excerpt_more = apply_filters('excerpt_more', ' ' . '[...]');
     $words = preg_split("/[\n\r\t ]+/", $text, $excerpt_length + 1, PREG_SPLIT_NO_EMPTY);
     if ( count($words) > $excerpt_length ) {
-            array_pop($words);
-            $text = implode(' ', $words);
-            $text = $text . $excerpt_more;
+        array_pop($words);
+        $text = implode(' ', $words);
+        $text = $text . $excerpt_more;
     } else {
-            $text = implode(' ', $words);
+        $text = implode(' ', $words);
     }
 
-    //return apply_filters('wp_trim_excerpt', $text, $raw_excerpt);
     return $text;
 }
 
@@ -530,7 +528,7 @@ function fullentry($record, $for, $sqldate)
         $parts = explode('@', $record['email'], 2);
         // data-aa = after at sign
         // data-ba = before at sign
-        printf("<div class=leader-email><a data-aa='%s' href='#' data-ba='%s'>e-mail</a></div>",
+        printf("<div class=leader-email><a class='scrambled-email' data-aa='%s' href='#' data-ba='%s'>e-mail</a></div>",
                str_rot13($parts[1]), str_rot13($parts[0]));
     }
     if ($record['weburl'] != '') {

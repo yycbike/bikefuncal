@@ -548,4 +548,70 @@ function bfc_wp_loaded_filter() {
     }
 }
 
+// Register Javascript used by the pages (and some associated CSS)
+function bfc_register_javascript() {
+    ///////////////////////
+    // E-mail mangling
+    //
+    // Goes on all pages
+    $email_js_url = plugins_url('bikefuncal/mail.js');
+    wp_register_script('bfc-mail', $email_js_url, array('jquery'));
+
+    // enqueue this now, since it goes on all pages
+    wp_enqueue_script('bfc-mail');
+
+    //////////////////////
+    // Overview calendar pop-ups
+    //
+    // Goes on pages with the [bfc_overview_cal] shorttag
+    
+    // simplemodal is the library for the pop-up window the calendar events appear in
+    $simplemodal_js_url = plugins_url('bikefuncal/jquery.simplemodal.js');
+    wp_register_script('bfc-jquery-simplemodal', $simplemodal_js_url, array('jquery'));
+
+    // This plugin's JS that goes with the overview calendar
+    $overview_cal_js_url = plugins_url('bikefuncal/overview-calendar.js');
+    wp_register_script('bfc-overview-calendar', $overview_cal_js_url,
+                       array('jquery', 'bfc-jquery-simplemodal', 'bfc-mail'));
+
+    $overview_ajax_options = array(
+        'ajaxURL' => admin_url('admin-ajax.php'),
+        'spinnerURL' => plugins_url('bikefuncal/images/ajax-loader.gif'),
+    );
+    wp_localize_script('bfc-overview-calendar', 'BikeFunAjax', $overview_ajax_options);
+
+    //////////////////////
+    // Event editing form
+
+    // Once upon a time, WordPress' version of jQuery-UI was super-old, so this plugin
+    // bundled its own. @@@ Perhaps WP has gotten a newer version? We should check.
+    $jquery_js_url = 
+        plugins_url('bikefuncal/jquery-ui/js/jquery-ui-1.8.11.custom.min.js');
+    wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
+
+    // CSS that goes with the plugin-specific jQuery UI.
+    $jquery_css_url =
+        plugins_url('bikefuncal/jquery-ui/css/ui-lightness/jquery-ui-1.8.11.custom.css');
+    wp_register_style('bfc-jquery-ui-style', $jquery_css_url, null);
+
+    // This plugin's JS that goes with the new event form
+    $event_submission_js_url = plugins_url('bikefuncal/event-submission.js');
+    $required_scripts = array('jquery', 'bfc-jquery-ui');
+    wp_register_script('bfc-event-submission',
+                       $event_submission_js_url,
+                       $required_scripts);
+
+    // Create the BikeFunAjax object in the page, to send data from
+    // PHP to JavaScript.
+    $submission_ajax_options = array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        // We have to use l10n_print_after to pass JSON-encoded data.
+        // See: http://wordpress.stackexchange.com/q/8655
+        'l10n_print_after' =>
+            'BikeFunAjax.venues = ' . json_encode(bfc_venue_list()) . ';',
+        );
+    wp_localize_script('bfc-event-submission', 'BikeFunAjax', $submission_ajax_options);
+}
+add_action('init', 'bfc_register_javascript');
+
 ?>
