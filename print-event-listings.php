@@ -4,12 +4,35 @@
 //
 // It prints out events -- the overviews and the individual listings
 
-// Image height limits for the online calendar
-define("RIGHTHEIGHT", 200);
-define("LEFTHEIGHT", 125);
+/**
+ * Trim the words to a certain length. Use this because
+ * WordPress' wp_trim_excerpt() is tightly bound with The Loop.
+ * You can't use it with arbitrary text.
+ * 
+ * See http://wordpress.stackexchange.com/a/7400
+ */
+function bfc_excerpt($text, $excerpt_more)
+{
+    $text = strip_shortcodes( $text );
 
-// Preload all days if no alldays cookie is set and number of events is under this threshold
-define("PRELOAD", 100);		
+    $text = apply_filters('the_content', $text);
+    $text = str_replace(']]>', ']]&gt;', $text);
+    $text = strip_tags($text);
+    $excerpt_length = apply_filters('excerpt_length', 55);
+    // Don't use the excerpt_more filter, because it expects to be called from The Loop
+    //$excerpt_more = apply_filters('excerpt_more', ' ' . '[...]');
+    $words = preg_split("/[\n\r\t ]+/", $text, $excerpt_length + 1, PREG_SPLIT_NO_EMPTY);
+    if ( count($words) > $excerpt_length ) {
+            array_pop($words);
+            $text = implode(' ', $words);
+            $text = $text . $excerpt_more;
+    } else {
+            $text = implode(' ', $words);
+    }
+
+    //return apply_filters('wp_trim_excerpt', $text, $raw_excerpt);
+    return $text;
+}
 
 /**
  * Create a google maps link to the specified address.
@@ -343,6 +366,7 @@ function fullentry($record, $for, $include_images)
     // extract info from the record
     if ($for != 'preview') {
         $id = $record["id"];
+        $permalink_url = get_permalink($record['wordpress_id']);
     }
     else {
         // It's OK to use $id when creating URLs based off of the
@@ -352,6 +376,7 @@ function fullentry($record, $for, $include_images)
         // But, use caution not to use $id for things like database
         // lookups.
         $id = 'PREVIEW';
+        $permalink_url = '#';
     }
 
     print "<div class='event-info'>";
@@ -504,14 +529,19 @@ function fullentry($record, $for, $include_images)
 
     ////////////////////
     // Event description
+    $descr = htmldescription($record['descr']);
+    if ($for == 'listing') {
+        $more = sprintf(" <a href='%s'>[more...]</a>",
+                        esc_url($permalink_url));
+        $descr = bfc_excerpt($descr, $more);
+    }
     printf("<div class='event-description %s'>%s</div>\n",
            $cancel_class,
-           htmldescription($record['descr']));
+           $descr);
 
     ////////////
     // Permalink
     if ($for != 'event-page') {
-        $permalink_url = get_permalink($record['wordpress_id']);
         print "<div class='permalink'>";
         printf("<a href='%s'>Permalink & Comments</a>", esc_url($permalink_url));
         print "</div>\n";
