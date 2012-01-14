@@ -37,6 +37,8 @@ register_activation_hook(__FILE__,'bfc_install');
 // with any parametrs WordPress may use internally.
 add_filter('query_vars', 'bfc_query_vars_filter');
 function bfc_query_vars_filter($qvars) {
+    $qvars[] = 'date';
+
     // Query vars for browsing the calendar.
     $qvars[] = 'calyear';
     $qvars[] = 'calmonth';
@@ -438,16 +440,34 @@ function bfc_the_content_filter($content) {
         global $wpdb;
         global $wp_query;
 
-        $sql = <<<END_QUERY
-SELECT *
-FROM ${calevent_table_name}, ${caldaily_table_name}
-WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-      ${calevent_table_name}.wordpress_id = %d
-ORDER BY ${caldaily_table_name}.eventdate
-LIMIT 1
-
+        // Is there a particular instance of a series specified?
+        if (isset($wp_query->query_vars['date'])) {
+            $sql = <<<END_QUERY
+                SELECT *
+                FROM ${calevent_table_name}, ${caldaily_table_name}
+                WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
+                      ${caldaily_table_name}.eventdate = %s AND
+                      ${calevent_table_name}.wordpress_id = %d
+                ORDER BY ${caldaily_table_name}.eventdate
+                LIMIT 1
 END_QUERY;
-        $sql = $wpdb->prepare($sql, $wp_query->post->ID);
+            $sql = $wpdb->prepare($sql, $wp_query->query_vars['date'],
+                $wp_query->post->ID);
+            $sqldate = $wp_query->query_vars['date'];
+        }
+        else {
+            // No date specified, get the first one.
+            $sql = <<<END_QUERY
+                SELECT *
+                FROM ${calevent_table_name}, ${caldaily_table_name}
+                WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
+                      ${calevent_table_name}.wordpress_id = %d
+                ORDER BY ${caldaily_table_name}.eventdate
+                LIMIT 1
+END_QUERY;
+            $sql = $wpdb->prepare($sql, $wp_query->post->ID);
+            $sqldate = null;
+        }
         $records = $wpdb->get_results($sql, ARRAY_A);
         $num_records = count($records);
 
@@ -459,9 +479,7 @@ END_QUERY;
             // print statements into a string.
             ob_start();
             ob_implicit_flush(0);
-            fullentry($records[0],
-                      'event-page',
-                      TRUE);    // include images
+            fullentry($records[0], 'event-page', $sqldate);    // include images
             $listing = ob_get_contents();
             ob_end_clean();
 

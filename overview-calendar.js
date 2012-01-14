@@ -39,32 +39,46 @@ function update_popup(popup_content_html) {
         element.attr('href', url);
         element.text(address);
     });
+
+    // Attach popup to previous & next buttons
+    jQuery('.event-navigation a').each(function(index, element) {
+        element = jQuery(element);
+        element.attr('href', '#');
+        element.click(function() {
+            jQuery.modal.close();
+            launch_popup(element);
+        });
+    });
+}
+
+function launch_popup(element) {
+    var ajax_params = {
+        'action': 'event-popup',
+        'id': element.attr('data-id'),
+        'date': element.attr('data-date'),
+    };
+
+    // For now, put up a spinner popup
+    var initialPopup = jQuery('<div id=cal-popup><img id=spinner></div>');
+    initialPopup.find('#spinner').attr('src', BikeFunAjax.spinnerURL);
+    initialPopup.modal(BfcPopupOptions);
+
+    // Get the results back as text, so we don't have
+    // to worry about validating them as XML
+    jQuery.post(
+        BikeFunAjax.ajaxURL,
+        ajax_params,
+        update_popup, 
+        'text');
+
+    return false;
 }
 
 jQuery(document).ready(function() {
     jQuery('.event-title a').each(function(index, element) {
         element = jQuery(element);
         element.click(function() {
-            var ajax_params = {
-                'action': 'event-popup',
-                'id': element.attr('data-id'),
-                'date': element.attr('data-date'),
-            };
-
-            // For now, put up a spinner popup
-            var initialPopup = jQuery('<div id=cal-popup><img id=spinner></div>');
-            initialPopup.find('#spinner').attr('src', BikeFunAjax.spinnerURL);
-            initialPopup.modal(BfcPopupOptions);
-
-            // Get the results back as text, so we don't have
-            // to worry about validating them as XML
-            jQuery.post(
-                BikeFunAjax.ajaxURL,
-                ajax_params,
-                update_popup, 
-                'text');
-
-            return false;
+            launch_popup(element)
         });
     });
 });

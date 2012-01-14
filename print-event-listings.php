@@ -67,6 +67,14 @@ function address_link($address) {
     return $site . '?' . http_build_query($query_args);
 }
 
+function add_date_to_permalink($permalink, $sqldate) {
+    $query_args = array('date' => $sqldate);
+    $query_string = http_build_query($query_args);
+
+    // @@@ Need to handle the case where the old permalink is already a query
+    return $permalink . '?' . $query_string;
+}
+
 function class_for_special_day($thisdate) {
     // For Pedalpalooza, the Portland calendar highlights
     // special events, such as MCBF, Father's Day, and the Solstice.
@@ -96,7 +104,7 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     print esc_html(date("j", $thisdate));
     print "</div>\n";
     $sqldate = date("Y-m-d", $thisdate);
-    tinyentries($sqldate, TRUE, $preload_alldays );
+    tinyentries($sqldate, 'calendar');
     print "</td>\n";
 }   
 
@@ -207,33 +215,32 @@ function overview_calendar(
 
 // Generate the HTML for all entries in a given day, in the tiny format
 // used in the weekly grid near the top of the page.
-function tinyentries($day, $exclude = FALSE, $loadday = FALSE)
+//
+// For:
+// - calendar
+// - sidebar
+function tinyentries($sqldate, $for, $current_event_wordpress_id = null)
 {
     global $calevent_table_name;
     global $caldaily_table_name;
     global $wpdb;
-    
-    $dayofmonth = substr($day, -2);
 
     // Find events that are not exceptions or skipped
     $query = <<<END_QUERY
 SELECT ${calevent_table_name}.id, newsflash,title, tinytitle, eventtime,
-       audience, eventstatus, descr, review
+       eventdate, datestype, audience, eventstatus, descr, review, wordpress_id
 FROM ${calevent_table_name}, ${caldaily_table_name}
 WHERE ${calevent_table_name}.id=${caldaily_table_name}.id AND
       eventdate   =  %s   AND
       eventstatus <> "E"  AND
       eventstatus <> "S"     
-ORDER BY eventtime
+ORDER BY eventtime ASC, title ASC
 
 END_QUERY;
-    $query = $wpdb->prepare($query, $day);
+    $query = $wpdb->prepare($query, $sqldate);
     $records = $wpdb->get_results($query, ARRAY_A);
 
     foreach ($records as $record) {
-	if ($exclude && $record["review"] == "E") {
-	    continue;
-        }
 	$id = $record["id"];
 	$tinytitle = $record["tinytitle"];
 	$title = $record["title"];
@@ -271,7 +278,6 @@ END_QUERY;
         }
 
         printf("<div class='%s'>", esc_attr($cssclass));
-        //printf("<div class='event-time'>%s</div>", esc_html($eventtime));
         printf("<div class='event-time'>");
         printf("<span class='time'>%s</span>", esc_html($eventtime));
         if ($record['audience'] == 'A') {
@@ -286,8 +292,30 @@ END_QUERY;
         }
         
         print "</div>";
+
+        // Print the title different ways, depending on what we're printing for
+        print "<div class='event-title'>";
+        if ($current_event_wordpress_id == $record['wordpress_id']) {
+            // Don't link to the current event
+            printf("<span class='current-event'>%s</span>", esc_html($title));
+        }
+        else if ($for == 'calendar') {
+            // Calendar gets a pop-up link. (The JavaScript will fill in the "pop up" part.)
+            printf("<a data-id='%d' data-date='%s' href='#'>%s</a></div>", esc_attr($id), esc_attr($sqldate), esc_html($title));
+        }
+        else if ($for == 'sidebar') {
+            // Sidebar gets permalinks
+            $url = get_permalink($record['wordpress_id']);
+            if ($record['datestype'] != 'O') {
+                $url = add_date_to_permalink($url, $sqldate);
+            }
+            printf("<a href='%s'>%s</a>", esc_url($url), esc_html($title));
+        }
+        else {
+            die();
+        }
+        print "</div>"; // .event-title
         
-        printf("<div class='event-title'><a data-id='%d' data-date='%s' href='#'>%s</a></div>", esc_attr($id), esc_attr($day), esc_html($title));
         printf("</div>");
     }
 }
@@ -343,23 +371,21 @@ function event_listings($startdate,
     }
 }
 
-// Generate the HTML entry for a single event
+// Generate the HTML entry for a single event:
+//
+// $record: The SQL record to print
 //
 // $for is one of:
 //   'listing'         -- The event listings on the calendar
-//   'printer'         -- The event listings on a printer
 //   'preview'         -- The preview when creating/editing an event
 //   'event-page'      -- The page for the event
 //
-// $include_images -- TRUE to include images, FALSE to leave them out.
-//  @@@ $include_images isn't used; remove it!
-function fullentry($record, $for, $include_images)
+// $sqldate: If the event recurs, specify this instance of the event.
+//           If unknown, pass in null.
+function fullentry($record, $for, $sqldate)
 {
-    // @@@ Delete for = printer. It's not used. Eventually, the printable version
-    // should be done w/ CSS media queries.
-
     // Check arguments
-    if (!in_array($for, Array('listing', 'printer', 'preview', 'event-page'))) {
+    if (!in_array($for, Array('listing', 'preview', 'event-page'))) {
         die("Bad entry 'for': $for");
     }
 
@@ -367,6 +393,9 @@ function fullentry($record, $for, $include_images)
     if ($for != 'preview') {
         $id = $record["id"];
         $permalink_url = get_permalink($record['wordpress_id']);
+        if ($record['datestype'] != 'O') {
+            $permalink_url = add_date_to_permalink($permalink_url, $sqldate);
+        }
     }
     else {
         // It's OK to use $id when creating URLs based off of the
@@ -429,27 +458,57 @@ function fullentry($record, $for, $include_images)
     //
     // Requirements:
     // - If the instance is canceled, prefix the date & time with 'Was: '
-    // - If there's no end time, use the format "[date] at [start]"
-    // - If there is an end time, use the format "[date], [start] - [end]"
-    //   (Use these formats because they read better)
-    // 
-    $date = date('l, F j', strtotime($record['eventdate']));
+    // - If there's no end time:
+    //   - If the date is known:
+    //     - Use the format "[date] at [start]"
+    //   - If the date is unknown:
+    //     - Use the format "[start]"
+    // - If there is an end time:
+    //     - If the date is known
+    //       - Use the format "[date], [start] - [end]"
+    //     - If the date is unknown
+    //       - Use the format "[start] - [end]"
+    //
+    // Use different formats for with/without end time, because they
+    // read better.
+
+    $has_end_time = ($record['eventduration'] != 0);
+
+    // This will fail if $sqldate is unset or invalid. (Have to check
+    // because it can come from user input.)
+    $eventdate = strtotime($sqldate);
+    $date = ($eventdate !== false) ? date('l, F j', $eventdate) : null;
+    
+    if ($date === null) {
+        $date_text = '';
+    }
+    else {
+        if ($has_end_time) {
+            $date_text = sprintf('%s, ', esc_html($date));
+        }
+        else {
+            $date_text = sprintf('%s at ', esc_html($date));
+        }
+    }
+    
     $time = hmmpm($record['eventtime']);
+    if ($has_end_time) {
+        $time_text = sprintf("%s - %s", esc_html($time),
+              esc_html(endtime($time, $record['eventduration'])));
+    }
+    else {
+        $time_text = esc_html($time);
+    }
+
     print "<div class='time'>";
     if ($is_canceled) {
         print "Was: ";
         print "<span class='cancel'>";
     }
-    if ($record['eventduration'] != 0) {
-        // Format: [date], [start] - [end]
-        printf("%s, %s - %s", esc_html($date), esc_html($time),
-              esc_html(endtime($record['eventtime'], $record['eventduration'])));
-    }
-    else {
-        printf("%s at %s", esc_html($date), esc_html($time));
-    }                   
+    print $date_text;
+    print $time_text;
     if ($is_canceled) {
-        print "</span>";
+        print "</span>"; // span.cancel
     }
     print "</div>\n";
 
@@ -558,14 +617,107 @@ function fullentry($record, $for, $include_images)
         printf("<div class='admin-edit-link'><a href='%s'>Edit Event</a></div>",
                esc_url($edit_url));
     }
+
+    /////////////////////////
+    // Next & Previous events
+    if ($for != 'preview') {
+        global $wpdb;
+        global $calevent_table_name;
+        global $caldaily_table_name;
+        
+        $prev_sql = <<<END_SQL
+            -- Find the previous event
+            SELECT *
+            FROM ${calevent_table_name}, ${caldaily_table_name}
+            WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
+                  eventstatus <> "E" AND
+                  eventstatus <> "S" AND
+                  (
+                      -- Find an earlier event
+                      eventdate < %s OR
+                     (eventdate = %s AND eventtime < %s) OR
+                      -- More than one event has the same time as this one,
+                      -- so sort by title.
+                     (eventdate = %s AND eventtime = %s AND title < %s)
+                  )
+            ORDER by eventdate DESC, eventtime DESC, title DESC
+            LIMIT 1;
+END_SQL;
+$next_sql = <<<END_SQL
+            -- Find the next event
+            SELECT *
+            FROM ${calevent_table_name}, ${caldaily_table_name}
+            WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
+                  eventstatus <> "E" AND
+                  eventstatus <> "S" AND
+                  (
+                      eventdate > %s OR
+                     (eventdate = %s AND eventtime > %s) OR
+                     (eventdate = %s AND eventtime = %s AND title > %s)
+                  )
+            ORDER by eventdate ASC, eventtime ASC, title ASC
+            LIMIT 1;
+END_SQL;
+
+        $prev_sql = $wpdb->prepare($prev_sql,
+                                   $record['eventdate'],
+                                   $record['eventdate'], $record['eventtime'],
+                                   $record['eventdate'], $record['eventtime'], $record['title']);
+        $prev_results = $wpdb->get_results($prev_sql, ARRAY_A);
+        $next_sql = $wpdb->prepare($next_sql,
+                                   $record['eventdate'],
+                                   $record['eventdate'], $record['eventtime'],
+                                   $record['eventdate'], $record['eventtime'], $record['title']);
+        $next_results = $wpdb->get_results($next_sql, ARRAY_A);
+ 
+        if (isset($prev_results[0])) {
+            $prev_record = $prev_results[0];
+            $prev_url = get_permalink($prev_record['wordpress_id']);
+
+            if ($record['eventdate'] == $prev_record['eventdate']) {
+                // On the same day, show the time
+                $when = hmmpm($prev_record['eventtime']);
+            }
+            else {
+                // On another day, show the weekday (e.g., Thursday)
+                $when = date('l', strtotime($prev_record['eventdate']));
+            }
+            
+            print "<div class='event-navigation previous'>";
+            printf("<div><a data-id='%d' data-date='%s' href='%s'>&lt; Previous</a>",
+                   esc_attr($prev_record['id']), esc_attr($prev_record['eventdate']),
+                   esc_attr($prev_url));
+            printf("<div>%s: %s</div>", esc_html($when), esc_html($prev_record['title']));
+            printf("</div>");
+        }
+
+        if (isset($next_results[0])) {
+            $next_record = $next_results[0];
+            $next_url = get_permalink($next_record['wordpress_id']);
+
+            if ($record['eventdate'] == $next_record['eventdate']) {
+                // On the same day, show the time
+                $when = hmmpm($next_record['eventtime']);
+            }
+            else {
+                // On another day, show the weekday (e.g., Thursday)
+                $when = date('l', strtotime($next_record['eventdate']));
+            }
+
+            print "<div class='event-navigation next'>";
+            printf("<div><a data-id='%d' data-date='%s' href='%s'>Next &gt;</a>",
+                   esc_attr($next_record['id']), esc_attr($next_record['eventdate']),
+                   esc_attr($next_url));
+            printf("<div>%s: %s</div>", esc_html($when), esc_html($next_record['title']));
+            printf("</div>");
+            
+        }
+    }        
 }
 
 // Generate the HTML for all entries in a given day, in the full format
 // used in the lower part of the page.
-function fullentries($day,
-                         $exclude = FALSE,
-                         $for_printer = FALSE,
-                         $include_images = TRUE)
+function fullentries($day, $exclude = FALSE)
 {
     global $calevent_table_name;
     global $caldaily_table_name;
@@ -587,7 +739,7 @@ WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
       eventdate = %s AND
       eventstatus <> "E" AND
       eventstatus <> "S"
-ORDER BY eventtime
+ORDER BY eventtime ASC, title ASC
 END_QUERY;
     $query = $wpdb->prepare($query, $day);
     $records = $wpdb->get_results($query, ARRAY_A);
@@ -598,10 +750,7 @@ END_QUERY;
 
         foreach ($records as $record) {
             if (!$exclude || $record["review"] != "E") {
-                $for = $for_printer ? 'printer' : 'listing';
-                fullentry($record,
-                          $for,
-                          $include_images);
+                fullentry($record, 'listing', $record['eventdate']);
             }
         }
 
@@ -708,9 +857,7 @@ function bfc_preview_event_submission() {
     // forum, which is OK in the preview.
     $record["wordpress_id"] = 0;
 
-    fullentry($record,
-              'preview',
-              FALSE); // include images,
+    fullentry($record, 'preview', null);
     exit;
 }
 
@@ -739,7 +886,7 @@ WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
       eventdate = %s AND
       eventstatus <> "E" AND
       eventstatus <> "S"
-ORDER BY eventtime
+ORDER BY eventtime ASC, title ASC
 END_QUERY;
     $query = $wpdb->prepare($query, $id, $sqldate);
     $records = $wpdb->get_results($query, ARRAY_A);
@@ -748,7 +895,7 @@ END_QUERY;
     }
     $record = $records[0];
 
-    fullentry($record, 'listing', true);
+    fullentry($record, 'listing', $sqldate);
            
     exit;
 }
@@ -758,6 +905,62 @@ add_action('wp_ajax_nopriv_event-popup',
            'bfc_event_popup');
 add_action('wp_ajax_event-popup',
            'bfc_event_popup');
+
+// Make a widget to show other events that happen on the same day as the current event.           
+class BFC_OtherEvents_Widget extends WP_Widget {
+    /** constructor */
+    function BFC_OtherEvents_Widget() {
+        parent::WP_Widget(false, 'Bike Fun Cal: Other Events');
+    }
+
+    /** @see WP_Widget::widget */
+    function widget( $args, $instance ) {
+        global $wp_query;
+        if (get_post_type() == 'bfc-event') {
+            $sqldate = null;
+            if (isset($wp_query->query_vars['date'])) {
+                $sqldate = $wp_query->query_vars['date'];
+            }
+            else {
+                // Date wasn't passed in as part of the query,
+                // have to look it up in the database
+                global $wpdb;
+                global $calevent_table_name;
+                global $caldaily_table_name;
+                $sql = <<<END_SQL
+                    SELECT *
+                    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+                    WHERE wordpress_id = %d AND
+                          eventstatus <> "E" AND
+                          eventstatus <> "S";
+END_SQL;
+                $sql = $wpdb->prepare($sql, $wp_query->post->ID);
+                $records = $wpdb->get_results($sql, ARRAY_A);
+                if (isset($records[0])) {
+                    $record = $records[0];
+                    // If this is a one-time event, use its date.
+                    // Otherwise, it's a recurring event and we don't
+                    // know which instance we're looking for.
+                    if ($record['datestype'] == 'O') {
+                        $sqldate = $record['eventdate'];
+                    }
+                }
+            }
+
+            if ($sqldate != null) {
+                print "<div class='other-events'>\n";
+                printf("<p>%s</p>",
+                       esc_html(date('l, F j', strtotime($sqldate))));
+                tinyentries($sqldate, 'sidebar', $wp_query->post->ID);
+                print "</div>\n";
+            }
+        }
+    }
+}
+function bfc_register_other_events_widget() {
+    register_widget('BFC_OtherEvents_Widget');
+}
+add_action('widgets_init', 'bfc_register_other_events_widget');
 
 //ex:set sw=4 embedlimit=60000:
 ?>
