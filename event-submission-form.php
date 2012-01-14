@@ -38,9 +38,6 @@ function bfc_print_event_submission_form($event_submission) {
     <h4>Event Title</h4>
     <input type="text" name="event_title" <?php $event_submission->print_title(); ?> >
 
-    <h4>Tiny Title</h4>
-    <input type="text" name="event_tinytitle" <?php $event_submission->print_tinytitle(); ?>>
-
     <h4>Audience</h4>
     <div>
       <input type="radio" name="event_audience"
@@ -220,20 +217,11 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Your Phone Number</h4>
     <input type="text" name="event_phone" <?php $event_submission->print_phone(); ?>>
-    <p>
-    <input type="checkbox" name="event_hidephone" value="Y"
-           id=event_hidephone
-           <?php $event_submission->print_checked_for_hidephone() ?>
-           >
-      <label for=event_hidephone>         
-        Don't publish my phone number online
-      </label>
-    </p>
 
     <h4>Your E-Mail Address</h4>
     <input type="text" name="event_email" <?php $event_submission->print_email(); ?>>
 
-    <!-- The old code has a checkbox here about sending forum e-mails
+    <!-- @@@ The old code has a checkbox here about sending forum e-mails
          to this address. We can turn that on later, when we add forums. -->
     
     <p>
@@ -254,15 +242,6 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Other Contact Info</h4>
     <input type="text" name="event_contact" <?php $event_submission->print_contact(); ?>>
-    <p>
-    <input type=checkbox id=event_hidecontact name=event_hidecontact value=Y
-           <?php $event_submission->print_checked_for_hidecontact() ?>
-           >
-
-      <label for=event_hidecontact>
-        Do not include this in the online calendar
-      </label>
-    </p>
 
     </div>
 

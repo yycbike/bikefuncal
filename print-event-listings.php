@@ -521,7 +521,7 @@ function fullentry($record, $for, $sqldate)
     // Ride leader & contact info
     printf("<div class='contact-info'>");
     printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
-    if ($record['email'] != '') {
+    if ($record['email'] != '' && !$record['hideemail']) {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
         

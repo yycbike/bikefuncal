@@ -40,40 +40,4 @@ class TestSubmissionMissingValues extends BfcTestCase {
         $event = $this->update_submission($event, array('event_hideemail' => null));
         $this->assertEquals('0', $this->get_value_from_datbase($event->event_id(), 'hideemail'));
     }
-
-    /** Ensure that the hidecontact flag can be set */
-    function test_hidecontact_set() {
-        $event = $this->make_valid_submission(array('event_hidecontact' => 'Y'));
-        $this->assertEquals('1', $this->get_value_from_datbase($event->event_id(), 'hidecontact'));
-
-        return $event;
-    }
-
-    /**
-     * Ensure that the hidecontact flag can be cleared. See issue #68.
-     *
-     * @depends test_hidecontact_set
-     */
-    function test_hidecontact_clear($event) {
-        $event = $this->update_submission($event, array('event_hidecontact' => null));
-        $this->assertEquals('0', $this->get_value_from_datbase($event->event_id(), 'hidecontact'));
-    }
-
-    /** Ensure that the hidephone flag can be set */
-    function test_hidephone_set() {
-        $event = $this->make_valid_submission(array('event_hidephone' => 'Y'));
-        $this->assertEquals(1, $this->get_value_from_datbase($event->event_id(), 'hidephone'));
-
-        return $event;
-    }
-
-    /**
-     * Ensure that the hidephone flag can be cleared. See issue #68.
-     *
-     * @depends test_hidephone_set
-     */
-    function test_hidephone_clear($event) {
-        $event = $this->update_submission($event, array('event_hidephone' => null));
-        $this->assertEquals(0, $this->get_value_from_datbase($event->event_id(), 'hidephone'));
-    }
 }

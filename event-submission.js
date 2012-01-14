@@ -370,7 +370,9 @@ function display_preview(preview_content)
     // disable any links in the preview
     jQuery('a', preview).each(function(index, element) {
         element.href = '#';
-    });                                      
+    });
+
+    descramble_emails();
 }
 
 // Update the preview

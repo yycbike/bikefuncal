@@ -50,21 +50,13 @@ function bfc_query_vars_filter($qvars) {
     $qvars[] = "event_email";
     $qvars[] = "event_hideemail";
     $qvars[] = "event_emailforum";
-    $qvars[] = "event_printemail";
     $qvars[] = "event_phone";
-    $qvars[] = "event_hidephone";
-    $qvars[] = "event_printphone";
     $qvars[] = "event_weburl";
     $qvars[] = "event_webname";
-    $qvars[] = "event_printweburl";
     $qvars[] = "event_contact";
-    $qvars[] = "event_hidecontact";
-    $qvars[] = "event_printcontact";
     $qvars[] = "event_title";
-    $qvars[] = "event_tinytitle";
     $qvars[] = "event_audience";
     $qvars[] = "event_descr";
-    $qvars[] = "event_printdescr";
     $qvars[] = "event_dates";
     $qvars[] = "event_datestype";
     $qvars[] = "event_eventtime";
@@ -76,6 +68,16 @@ function bfc_query_vars_filter($qvars) {
     $qvars[] = "event_locdetails";
     $qvars[] = "event_review";
     $qvars[] = "event_editcode";
+
+    // Obsolete variables we're no longer using
+    //$qvars[] = "event_printemail";
+    //$qvars[] = "event_hidecontact";
+    //$qvars[] = "event_printcontact";
+    //$qvars[] = "event_tinytitle";
+    //$qvars[] = "event_hidephone";
+    //$qvars[] = "event_printphone";
+    //$qvars[] = "event_printweburl";
+    //$qvars[] = "event_printdescr";
 
     // Query vars for managing the form for creating
     // new events. These get a submission_ prefix because

@@ -75,9 +75,7 @@ abstract class BfcTestCase extends WPTestCase {
         }
 
         // Checkboxes are not reported at all if the value is false.
-        $checkbox_arg_names = array('event_hideemail', 'event_hidecontact', 'event_hidephone',
-                                    'submission_suppress_email', 'event_emailforum', 'event_printemail',
-                                    'event_printphone', 'event_printweburl', 'event_printcontact');
+        $checkbox_arg_names = array('event_hideemail', 'submission_suppress_email', 'event_emailforum');
         foreach ($checkbox_arg_names as $arg_name) {
             if (isset($args[$arg_name])) {
                 // the value will be Y/N if this is coming in from other test cases
@@ -116,7 +114,6 @@ abstract class BfcTestCase extends WPTestCase {
             // Generate a unique title to avoid clashing with anything else
             // in the database that might have that title.
             'event_title' => 'Title ' . uniqid(),
-            'event_tinytitle' => 'tiny',
             'event_descr' => 'Description',
             'event_name' => 'Earl',
             'event_email' => 'hi@hello.ca',
@@ -296,7 +293,6 @@ abstract class BfcTestCase extends WPTestCase {
             'event_dates' => 'August 5 - 10',
             'event_audience' => 'G',
             'event_descr' => "My event is so rad!\n\nYou'll have a great time!",
-            'event_printdescr' => "My event is so rad!!!",
             'event_hidephone'  => 'Y',
             'event_contact'    => 'Smoke signals',
             'event_phone'      => '555-FILM',
