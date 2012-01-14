@@ -376,6 +376,12 @@ function fullentry($record, $for, $include_images)
     }
 
     //////////////
+    // Fee
+    if (strpos($record['descr'], "\$") !== false) {
+        print '<div class=fee>$$</div>';
+    }
+
+    //////////////
     // Title
     if ($is_canceled) {
         printf("<div class='title'>CANCELED: <span class='cancel'>%s</span></div>",
