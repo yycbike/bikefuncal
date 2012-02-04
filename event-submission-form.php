@@ -60,8 +60,7 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Description</h4>
     <textarea name="event_descr"><?php $event_submission->print_descr()?></textarea>
-
-    </div>
+    </div><!-- .new-event-category (what) -->
 
     <h3>Where</h3>
     <div class="new-event-category">
@@ -76,7 +75,7 @@ function bfc_print_event_submission_form($event_submission) {
     <h4>Location Details</h4>
     <input type="text" name="event_locdetails" <?php $event_submission->print_locdetails()?>>
 
-    </div>
+    </div><!-- .new-event-category (where) -->
 
     <h3>When</h3>
     <div class="new-event-category">
@@ -86,7 +85,7 @@ function bfc_print_event_submission_form($event_submission) {
            id="event_dates"
            name="event_dates" <?php $event_submission->print_dates(); ?>>
 
-    <p>
+    <p class='help'>
     Enter something like <em>July 15</em> or <em>Every Thursday</em>.
     Dates like 2011-07-15 do not work.
     </p>
@@ -207,7 +206,7 @@ function bfc_print_event_submission_form($event_submission) {
     <h4>Time Details</h4>
     <input type="text" name="event_timedetails" <?php $event_submission->print_timedetails(); ?>>
 
-    </div>
+    </div><!-- .new-event-category (when) -->
 
     <h3>Who</h3>
     <div class="new-event-category">
@@ -243,7 +242,7 @@ function bfc_print_event_submission_form($event_submission) {
     <h4>Other Contact Info</h4>
     <input type="text" name="event_contact" <?php $event_submission->print_contact(); ?>>
 
-    </div>
+    </div><!-- .new-event-category (who) -->
 
     <h3>Image</h3>
     <div class="new-event-category">
@@ -272,7 +271,7 @@ function bfc_print_event_submission_form($event_submission) {
         <input type="file" name="event_image">
     <?php } ?>
 
-    </div>
+    </div><!-- .new-event-category (image) -->
 
     <?php
     if ($event_submission->has_admin_comment()) {
