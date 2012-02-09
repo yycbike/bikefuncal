@@ -672,7 +672,7 @@ END_SQL;
  
         if(isset($prev_results[0]) || isset($next_results[0])) {
 			
-			print "<div class='event-nagivation'>"; 
+			print "<div class='event-navigation'>"; 
 		
 			if (isset($prev_results[0])) {
 				$prev_record = $prev_results[0];
