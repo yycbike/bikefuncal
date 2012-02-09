@@ -9,6 +9,9 @@ var BfcPopupOptions = {
 
     // Opacity of the overlay (in percent)
     'opacity': 20,
+	
+	'minWidth': 800,
+	'maxWidth': 800,
 };
 
 function update_popup(popup_content_html) {

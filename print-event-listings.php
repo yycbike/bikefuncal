@@ -410,38 +410,62 @@ function fullentry($record, $for, $sqldate)
 
     $is_canceled = ($record['eventstatus'] == 'C');
     $cancel_class = $is_canceled ? 'cancel' : '';
+    
 
-    ///////////
-    // Audience
-    if ($record['audience'] == 'A' || $record['audience'] == 'F') {
-        if ($record['audience'] == 'A') {
-            $badge = 'beer.gif';
+    ////////////////////////
+    // Audience and Fee
+    if ($record['audience'] == 'A' || $record['audience'] == 'F' || strpos($record['descr'], "\$") !== false) {
+        
+		print "<div class=audience>";
+		
+		if ($record['audience'] == 'A') {
+			$badge_url = plugins_url('bikefuncal/images/') . 'adult-icon.png';
             $message = sprintf('Adults Only (%d+)', get_option('bfc_drinking_age'));
+			printf("<img src='%s' alt='%s' title='%s'>",
+               esc_url($badge_url), esc_attr($message), esc_attr($message));
         }
         else if ($record['audience'] == 'F') {
-            $badge = "ff.gif";
+			$badge_url = plugins_url('bikefuncal/images/') . 'family-icon.png';
             $message = 'Family Friendly';
-        }
-        $badge_url = plugins_url('bikefuncal/images/') . $badge;
-        printf("<div class=audience><img src='%s' alt='%s' title='%s'></div>\n",
+			printf("<img src='%s' alt='%s' title='%s'>\n",
                esc_url($badge_url), esc_attr($message), esc_attr($message));
-    }
-
-    //////////////
-    // Fee
-    if (strpos($record['descr'], "\$") !== false) {
-        print '<div class=fee>$$</div>';
-    }
-
-    //////////////
+        }
+    
+		if (strpos($record['descr'], "\$") !== false) {
+			$badge_url = plugins_url('bikefuncal/images/') . 'money-icon.png';
+			$message = 'Bring Money';
+			printf("<img src='%s' alt='%s' title='%s'>\n",
+               esc_url($badge_url), esc_attr($message), esc_attr($message));
+    	}
+	
+		print "</div>";
+	}
+	
+	
+	//////////////
     // Title
     if ($is_canceled) {
-        printf("<div class='title'>CANCELED: <span class='cancel'>%s</span></div>",
+        printf("<div class='title'><h2>CANCELED: <span class='cancel'>%s</span></h2>",
                esc_html($record['title']));
     }
     else {
-        printf("<div class='title'>%s</div>", esc_html($record['title']));
+        printf("<div class='title'><h2>%s</h2>", esc_html($record['title']));
     }
+
+	////////////
+    // Edit link
+    //
+    // Show the edit link to admin users.
+    // Except if this is a preview; then it's meaningless
+    // because they're already editing.
+    if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+        printf("<a class='admin-edit-link' href='%s'>Edit Event</a>",
+               esc_url($edit_url));
+    }
+	
+	print '</div><!-- End title -->';
+	
 
     //////////////
     // Newsflash
@@ -516,11 +540,42 @@ function fullentry($record, $for, $sqldate)
         printf("<div class='time repeat %s'>Repeats: %s</div>",
                $cancel_class, esc_html($record['dates']));
     }
+	
+	print "<div class='event-details'>";
+	
+	///////////
+    // Location
+    printf("<div class='location'>");
+    $address_html = sprintf("<a href=%s>%s</a>",
+                            esc_url(address_link($record['address'])),
+                            esc_html($record['address']));
+    
+    print '<h3>Meet At:</h3>';
+	if ($record['locname'] != '') {
+        // Show both location name and address
+        printf("<div class='location-name'><span class='%s'>%s</span></div>",
+               $cancel_class, esc_html($record['locname']));
+        printf("<div class='location-address %s'>%s</div>",
+               $cancel_class, $address_html);
+    }
+    else {
+        // Show address in place of locname
+        printf("<div class='location-name'><span class='%s'>%s</span></div>",
+               $cancel_class, $address_html);
+    }
+
+    if ($record['locdetails'] != '') {
+        printf("<div class='location-details %s'>Notes: %s</div>",
+               $cancel_class, 
+               esc_html($record['locdetails']));
+    }
+
+    printf("</div>"); // class='location'
 
     /////////////////////////////
-    // Ride leader & contact info
+    // Contact info
     printf("<div class='contact-info'>");
-    printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
+	print '<h3>Contact Info:</h3>';
     if ($record['email'] != '') {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
@@ -544,34 +599,11 @@ function fullentry($record, $for, $sqldate)
         printf("<div class='leader-other-contact'>%s</div>", esc_html($record['contact']));
     }
     printf("</div>"); // class='contact-info'
-    
-    ///////////
-    // Location
-    printf("<div class='location'>");
-    $address_html = sprintf("<a href=%s>%s</a>",
-                            esc_url(address_link($record['address'])),
-                            esc_html($record['address']));
-    
-    if ($record['locname'] != '') {
-        // Show both location name and address
-        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
-               $cancel_class, esc_html($record['locname']));
-        printf("<div class='location-address %s'>%s</div>",
-               $cancel_class, $address_html);
-    }
-    else {
-        // Show address in place of locname
-        printf("<div class='location-name'>At: <span class='%s'>%s</span></div>",
-               $cancel_class, $address_html);
-    }
+	
+	print "</div><!-- End event-details -->";
+	
+	print "<div class='event-about'>";
 
-    if ($record['locdetails'] != '') {
-        printf("<div class='location-details %s'>%s</div>",
-               $cancel_class, 
-               esc_html($record['locdetails']));
-    }
-
-    printf("</div>"); // class='location'
 
     ///////////
     // Image
@@ -587,36 +619,31 @@ function fullentry($record, $for, $sqldate)
 	}
 
     ////////////////////
-    // Event description
-    $descr = htmldescription($record['descr']);
+    // Ride leader, event description and permalink
+	
+	$descr = htmldescription($record['descr']);
     if ($for == 'listing') {
         $more = sprintf(" <a href='%s'>[more...]</a>",
                         esc_url($permalink_url));
         $descr = bfc_excerpt($descr, $more);
     }
-    printf("<div class='event-description %s'>%s</div>\n",
-           $cancel_class,
+    printf("<div class='event-description %s'>",
+           $cancel_class);
+		   
+	printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
+		   
+	printf("%s",
            $descr);
-
-    ////////////
-    // Permalink
-    if ($for == 'preview') { //removed permalink for listings. redundant with "more..." link after description 
+		   
+    if ($for != 'event-page') {
         print "<div class='permalink'>";
-        printf("<a href='%s'>Permalink & Comments</a>", esc_url($permalink_url));
+        printf("<a href='%s'>Read comments and more</a>", esc_url($permalink_url));
         print "</div>\n";
     }
-
-    ////////////
-    // Edit link
-    //
-    // Show the edit link to admin users.
-    // Except if this is a preview; then it's meaningless
-    // because they're already editing.
-    if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
-        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        printf("<div class='admin-edit-link'><a href='%s'>Edit Event</a></div>",
-               esc_url($edit_url));
-    }
+	
+	print "</div>";
+	
+	print "</div><!-- End event-about -->";
 
     /////////////////////////
     // Next & Previous events
