@@ -691,7 +691,7 @@ END_SQL;
 				printf("<div><a data-id='%d' data-date='%s' href='%s'>&lt; Previous</a></div>",
 					   esc_attr($prev_record['id']), esc_attr($prev_record['eventdate']),
 					   esc_attr($prev_url));
-				printf("<div>%s: %s</div>", esc_html($when), esc_html($prev_record['title']));
+				printf("<p>%s</p><p>%s</p>", esc_html($when), esc_html($prev_record['title']));
 				printf("</div>");
 			}
 	
@@ -712,7 +712,7 @@ END_SQL;
 				printf("<div><a data-id='%d' data-date='%s' href='%s'>Next &gt;</a></div>",
 					   esc_attr($next_record['id']), esc_attr($next_record['eventdate']),
 					   esc_attr($next_url));
-				printf("<div>%s: %s</div>", esc_html($when), esc_html($next_record['title']));
+				printf("<p>%s</p><p>%s</p>", esc_html($when), esc_html($next_record['title']));
 				printf("</div>");
 			}
 			
