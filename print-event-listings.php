@@ -521,7 +521,7 @@ function fullentry($record, $for, $sqldate)
     // Ride leader & contact info
     printf("<div class='contact-info'>");
     printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
-    if ($record['email'] != '' && !$record['hideemail']) {
+    if ($record['email'] != '') {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
         
@@ -579,10 +579,12 @@ function fullentry($record, $for, $sqldate)
         // The image field has the path relative to the uploads dir.
         $upload_dirinfo = wp_upload_dir();
         $image = $upload_dirinfo['baseurl'] . $record["image"];
-        
-        printf("<div class=event-image><img src='%s' alt=''></div>\n",
-               esc_attr($image));
-    }
+  		if ($for == 'event-page') printf("<div class=event-image><img src='%s' alt=''></div>\n", esc_attr($image));
+    	else printf("<div class=event-image><img width='180' src='%s' alt=''></div>\n", esc_attr($image));
+	} else if ($for == 'listing' && !$record['image']) {
+		$noimage_small_url = plugins_url('bikefuncal/images/') . "noimg-small.png";
+		printf("<div class=event-image><img width='180' src='%s' alt=''></div>\n", esc_attr($noimage_small_url));
+	}
 
     ////////////////////
     // Event description
@@ -598,7 +600,7 @@ function fullentry($record, $for, $sqldate)
 
     ////////////
     // Permalink
-    if ($for != 'event-page') {
+    if ($for == 'preview') { //removed permalink for listings. redundant with "more..." link after description 
         print "<div class='permalink'>";
         printf("<a href='%s'>Permalink & Comments</a>", esc_url($permalink_url));
         print "</div>\n";
