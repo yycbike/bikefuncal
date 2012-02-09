@@ -670,48 +670,54 @@ END_SQL;
                                    $record['eventdate'], $record['eventtime'], $record['title']);
         $next_results = $wpdb->get_results($next_sql, ARRAY_A);
  
-        if (isset($prev_results[0])) {
-            $prev_record = $prev_results[0];
-            $prev_url = get_permalink($prev_record['wordpress_id']);
-
-            if ($record['eventdate'] == $prev_record['eventdate']) {
-                // On the same day, show the time
-                $when = hmmpm($prev_record['eventtime']);
-            }
-            else {
-                // On another day, show the weekday (e.g., Thursday)
-                $when = date('l', strtotime($prev_record['eventdate']));
-            }
-            
-            print "<div class='event-navigation previous'>";
-            printf("<div><a data-id='%d' data-date='%s' href='%s'>&lt; Previous</a>",
-                   esc_attr($prev_record['id']), esc_attr($prev_record['eventdate']),
-                   esc_attr($prev_url));
-            printf("<div>%s: %s</div>", esc_html($when), esc_html($prev_record['title']));
-            printf("</div>");
-        }
-
-        if (isset($next_results[0])) {
-            $next_record = $next_results[0];
-            $next_url = get_permalink($next_record['wordpress_id']);
-
-            if ($record['eventdate'] == $next_record['eventdate']) {
-                // On the same day, show the time
-                $when = hmmpm($next_record['eventtime']);
-            }
-            else {
-                // On another day, show the weekday (e.g., Thursday)
-                $when = date('l', strtotime($next_record['eventdate']));
-            }
-
-            print "<div class='event-navigation next'>";
-            printf("<div><a data-id='%d' data-date='%s' href='%s'>Next &gt;</a>",
-                   esc_attr($next_record['id']), esc_attr($next_record['eventdate']),
-                   esc_attr($next_url));
-            printf("<div>%s: %s</div>", esc_html($when), esc_html($next_record['title']));
-            printf("</div>");
-            
-        }
+        if(isset($prev_results[0]) || isset($next_results[0])) {
+			
+			print "<div class='event-nagivation'>"; 
+		
+			if (isset($prev_results[0])) {
+				$prev_record = $prev_results[0];
+				$prev_url = get_permalink($prev_record['wordpress_id']);
+	
+				if ($record['eventdate'] == $prev_record['eventdate']) {
+					// On the same day, show the time
+					$when = hmmpm($prev_record['eventtime']);
+				}
+				else {
+					// On another day, show the weekday (e.g., Thursday)
+					$when = date('l', strtotime($prev_record['eventdate']));
+				}
+				
+				print "<div class='previous'>";
+				printf("<div><a data-id='%d' data-date='%s' href='%s'>&lt; Previous</a></div>",
+					   esc_attr($prev_record['id']), esc_attr($prev_record['eventdate']),
+					   esc_attr($prev_url));
+				printf("<div>%s: %s</div>", esc_html($when), esc_html($prev_record['title']));
+				printf("</div>");
+			}
+	
+			if (isset($next_results[0])) {
+				$next_record = $next_results[0];
+				$next_url = get_permalink($next_record['wordpress_id']);
+	
+				if ($record['eventdate'] == $next_record['eventdate']) {
+					// On the same day, show the time
+					$when = hmmpm($next_record['eventtime']);
+				}
+				else {
+					// On another day, show the weekday (e.g., Thursday)
+					$when = date('l', strtotime($next_record['eventdate']));
+				}
+	
+				print "<div class='next'>";
+				printf("<div><a data-id='%d' data-date='%s' href='%s'>Next &gt;</a></div>",
+					   esc_attr($next_record['id']), esc_attr($next_record['eventdate']),
+					   esc_attr($next_url));
+				printf("<div>%s: %s</div>", esc_html($when), esc_html($next_record['title']));
+				printf("</div>");
+			}
+			
+			print "</div>";
+		}
     }        
 }
 
