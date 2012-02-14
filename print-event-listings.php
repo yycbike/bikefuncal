@@ -406,7 +406,8 @@ function fullentry($record, $for, $sqldate)
         $permalink_url = '#';
     }
 
-    print "<div class='event-info'>";
+    printf("<div id='%s'>", $for);
+	print "<div class='event-info'>";
 
     $is_canceled = ($record['eventstatus'] == 'C');
     $cancel_class = $is_canceled ? 'cancel' : '';
@@ -444,13 +445,15 @@ function fullentry($record, $for, $sqldate)
 	
 	//////////////
     // Title
-    if ($is_canceled) {
-        printf("<div class='title'><h2>CANCELED: <span class='cancel'>%s</span></h2>",
-               esc_html($record['title']));
-    }
-    else {
-        printf("<div class='title'><h2>%s</h2>", esc_html($record['title']));
-    }
+    if ($for != 'event-page') {
+		if ($is_canceled) {
+			printf("<div class='title'><h2>CANCELED: <span class='cancel'>%s</span></h2>",
+				   esc_html($record['title']));
+		}
+		else {
+			printf("<div class='title'><h2>%s</h2>", esc_html($record['title']));
+		}
+	}
 
 	////////////
     // Edit link
@@ -743,6 +746,7 @@ END_SQL;
 				printf("</div>");
 			}
 			
+			print "</div>";
 			print "</div>";
 		}
     }        
