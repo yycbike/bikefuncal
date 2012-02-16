@@ -37,9 +37,9 @@ function update_popup(popup_content_html) {
             // Show a pop-up if there's enough width, otherwise just 
             // follow the link.
             if (jQuery(window).width() > 800) {
-                e.preventDefault();
                 jQuery.modal.close();
                 launch_popup(element);
+                return false;
             }
         });
     });
@@ -64,8 +64,6 @@ function launch_popup(element) {
         ajax_params,
         update_popup, 
         'text');
-
-    return false;
 }
 
 jQuery(document).ready(function() {
@@ -73,8 +71,11 @@ jQuery(document).ready(function() {
         element = jQuery(element);
         element.click(function(e) {
             if (jQuery(window).width() > 800) {
-                e.preventDefault();
                 launch_popup(element)
+                
+                // Within a jQuery handler, 'return false' prevents
+                // propagation and stops the event from bubbling up.
+                return false;
             }
         });
     });
