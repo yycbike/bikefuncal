@@ -440,7 +440,7 @@ function fullentry($record, $for, $sqldate)
 	}
 	
 	
-	//////////////
+    //////////////
     // Title
     if ($for != 'event-page') {
 		if ($is_canceled) {
@@ -452,7 +452,7 @@ function fullentry($record, $for, $sqldate)
 		}
 	}
 
-	////////////
+    ////////////
     // Edit link
     //
     // Show the edit link to admin users.
@@ -543,7 +543,7 @@ function fullentry($record, $for, $sqldate)
 	
 	print "<div class='event-details'>";
 	
-	///////////
+    ///////////
     // Location
     printf("<div class='location'>");
     $address_html = sprintf("<a href=%s>%s</a>",
@@ -587,9 +587,41 @@ function fullentry($record, $for, $sqldate)
                str_rot13($parts[1]), str_rot13($parts[0]));
     }
     if ($record['weburl'] != '') {
-        $webname = $record['webname'] != '' ? $record['webname'] : $record['weburl'];
+        // Create a shortened version of the URL for display
+        $url_parts = parse_url($record['weburl']);
+        $display_url = $url_parts['host'];
+
+        // Set to true if we put ellipsis on the end of $display_url.
+        $has_ellipsis = false;
+
+        // Append the path to $display_url
+        if (isset($url_parts['path'])) {
+            $path = $url_parts['path'];
+
+            // If path is too long, shorten w/ ellipsis
+            if (strlen($path) > 15) {
+                // Trim to 13 chars to avoid trimming just one char off the end.
+                $path = substr($path, 0, 13);
+                // Don't use &hellip; here (the horizointal ellipsis).
+                // The browser puts in a line break, and the URL looks weird
+                $path .= '...';
+                $has_ellipsis = true;
+            }
+
+            $display_url .= $path;
+        }
+        
+        // If there's a query or fragment on the URL, add ellipsis (unless
+        // there are already ellipsis).
+        if (!$has_ellipsis &&
+            (isset($url_parts['query']) || isset($url_parts['fragment']))) {
+
+            $display_url .= '...';
+            $has_ellipsis = true;
+        }
+
         printf("<div class='leader-website'><a href='%s'>%s</a></div>",
-               esc_url($record['weburl']), esc_html($webname));
+               esc_url($record['weburl']), esc_html($display_url));
     }
     if ($record['phone'] != '') {
         printf("<div class='leader-phone'>%s</div>", esc_html($record['phone']));
@@ -620,8 +652,7 @@ function fullentry($record, $for, $sqldate)
 
     ////////////////////
     // Ride leader, event description and permalink
-	
-	$descr = htmldescription($record['descr']);
+    $descr = htmldescription($record['descr']);
     if ($for == 'listing') {
         $more = sprintf(" <a href='%s'>[more...]</a>",
                         esc_url($permalink_url));
