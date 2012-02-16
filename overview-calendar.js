@@ -25,6 +25,7 @@ function update_popup(popup_content_html) {
     // If you use way #1 here, the popup is too small and the
     // content gets clipped.
     jQuery.modal(popup_content_html, BfcPopupOptions);
+    jQuery.modal.setContainerDimensions();
 
     // Attach click-to-email actions
     descramble_emails();
@@ -33,7 +34,8 @@ function update_popup(popup_content_html) {
     jQuery('.event-navigation a').each(function(index, element) {
         element = jQuery(element);
         element.attr('href', '#');
-        element.click(function() {
+        element.click(function(e) {
+            e.preventDefault();
             jQuery.modal.close();
             launch_popup(element);
         });
@@ -66,7 +68,9 @@ function launch_popup(element) {
 jQuery(document).ready(function() {
     jQuery('.event-title a').each(function(index, element) {
         element = jQuery(element);
-        element.click(function() {
+        element.click(function(e) {
+            e.preventDefault();
+
             launch_popup(element)
         });
     });
