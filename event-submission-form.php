@@ -329,11 +329,10 @@ function bfc_print_event_submission_form($event_submission) {
 
 
     <h2>Preview</h2>
-    <div id="preview">
-    
-    </div>         
-         
-    </div>
+    <div id="preview"></div>         
+
+    </form>         
+    </div><!-- .new-event-form>
          
 <?php
 }         
