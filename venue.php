@@ -222,18 +222,18 @@ function bfc_delete_venue_ajax_action() {
     exit;
 }
 
-#
-# Load the JavaScript code that the event submission page needs.
-#
-# This is designed to be run in the wp_footer action.
+//
+// Load the JavaScript code that the event submission page needs.
+//
+// This is designed to be run in the wp_footer action.
 function bfc_load_venue_list_javascript() {
-    # WordPress ships with a crappy old version of jquery hotkeys. It breaks
-    # when binding return. Use the newer version.
-    $hotkeys_js_url = plugins_url('bikefuncal/jquery.hotkeys/jquery.hotkeys.js');
+    // WordPress ships with a crappy old version of jquery hotkeys. It breaks
+    // when binding return. Use the newer version.
+    $hotkeys_js_url = plugins_url('bikefuncal/js-contrib/jquery.hotkeys/jquery.hotkeys.js');
     wp_register_script('non-broken-hotkeys', $hotkeys_js_url, array('jquery'));
 
-    # @@@ Evan isn't sure how to do this without hard-coding
-    # 'bikefuncal' into the URL.
+    // @@@ Evan isn't sure how to do this without hard-coding
+    // 'bikefuncal' into the URL.
     $venue_js_url = plugins_url('bikefuncal/venue.js');
     
     wp_register_script('venue', $venue_js_url, array('jquery', 'non-broken-hotkeys'));
