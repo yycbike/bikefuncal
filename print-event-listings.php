@@ -297,20 +297,17 @@ END_QUERY;
             // Don't link to the current event
             printf("<span class='current-event'>%s</span>", esc_html($title));
         }
-        else if ($for == 'calendar') {
-            // Calendar gets a pop-up link. (The JavaScript will fill in the "pop up" part.)
-            printf("<a data-id='%d' data-date='%s' href='#'>%s</a></div>", esc_attr($id), esc_attr($sqldate), esc_html($title));
-        }
-        else if ($for == 'sidebar') {
-            // Sidebar gets permalinks
+        else {
             $url = get_permalink($record['wordpress_id']);
             if ($record['datestype'] != 'O') {
                 $url = add_date_to_permalink($url, $sqldate);
             }
-            printf("<a href='%s'>%s</a>", esc_url($url), esc_html($title));
-        }
-        else {
-            die();
+
+            // Link to the full URL. If JavaScript decides to turn this into
+            // a pop-up link, it will use the id & date attributes.
+            printf("<a data-id='%d' data-date='%s' href='%s'>%s</a>",
+                   esc_attr($id), esc_attr($sqldate),
+                   esc_url($url), esc_html($title));
         }
         print "</div>"; // .event-title
         

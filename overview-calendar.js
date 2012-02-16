@@ -10,8 +10,8 @@ var BfcPopupOptions = {
     // Opacity of the overlay (in percent)
     'opacity': 20,
 	
-	'minWidth': 800,
-	'maxWidth': 800,
+    'minWidth': 800,
+    'maxWidth': 800,
 };
 
 function update_popup(popup_content_html) {
@@ -33,11 +33,14 @@ function update_popup(popup_content_html) {
     // Attach popup to previous & next buttons
     jQuery('.event-navigation a').each(function(index, element) {
         element = jQuery(element);
-        element.attr('href', '#');
         element.click(function(e) {
-            e.preventDefault();
-            jQuery.modal.close();
-            launch_popup(element);
+            // Show a pop-up if there's enough width, otherwise just 
+            // follow the link.
+            if (jQuery(window).width() > 800) {
+                e.preventDefault();
+                jQuery.modal.close();
+                launch_popup(element);
+            }
         });
     });
 }
@@ -69,9 +72,10 @@ jQuery(document).ready(function() {
     jQuery('.event-title a').each(function(index, element) {
         element = jQuery(element);
         element.click(function(e) {
-            e.preventDefault();
-
-            launch_popup(element)
+            if (jQuery(window).width() > 800) {
+                e.preventDefault();
+                launch_popup(element)
+            }
         });
     });
 });
