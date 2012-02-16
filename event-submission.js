@@ -459,6 +459,22 @@ function autocomplete_address(event, ui) {
     }
 }
 
+function toggle_occurs_once_repeating() {
+    var radOnce = jQuery('#submission_ride_occurs_once');
+    var radRepeating = jQuery('#submission_ride_occurs_repeating');
+
+    if (jQuery('#submission_ride_occurs_once').attr('checked')) {
+        jQuery('#date-label').text('Date');
+        jQuery('#occurs-repeating').hide();
+        jQuery('#occurs-once').show();
+    }
+    else {
+        jQuery('#date-label').text('Dates');
+        jQuery('#occurs-once').hide();
+        jQuery('#occurs-repeating').show();
+    }
+}
+
 // Initialize event handlers
 //
 // Have to use jQuery(), not $(), because WordPress loads jQuery
@@ -535,6 +551,26 @@ jQuery(document).ready(function() {
             // http://jqueryui.com/demos/autocomplete/#event-change
             close: autocomplete_address,
         });
+
+
+    // Toggle the visibility of once/repeating
+    jQuery('#submission_ride_occurs_once').change(toggle_occurs_once_repeating);
+    jQuery('#submission_ride_occurs_repeating').change(toggle_occurs_once_repeating);
+    toggle_occurs_once_repeating();
+
+    // Configure calendar for "occurs once"
+    jQuery('#submission_datepicker_once').datepicker({
+        //'altField': jQuery('#submission_datepicker_once'),
+        //'altFormat': 'yy-mm-dd',
+        'showOn': 'both',
+        'buttonText': 'Choose',
+
+        'dateFormat': 'DD, MM d', // e.g. Monday, October 8
+
+        'minDate': '0D', // today
+        'maxDate': '364D', // +1 year
+    });
+
 });
 
 

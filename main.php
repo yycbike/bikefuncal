@@ -599,12 +599,12 @@ function bfc_register_javascript() {
     // Once upon a time, WordPress' version of jQuery-UI was super-old, so this plugin
     // bundled its own. @@@ Perhaps WP has gotten a newer version? We should check.
     $jquery_js_url = 
-        plugins_url('bikefuncal/js-contrib/jquery-ui/js/jquery-ui-1.8.11.custom.min.js');
+        plugins_url('bikefuncal/js-contrib/jquery-ui/js/jquery-ui-1.8.17.custom.min.js');
     wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
 
     // CSS that goes with the plugin-specific jQuery UI.
     $jquery_css_url =
-        plugins_url('bikefuncal/jquery-ui/css/ui-lightness/jquery-ui-1.8.11.custom.css');
+        plugins_url('bikefuncal/js-contrib/jquery-ui/css/smoothness/jquery-ui-1.8.17.custom.css');
     wp_register_style('bfc-jquery-ui-style', $jquery_css_url, null);
 
     // This plugin's JS that goes with the new event form

@@ -1186,6 +1186,19 @@ class BfcEventSubmission {
         }
     }
 
+    // $what: 'once' or 'repeating'
+    public function print_checked_for_ride_occurs($what) {
+        $datestype = isset($this->event_args['datestype']) ?
+            $this->event_args['datestype'] : 'O';
+
+        if ($what === 'once' && $datestype === 'O') {
+            print 'checked';
+        }
+        else if ($what === 'repeating' && $datestype !== 'O') {
+            print 'checked';
+        }
+    }
+
     public function print_selected_for_eventtime($time) {
         if (!isset($this->event_args['eventtime']) && $time == "") {
 

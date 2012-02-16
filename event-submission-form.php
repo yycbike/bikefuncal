@@ -164,20 +164,20 @@ function bfc_print_event_submission_form($event_submission) {
             <div>
             <input type='radio' name='submission_image_action'
                 id='submission_image_action_keep' value='keep' checked>
-            <label for='change_image_keep'>Keep current image</label>
+            <label for='submission_image_action_keep'>Keep current image</label>
             </div>
 
             <div>
             <input type='radio' name='submission_image_action'
                 id='submission_image_action_change' value='change'>
-            <label for='change_image_change'>Change to</label>
+            <label for='submission_image_action_change'>Change to</label>
             <input type='file' size='60' name='event_image' id='event_image'>
             </div>
 
             <div>
             <input type='radio' name='submission_image_action'
                 id='submission_image_action_delete' value='delete'>
-            <label for='change_image_delete'>Remove the image</label>
+            <label for='submission_image_action_delete'>Remove the image</label>
             </div>
         <?php } else { ?>
             <input type="file" name="event_image">
@@ -186,7 +186,7 @@ function bfc_print_event_submission_form($event_submission) {
     
     </div><!-- .new-event-category (describe your ride) -->
 
-    <h3>Meet At</h3>
+    <h3>Meeting Place</h3>
     <div class="new-event-category">
     <h4>Place Name</h4>
     <div class="new-event-controls">
@@ -205,13 +205,35 @@ function bfc_print_event_submission_form($event_submission) {
     <input type="text" name="event_locdetails" <?php $event_submission->print_locdetails()?>>
     </div>
 
-    </div><!-- .new-event-category (meet at) -->
+    </div><!-- .new-event-category (meeting place) -->
 
     <h3>Date & Time</h3>
     <div class="new-event-category">
 
-    <h4>Date(s)</h4>
-    <div class="new-event-controls">
+    <h4>The ride occurs</h4>
+    <div class='new-event-controls'>
+        <div>
+            <input type='radio' name='submission_ride_occurs'
+                <?php $event_submission->print_checked_for_ride_occurs('once'); ?>
+                id='submission_ride_occurs_once' value='once'>
+            <label for='submission_ride_occurs_once'>One time</label>
+        </div>
+        <div>
+            <input type='radio' name='submission_ride_occurs'
+                <?php $event_submission->print_checked_for_ride_occurs('repeating'); ?>
+                id='submission_ride_occurs_repeating' value='repeating'>
+            <label for='submission_ride_occurs_repeating'>More than once (repeating)</label>
+        </div>
+    </div><!-- new-event-controls -->
+
+    <h4 id='date-label'>Date</h4>
+    <div class='new-event-controls'>
+        <div id='occurs-once'>
+            <!-- <div id='once-datepicker-control'></div> -->
+            <input type='text' name='submission_datepicker_once' id='submission_datepicker_once'>
+        </div><!-- occurs-once -->
+
+        <div id='occurs-repeating'>
         <input type="text"
                id="event_dates"
                name="event_dates" <?php $event_submission->print_dates(); ?>>
@@ -221,8 +243,8 @@ function bfc_print_event_submission_form($event_submission) {
         Dates like 2011-07-15 do not work.
         </p>
         <div id="datelist"></div>
-    </div>
-
+        </div><!-- occurs-repeating -->
+    </div><!-- new-event-controls -->
 
     <h4>Time</h4>
     <div class="new-event-controls">
