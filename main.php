@@ -405,17 +405,28 @@ function bfc_import_admin_page() {
     if (isset($_POST['bfc_import']) &&
         $_POST['bfc_import'] == 'do-import') {
 
-        bfc_import();
+        if (isset($_POST['bfc_magic_word']) &&
+            $_POST['bfc_magic_word'] != 'cheese') {
+
+            print "<p>That's not the magic word!</p>";
+        }
+        else {
+            bfc_import();
+        }
     }
     else {
     
     ?>
-    <p>Use this <strong>once</strong> to import the old site.
-    You should know what you're doing here!
+    <p>Use this <strong>once</strong> to import the old (Shift-style) calendar to the new site.
+    This is for advanced users who have read
+    <code>import-old-calendar.php</code> and know what they're doing.
     </p>
 
     <form method='post'>
+    Magic word:
+    <input type='text' name='bfc_magic_word'>
     <input type='hidden' name='bfc_import' value='do-import'>
+    <br>
     <input type='submit' value='Import Old Site'>
     </form>
 

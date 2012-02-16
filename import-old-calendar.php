@@ -1,13 +1,45 @@
 <?php
-// Import the database from the old code to the new code
 /**
+Imports the events from the old code (from Shift) into the new WordPress database.
+
+Important things to know:
+- THIS DELETES ALL EVENTS THAT ARE CURRENTLY IN THE CALENDAR
+- This does *not* import the old forum messages. (Ours were 95% spam.)
+- This also does not import the known-venue list. It could be improved to do so.
+   
 Import instructions:
-1) On the old site, delete all events without days.
-2) Copy the old event images to the new server
-3) Load the old datbase backup to the new server
-4) Read this code carefully; make sure you know what it does, and that it does the right thing
-5) Go to the WordPress admin panel and run the import.
+1) Back up your WordPress database
+
+2) On the old site, delete all events without days.
+   - Do this with the administrator tools. You could also use the mysql client to
+     do a bulk delete, if there are lots.
+   - Events without days are usually created by spambots.
+
+3) Copy the old event images to the new server
+   - This is the eventimages directory, in the old code
+   - Set the path below, as BFC_IMPORT_IMAGE_SRC
+   - Make sure the directory is readable by the web server process
+
+4) Backup the old calendar's database
+   - $ mysqldump -h [hostname] -u [username] -p [databasename] caladdress calevent caldaily > backup.sql
+
+5) Restore the backup into the new database
+   - $ mysql -h [hostname] -u [username] -p [databasename] < backup.sql
+   - You'll have two sets of tables in your database: caladdress etc. are from the
+     old calendar; wp_bfc_caladdress, etc., are for the new calendar.
+
+6) Read the code in this file to make sure it's still up to date. Check with Evan
+if you're not sure.
+
+7) Go to the WordPress admin panel and run the import.
+   - The magic word is cheese (lower case)
+
+8) After the import, go into mysql and drop these tables: caladdress, calevent, caldaily
  */
+
+// The folder on the new server where the events from the old calendar lives.
+// Must end with a slash.
+define('BFC_IMPORT_IMAGE_SRC', '/home/evand/Desktop/eventimages/');
 
 function bfc_import_event($event) {
     global $wpdb;
@@ -43,7 +75,7 @@ function bfc_import_event($event) {
         // The image's filename has the event ID. But what's stored in the
         // database is the original, uploaded filename.
         $source =
-            '/home/velo/images-from-old-site/' . $old_event_id . '.' . $extension;
+            BFC_IMPORT_IMAGE_SRC . $old_event_id . '.' . $extension;
         
         // Destination filename
         $upload_dirinfo = wp_upload_dir();
