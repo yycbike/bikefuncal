@@ -11,7 +11,7 @@ var BfcPopupOptions = {
     'opacity': 20,
 	
     'minWidth': 800,
-    'maxWidth': 800,
+    'maxWidth': 800
 };
 
 function update_popup(popup_content_html) {
@@ -49,7 +49,7 @@ function launch_popup(element) {
     var ajax_params = {
         'action': 'event-popup',
         'id': element.attr('data-id'),
-        'date': element.attr('data-date'),
+        'date': element.attr('data-date')
     };
 
     // For now, put up a spinner popup
