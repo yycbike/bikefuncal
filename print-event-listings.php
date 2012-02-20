@@ -1013,11 +1013,11 @@ END_SQL;
             }
 
             if ($sqldate != null) {
-                print "<div class='other-events'>\n";
-                printf("<p>%s</p>",
+                print "<aside class='widget other-events'>\n";
+                printf("<h3 class='widget-title'>Other events on %s</h3>",
                        esc_html(date('l, F j', strtotime($sqldate))));
                 tinyentries($sqldate, 'sidebar', $wp_query->post->ID);
-                print "</div>\n";
+                print "</aside>\n";
             }
         }
     }
