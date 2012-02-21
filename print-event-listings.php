@@ -452,13 +452,11 @@ function fullentry($record, $for, $sqldate)
 		}
 	}
 
-    ////////////
-    // Edit link
+    //////////////////////////
+    // Edit link for listings
     //
-    // Show the edit link to admin users.
-    // Except if this is a preview; then it's meaningless
-    // because they're already editing.
-    if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
+    // Show the edit link to admin users in the listing.
+    if (current_user_can('bfc_edit_others_events') && $for == 'listing') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
         printf("<span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
                esc_url($edit_url));
@@ -675,6 +673,18 @@ function fullentry($record, $for, $sqldate)
 	print "</div>";
 	
 	print "</div><!-- End event-about -->";
+	
+	    //////////////////////////
+    // Edit link for event-page
+    //
+    // Show the edit link to admin users on the event page.
+    // (But not the preview; then it's meaningless
+    // because they're already editing.)
+    if (current_user_can('bfc_edit_others_events') && $for == 'event-page') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+        printf("<span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
+               esc_url($edit_url));
+    }
 
     /////////////////////////
     // Next & Previous events
