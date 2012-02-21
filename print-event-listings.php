@@ -460,7 +460,7 @@ function fullentry($record, $for, $sqldate)
     // because they're already editing.
     if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        printf("<a class='admin-edit-link' href='%s'>Edit Event</a>",
+        printf("<span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
                esc_url($edit_url));
     }
 	
