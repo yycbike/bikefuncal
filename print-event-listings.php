@@ -618,7 +618,7 @@ function fullentry($record, $for, $sqldate)
             $has_ellipsis = true;
         }
 
-        printf("<div class='leader-website'><a href='%s'>%s</a></div>",
+        printf("<div class='leader-website'><a target='_blank' href='%s'>%s</a></div>",
                esc_url($record['weburl']), esc_html($display_url));
     }
     if ($record['phone'] != '') {
