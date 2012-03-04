@@ -210,41 +210,58 @@ function bfc_print_event_submission_form($event_submission) {
     <h3>Date & Time</h3>
     <div class="new-event-category">
 
-    <h4>The ride occurs</h4>
+    <h4>The event occurs</h4>
     <div class='new-event-controls'>
         <div>
-            <input type='radio' name='submission_ride_occurs'
-                <?php $event_submission->print_checked_for_ride_occurs('once'); ?>
-                id='submission_ride_occurs_once' value='once'>
-            <label for='submission_ride_occurs_once'>One time</label>
+            <input type='radio' name='submission_event_occurs'
+                <?php $event_submission->print_checked_for_event_occurs('once'); ?>
+                id='submission_event_occurs_once' value='once'>
+            <label for='submission_event_occurs_once'>One time</label>
         </div>
         <div>
-            <input type='radio' name='submission_ride_occurs'
-                <?php $event_submission->print_checked_for_ride_occurs('repeating'); ?>
-                id='submission_ride_occurs_repeating' value='repeating'>
-            <label for='submission_ride_occurs_repeating'>More than once (repeating)</label>
+            <input type='radio' name='submission_event_occurs'
+                <?php $event_submission->print_checked_for_event_occurs('multiple'); ?>
+                id='submission_event_occurs_multiple' value='multiple'>
+            <label for='submission_event_occurs_multiple'>More than once (repeating)</label>
         </div>
     </div><!-- new-event-controls -->
 
-    <h4 id='date-label'>Date</h4>
-    <div class='new-event-controls'>
-        <div id='occurs-once'>
-            <!-- <div id='once-datepicker-control'></div> -->
-            <input type='text' name='submission_datepicker_once' id='submission_datepicker_once'>
-        </div><!-- occurs-once -->
+    <div id='occurs-once'>
+      <h4></h4>
+      <div class='new-event-controls'>
+        <input type='checkbox' name='submission_event_during_festival'
+               <?php $event_submission->print_checked_for_event_during_festival(); ?>
+               id='submission_event_during_festival'>
+        <label for='submission_event_during_festival'>The event is during [@@@ name of festival]</label>
+      </div>
 
-        <div id='occurs-repeating'>
+      <h4>Date</h4>
+      <div class='new-event-controls'>
+        <input type='text'
+               name='submission_dates_once'
+               id='submission_dates_once'
+          <?php if ($event_submission->event_occurs('once')) $event_submission->print_dates();  ?>
+        >
+      </div><!-- .new-event-controls -->
+
+    </div><!-- #occurs-once -->
+
+    <div id='occurs-multiple'>
+      <h4>Dates</h4>
+      <div class='new-event-controls'>
         <input type="text"
-               id="event_dates"
-               name="event_dates" <?php $event_submission->print_dates(); ?>>
-    
+               id="submission_dates_multiple"
+               name="submission_dates_multiple"
+               <?php if ($event_submission->event_occurs('multiple')) $event_submission->print_dates(); ?>
+               >
+
         <p class='help'>
         Enter something like <em>July 15</em> or <em>Every Thursday</em>.
         Dates like 2011-07-15 do not work.
         </p>
         <div id="datelist"></div>
-        </div><!-- occurs-repeating -->
-    </div><!-- new-event-controls -->
+      </div><!-- new-event-controls -->
+    </div><!-- occurs-multiple -->
 
     <h4>Time</h4>
     <div class="new-event-controls">
@@ -363,7 +380,8 @@ function bfc_print_event_submission_form($event_submission) {
     } # end if
     ?>
 
-
+    <input type='hidden' id='event_dates' name='event_dates'>
+    
     <div class='new-event-actions'>
         <input type="submit" id="submission_action" name="submission_action"
              value="<?php print esc_attr($event_submission->next_action()); ?>">

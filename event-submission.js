@@ -73,8 +73,7 @@ function display_dates(xmlDom)
                 ? tmp[0].firstChild.nodeValue
                 : "";
 
-            //$('#event_dates').value = olddates;
-            datesfield = document.getElementById('event_dates');
+            datesfield = document.getElementById('submission_dates_multiple');
             datesfield.value = olddates;
         }
     }
@@ -459,19 +458,38 @@ function autocomplete_address(event, ui) {
     }
 }
 
-function toggle_occurs_once_repeating() {
-    var radOnce = jQuery('#submission_ride_occurs_once');
-    var radRepeating = jQuery('#submission_ride_occurs_repeating');
-
-    if (jQuery('#submission_ride_occurs_once').attr('checked')) {
-        jQuery('#date-label').text('Date');
-        jQuery('#occurs-repeating').hide();
+function toggle_occurs_once_multiple() {
+    if (jQuery('#submission_event_occurs_once').attr('checked')) {
+        jQuery('#occurs-multiple').hide();
         jQuery('#occurs-once').show();
     }
     else {
-        jQuery('#date-label').text('Dates');
         jQuery('#occurs-once').hide();
-        jQuery('#occurs-repeating').show();
+        jQuery('#occurs-multiple').show();
+    }
+}
+
+function toggle_event_during_festival() {
+    var chkDuringFestival = jQuery('#submission_event_during_festival');
+    if (chkDuringFestival.attr('checked')) {
+        // Show one or two months, depending on whether the start & end dates have
+        // the same month.
+        var isSingleMonth = (BikeFunAjax.festivalStartMonth == BikeFunAjax.festivalEndMonth);
+        var numberOfMonths = isSingleMonth ? 1 : 2;
+
+        // Limit the calendar to dates during the festival
+        jQuery('#submission_dates_once').
+            datepicker('option', 'minDate', BikeFunAjax.festivalStartDate).
+            datepicker('option', 'maxDate', BikeFunAjax.festivalEndDate). 
+            datepicker('option', 'numberOfMonths', numberOfMonths);
+
+    }
+    else {
+        // Limit the calendar to today - +364 days
+        jQuery('#submission_dates_once').
+            datepicker('option', 'minDate', '0D').
+            datepicker('option', 'maxDate', '364D'). // +1 year
+            datepicker('option', 'numberOfMonths', 1);
     }
 }
 
@@ -480,8 +498,8 @@ function toggle_occurs_once_repeating() {
 // Have to use jQuery(), not $(), because WordPress loads jQuery
 // in "no-conflicts" mode, where $() isn't defined.
 jQuery(document).ready(function() {
-    // When the event date changes, look up the recurring dates
-    jQuery('#event_dates').blur(function() {
+    // When the multiple date text input changes, look up the recurring dates
+    jQuery('#submission_dates_multiple').blur(function() {
         verifydates(this.value, false);
         return false;
     });
@@ -499,8 +517,8 @@ jQuery(document).ready(function() {
         update_preview();
     }
 
-    // If an event date has been specified, run verifydates() now.
-    var dates = jQuery('#event_dates').val();
+    // If a multiple event dates have been specified, run verifydates() now.
+    var dates = jQuery('#submission_dates_multiple').val();
     if (dates != "") {
         verifydates(dates, false);
     }
@@ -552,25 +570,41 @@ jQuery(document).ready(function() {
             close: autocomplete_address,
         });
 
-
-    // Toggle the visibility of once/repeating
-    jQuery('#submission_ride_occurs_once').change(toggle_occurs_once_repeating);
-    jQuery('#submission_ride_occurs_repeating').change(toggle_occurs_once_repeating);
-    toggle_occurs_once_repeating();
-
     // Configure calendar for "occurs once"
-    jQuery('#submission_datepicker_once').datepicker({
-        //'altField': jQuery('#submission_datepicker_once'),
-        //'altFormat': 'yy-mm-dd',
+    jQuery('#submission_dates_once').datepicker({
         'showOn': 'both',
         'buttonText': 'Choose',
 
         'dateFormat': 'DD, MM d', // e.g. Monday, October 8
 
+        'hideIfNoPrevNext': true,
+
         'minDate': '0D', // today
         'maxDate': '364D', // +1 year
     });
 
+
+    // Toggle the visibility of once/multiple
+    jQuery('#submission_event_occurs_once').change(toggle_occurs_once_multiple);
+    jQuery('#submission_event_occurs_multiple').change(toggle_occurs_once_multiple);
+    toggle_occurs_once_multiple();
+
+    jQuery('#submission_event_during_festival').change(toggle_event_during_festival);
+    toggle_event_during_festival();
+
+    // Code to run on submit
+    jQuery('#event-submission-form').submit(function() {
+        var dates_val;
+
+        if (jQuery('#submission_event_occurs_once').attr('checked')) {
+            dates_val = jQuery('#submission_dates_once').val();
+        }
+        else {
+            dates_val = jQuery('#submission_dates_multiple').val();
+        }
+
+        jQuery('#event_dates').val(dates_val);
+    });
 });
 
 

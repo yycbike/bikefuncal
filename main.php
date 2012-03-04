@@ -616,8 +616,27 @@ function bfc_register_javascript() {
 
     // Create the BikeFunAjax object in the page, to send data from
     // PHP to JavaScript.
+    $festival_start_date = strtotime(get_option('bfc_festival_start_date'));
+    $festival_end_date = strtotime(get_option('bfc_festival_end_date'));
     $submission_ajax_options = array(
         'ajaxurl' => admin_url('admin-ajax.php'),
+
+        // Pass in the start & end dates of the festival, so we can set limits on the
+        // jQuery calendar UI control. We need to pass the date in the same
+        // format that the calendar control outputs them in.
+        //
+        // jQuery calendars also have an option of setting the min/max date with a
+        // JS Date object. That wasn't working for me. The end date would get parsed
+        // as midnight, UTC; then it was converted to 5pm Pacific Time on the prior day.
+        // Result: The last day of the festival wasn't selectable in the calendar.
+        'festivalStartDate' =>  date('l, F j', $festival_start_date),
+        'festivalEndDate' =>    date('l, F j', $festival_end_date),
+
+        // Pass the start & end months. JS uses this to decide if the calendar should
+        // show one month at a time, or two.
+        'festivalStartMonth' => date('n', $festival_start_date),
+        'festivalEndMonth'   => date('n', $festival_end_date),
+
         // We have to use l10n_print_after to pass JSON-encoded data.
         // See: http://wordpress.stackexchange.com/q/8655
         'l10n_print_after' =>
