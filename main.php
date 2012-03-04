@@ -325,7 +325,13 @@ function bfc_options_admin_page() {
 
             <h3>Festival</h3>
             <p>This plugin assumes you have a Pedalpalooza-type festival. Enter the dates of the next festival here.</p>
-        
+
+            <p>
+            Festival name:
+            <input type='text' name='bfc_festival_name' value='<?php echo esc_attr(get_option('bfc_festival_name')); ?>'>
+            <em>e.g., Pedalpalooza</em>
+            </p>
+         
             <p>
             Festival Start Date:
             <input type='text' name='bfc_festival_start_date' value='<?php echo esc_attr(get_option('bfc_festival_start_date')); ?>'>
@@ -519,6 +525,7 @@ END_QUERY;
 
 add_action('admin_init', 'bfc_admin_init_action');
 function bfc_admin_init_action() {
+    register_setting('bikefuncal-options', 'bfc_festival_name');
     register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');

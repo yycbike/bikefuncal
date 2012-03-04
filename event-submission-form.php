@@ -232,7 +232,9 @@ function bfc_print_event_submission_form($event_submission) {
         <input type='checkbox' name='submission_event_during_festival'
                <?php $event_submission->print_checked_for_event_during_festival(); ?>
                id='submission_event_during_festival'>
-        <label for='submission_event_during_festival'>The event is during [@@@ name of festival]</label>
+        <label for='submission_event_during_festival'>
+          The event occurs during <?php print esc_html(get_option('bfc_festival_name')); ?>
+        </label>
       </div>
 
       <h4>Date</h4>
