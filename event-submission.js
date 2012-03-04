@@ -462,10 +462,16 @@ function toggle_occurs_once_multiple() {
     if (jQuery('#submission_event_occurs_once').attr('checked')) {
         jQuery('#occurs-multiple').hide();
         jQuery('#occurs-once').show();
+
+        jQuery('#submission_dates_once').attr('required', true);
+        jQuery('#submission_dates_multiple').attr('required', false);
     }
     else {
         jQuery('#occurs-once').hide();
         jQuery('#occurs-multiple').show();
+
+        jQuery('#submission_dates_once').attr('required', false);
+        jQuery('#submission_dates_multiple').attr('required', true);
     }
 }
 

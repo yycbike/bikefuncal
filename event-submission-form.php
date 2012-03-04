@@ -128,7 +128,7 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Title</h4>
     <div class="new-event-controls">
-    <input type="text" name="event_title" <?php $event_submission->print_title(); ?> >
+    <input type="text" name="event_title" required <?php $event_submission->print_title(); ?> >
     </div>
 
     <h4>Audience</h4>
@@ -155,7 +155,7 @@ function bfc_print_event_submission_form($event_submission) {
                                                  
     <h4>Description</h4>
     <div class="new-event-controls">
-    <textarea name="event_descr"><?php $event_submission->print_descr()?></textarea>
+    <textarea name="event_descr" required><?php $event_submission->print_descr()?></textarea>
     </div>
 
     <h4>Image</h4>
@@ -196,7 +196,7 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Address</h4>
     <div class="new-event-controls">
-    <input type="text" id="event_address" name="event_address" 
+    <input type="text" id="event_address" name="event_address" required
            <?php $event_submission->print_address()?>>
     </div>
 
@@ -304,12 +304,12 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Your Name</h4>
     <div class="new-event-controls">
-        <input type="text" name="event_name" <?php $event_submission->print_name(); ?>>
+        <input type="text" name="event_name" required <?php $event_submission->print_name(); ?>>
     </div>
 
     <h4>E-Mail</h4>
     <div class='new-event-controls'>
-       <input type="text" name="event_email" <?php $event_submission->print_email(); ?>>
+       <input type="email" name="event_email" required <?php $event_submission->print_email(); ?>>
         <!-- @@@ The old code has a checkbox here about sending forum e-mails
              to this address. We can turn that on later, when we add forums. -->
 
@@ -326,7 +326,7 @@ function bfc_print_event_submission_form($event_submission) {
     
     <h4>Web Site</h4>
     <div class='new-event-controls'>
-        <input type="text" name="event_weburl" <?php $event_submission->print_weburl(); ?>>
+        <input type="url" name="event_weburl" <?php $event_submission->print_weburl(); ?>>
     </div>
 
     <h4>Phone Number</h4>
