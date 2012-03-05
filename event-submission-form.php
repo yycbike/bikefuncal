@@ -397,7 +397,7 @@ function bfc_print_event_submission_form($event_submission) {
       </div><!-- new-event-controls -->
     </div><!-- occurs-multiple -->
 
-    <h4>Time</h4>
+    <h4>Start time</h4>
     <div class="new-event-controls">
 	<select name="event_eventtime" id="event_eventtime">         
 	  <option value="">Choose a time</option>
@@ -406,7 +406,7 @@ function bfc_print_event_submission_form($event_submission) {
         <?php bfc_event_form_help('event_eventtime') ?>
     </div>
     
-    <h4>Duration</h4>
+    <h4>End time</h4>
     <div class="new-event-controls">
       <select name="event_eventduration" id="event_eventduration">
         <option value="0" <?php $event_submission->print_selected_for_duration("0") ?> >Unspecified</option>
@@ -429,7 +429,8 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h4>Time Details</h4>
     <div class="new-event-controls">
-        <input type="text" name="event_timedetails" <?php $event_submission->print_timedetails(); ?>>
+      <input type="text" name="event_timedetails" <?php $event_submission->print_timedetails(); ?>>
+      <?php bfc_event_form_help('event_timedetails') ?>
     </div>
     </div><!-- .new-event-category (date & time) -->
 

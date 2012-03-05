@@ -337,27 +337,39 @@ function tweaktime()
     }
 }
 
+// In the duration/end-time drop-down, save the textual
+// descriptions of the durations, so we can use them later.
+function save_durations() {
+    var durations = jQuery('#event_eventduration');
+    durations.find('option').each(function(idx, domElement) {
+        var option = jQuery(domElement);
+        option.attr('data-duration-text', option.text());
+    });
+}
 
 // Update the list of durations to reflect the chosen eventtime.
-function tweakdurations()
-{
-    var sel = document.getElementById('event_eventduration');
-    var eventtime = document.getElementById('event_eventtime').value;
-    
-    var i;
-    var when;
+function tweakdurations() {
+    var durations = jQuery('#event_eventduration');
+    var startTime = jQuery('#event_eventtime').val();
+    durations.find('option').each(function(idx, domElement) {
+        var option = jQuery(domElement);
+        var text;
+        
+        // Don't adjust the text for "unspecified" (val = 0)
+        if (option.val() != 0) {
+            if (startTime === "") {
+                // No start time, just show durations
+                text = option.attr('data-duration-text');
+            }
+            else {
+                // Show end time + duration
+                when = twelvehour(startTime, option.val());
+                text = when + " [" + option.attr('data-duration-text') + "]";
+            }
 
-    // Adjust the descriptions of all items except first ("unspecified")
-    for (i = 1; i < sel.length; i++) {
-	// Replace the old ending time, if any, with the new one, if any
-	label = sel.options[i].text.split(",");
-	if (eventtime == "") {
-	    sel.options[i].text = label[0];
-	} else {
-	    when = twelvehour(eventtime, sel.options[i].value);
-	    sel.options[i].text = label[0] + ", ending " + when;
-	}
-    }
+            option.text(text);
+        }
+    });
 }
 
 function display_preview(preview_content)
@@ -544,6 +556,7 @@ jQuery(document).ready(function() {
     }
 
     // If a time has been specified, run tweakdurations() now.
+    save_durations();
     var time = jQuery('#event_eventtime').val();
     if (time != "") {
         tweakdurations();
