@@ -874,14 +874,10 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
     global $wp_rewrite;
     if ($wp_rewrite->using_permalinks()) {
         // If permalinks are on, use pretty URL
-        return site_url(sprintf('edit/%d/%s', $id, $editcode));
+        return site_url(sprintf('edit/%d/%s', esc_url($id), esc_url($editcode)));
     }
     else {
-        // @@@ Could also look these up by slug (with
-        // get_page_by_path()), to give more flexibility
-        // in the page title.
-        $edit_page_title = 'New Event';
-        $edit_page = get_page_by_title($edit_page_title);
+        $edit_page = get_page_by_path('add-event');
         $base_url = get_permalink($edit_page->ID); 
 
         return $base_url .
