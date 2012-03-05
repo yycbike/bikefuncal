@@ -954,6 +954,10 @@ class BfcEventSubmission {
         if ($this->event_args['descr'] == '') {
             $this->errors[] = "You must provide a description";
         }
+
+        if ($this->event_args['address'] == '') {
+            $this->errors[] = "You must provide an address (or cross-streets) for the meeting point";
+        }
         
         if ($this->event_args['weburl'] !== '') {
             $scheme = parse_url($this->event_args['weburl'], PHP_URL_SCHEME);
