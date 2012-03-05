@@ -150,49 +150,51 @@ END_HTML;
     }
     else if ($for === 'submission_dates_multiple') {
         $help['content'] = <<<END_HTML
-          Enter the dates when your ride occurs. Examples:
-          <ul>
-            <li>First Thursdays
-            <li>Mondays in June
-            <li>Tuesdays and Thursdays, May to September
-            <li>June 3 - 5
-          </ul>
+          Enter the dates when your ride occurs.
+          <br>
+          E.g., "First Thursdays" or "Mondays, May to September"
           <div id='dates_multiple_more' style='display: none;'>
-            <h3>Recurring Events</h3>
-            <p>
-              To create a recurring event, enter the days it occurs on. These examples
-              will occur year-round.
-            </p>
-            <ul>
-              <li>First Thursdays
-              <li>Last Fridays
-              <li>Every Monday
-              <li>Tuesdays and Thursdays
-            </ul>
-            <p>
-              For an event that does not go on forever, enter the start and end dates.
-            </p>
-            <ul>
-              <li>First Thursdays, May to September
-              <li>Tuesdays and Thursdays in July and August
-            </ul>
+            <table>
+              <thead>
+                <tr><th>Kind of Recurrence</th><th>Examples</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan=4>
+                    For an event with no end date, enter the days it occurs on.
+                  </td>
+                  <td>
+                    First Thursdays <br>
+                  </td>
+                </tr>
+                <tr><td>Last Fridays</td></tr>
+                <tr><td>Every Monday</td></tr>
+                <tr><td>Tuesdays and Thursdays</td></tr>
 
-            <h3>Date Ranges</h3>
-            <p>
-              For an event that occurs daily, for several days in a row, enter the start and end dates:
-              <ul>
-                <li>October 8 - 10
-                <li>August 28 to September 2
-              </ul>
-            </p>
+                <tr>
+                  <td rowspan=2>
+                    For an event that starts and ends, 
+                    For an event that does not go on forever, enter the start and end dates.
+                  </td>
 
-            <h3>Arbitrary days</h3>
-            <p>
-              If the dates of your event don't follow any pattern, just enter the dates separated by commas.
-              For example: June 7, June 9, June 14, June 16
-            </p>
-            
+                  <td>
+                    First Thursdays, May to September
+                  </td>
+                </tr>
+                <tr><td>Tuesdays and Thursdays in July and August</td></tr>
+
+                <tr>
+                  <td>For daily events, enter the start and end dates</td>
+                  <td>October 8 - 10</td>
+                </tr>
+
+                <tr>
+                  <td>If the dates of your event don't follow a pattern, enter the dates separated by commas.</td>
+                  <td>June 7, June 9, June 16</td>
+              </tbody>
+            </table>
           </div>
+          
           <div>
             <a id='dates_multiple_show_more'>More tips</a>
           </div>
