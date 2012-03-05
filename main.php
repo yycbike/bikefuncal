@@ -657,7 +657,7 @@ add_action('init', 'bfc_register_javascript');
  * Return the page title, fudging the title if needed.
  */
 function bfc_page_title($title) {
-    if (trim($title) == 'New Event') {
+    if (trim($title) == 'Add Event') {
         $event_submission = bfc_event_submission();
         switch ($event_submission->page_to_show()) {
             case 'edit-event':
@@ -665,7 +665,7 @@ function bfc_page_title($title) {
                     $title = 'Edit Event';
                 }
                 else {
-                    $title = 'New Event';
+                    $title = 'Add Event';
                 }
                 break;
                 
