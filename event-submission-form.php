@@ -107,6 +107,7 @@ function bfc_event_form_help($for) {
         'for' => $for,
         'content' => '',
         'class' => 'help',
+        'tag' => 'div',
     );
 
     // Set default values for the help.
@@ -213,6 +214,7 @@ END_HTML;
     }
     else if ($for === 'event_hideemail') {
         $help['content'] = "It's protected against spam-harvesting robots";
+        $help['tag'] = 'span';
     }
     else if ($for === 'event_weburl') {
         $help['content'] = 'e.g., www.your-site.ca. If you made a Facebook event, put it here.';
@@ -222,10 +224,10 @@ END_HTML;
     $help = apply_filters('bfc_event_form_help', $help);
 
     if ($help['content'] !== '') {
-        printf("<div class='%s'>", esc_attr($help['class']));
+        printf("<%s class='%s'>", esc_attr($help['tag']), esc_attr($help['class']));
         // Don't call esc_html on the content, because it has HTML tags in it.
         print $help['content'];
-        print '</div>';
+        printf('</%s>', esc_attr($help['tag']));
     }
 }
 
@@ -235,12 +237,77 @@ END_HTML;
 // $event_submission -- A BfcEventSubmission object.
 function bfc_print_event_submission_form($event_submission) {
 ?>
+<style type='text/css'>
+/* Container for the whole form */
+.new-event-form {
+    width: 100%;
+}
+
+/* Labels for the individual controls on the left side */
+.new-event-form h3 {
+    width: 20%;
+
+    float: left;
+}
+
+.new-event-form h2 {
+    margin-top: 10px;
+    font-size: 120%;
+}
+
+/* Controls, instructions, etc. that go with a label */
+.new-event-form .new-event-controls {
+    width: 80%;
+    float: right;
+
+    margin-bottom: 15px;
+}
+
+input.fullwidth {
+    width: 90%;
+}
+
+input.narrower {
+    width: 60%;
+}
+
+/* textarea for entering event description */
+#event_descr {
+    width: 90%;
+    height: 15em;
+}
+
+.new-event-form input[type='text'],
+.new-event-form input[type='email'],
+.new-event-form input[type='url'] {
+    /* override a setting in the theme's stylesheet */
+    margin-bottom: 0px;
+}
+
+/* Actions at the bottom of the form */
+.new-event-form .new-event-actions {
+    clear: both;
+    border-top: 1px solid;
+    padding-top: 5px;
+}
+
+/* help text */
+.help {
+    font-style: italic;
+}
+
+#hideemail_controls {
+    margin-top: 5px;
+}
+
+</style>
+
 
     <div class="new-event-form">
 
     <?php if (!$event_submission->is_valid()) { ?>
     <div class="error-messages">
-      <h3>Oops! Please fix these problems</h3>
+      <h2>Oops! Please fix these problems</h2>
       <?php $event_submission->print_errors() ?>
     </div>                                         
     <?php } # endif -- is valid ?>
@@ -251,16 +318,22 @@ function bfc_print_event_submission_form($event_submission) {
           id="event-submission-form"
           >
 
-    <h3>Describe Your Ride</h3>
+    <h2>Describe Your Ride</h2>
     <div class="new-event-category">
 
-    <h4>Title</h4>
+    <h3>Title</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_title" required <?php $event_submission->print_title(); ?> >
+      <input type="text" class="fullwidth" name="event_title" required <?php $event_submission->print_title(); ?> >
       <?php bfc_event_form_help('event_title') ?>
     </div>
+                                                 
+    <h3>Description</h3>
+    <div class="new-event-controls">
+      <textarea name="event_descr" id="event_descr" class="fullwidth" required><?php $event_submission->print_descr()?></textarea>
+      <?php bfc_event_form_help('event_descr') ?>
+    </div>
 
-    <h4>Audience</h4>
+    <h3>Audience</h3>
     <div class="new-event-controls">
         <div>
           <input type="radio" name="event_audience"
@@ -282,14 +355,8 @@ function bfc_print_event_submission_form($event_submission) {
         </div>
         <?php bfc_event_form_help('event_audience') ?>
     </div>
-                                                 
-    <h4>Description</h4>
-    <div class="new-event-controls">
-      <textarea name="event_descr" required><?php $event_submission->print_descr()?></textarea>
-      <?php bfc_event_form_help('event_descr') ?>
-    </div>
 
-    <h4>Image</h4>
+    <h3>Image</h3>
     <div class='new-event-controls'>
         <?php if ($event_submission->has_image()) { ?>            
             <div>
@@ -317,34 +384,38 @@ function bfc_print_event_submission_form($event_submission) {
     
     </div><!-- .new-event-category (describe your ride) -->
 
-    <h3>Meeting Place</h3>
+    <h2>Meeting Place</h2>
     <div class="new-event-category">
-    <h4>Place Name</h4>
+    <h3>Place Name</h3>
     <div class="new-event-controls">
       <input type="text" id="event_locname" name="event_locname"
+             class="narrower"
              <?php $event_submission->print_locname()?>>
       <?php bfc_event_form_help('event_locname') ?>
     </div>             
 
-    <h4>Address</h4>
+    <h3>Address</h3>
     <div class="new-event-controls">
       <input type="text" id="event_address" name="event_address" required
-           <?php $event_submission->print_address()?>>
+             class="narrower"
+             <?php $event_submission->print_address()?>>
       <?php bfc_event_form_help('event_address') ?>
   </div>
 
-    <h4>Details</h4>
+    <h3>Details</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_locdetails" <?php $event_submission->print_locdetails()?>>
+      <input type="text" name="event_locdetails" class="narrower"
+        <?php $event_submission->print_locdetails()?>
+        >
       <?php bfc_event_form_help('event_locdetails') ?>
     </div>
 
     </div><!-- .new-event-category (meeting place) -->
 
-    <h3>Date & Time</h3>
+    <h2>Date & Time</h2>
     <div class="new-event-category">
 
-    <h4>The event occurs</h4>
+    <h3>The event occurs</h3>
     <div class='new-event-controls'>
         <div>
             <input type='radio' name='submission_event_occurs'
@@ -361,7 +432,7 @@ function bfc_print_event_submission_form($event_submission) {
     </div><!-- new-event-controls -->
 
     <div id='occurs-once'>
-      <h4></h4>
+      <h3></h3>
       <div class='new-event-controls'>
         <input type='checkbox' name='submission_event_during_festival'
                <?php $event_submission->print_checked_for_event_during_festival(); ?>
@@ -371,24 +442,25 @@ function bfc_print_event_submission_form($event_submission) {
         </label>
       </div>
 
-      <h4>Date</h4>
+      <h3>Date</h3>
       <div class='new-event-controls'>
         <input type='text'
                name='submission_dates_once'
                id='submission_dates_once'
-          <?php if ($event_submission->event_occurs('once')) $event_submission->print_dates();  ?>
-        >
+               <?php if ($event_submission->event_occurs('once')) $event_submission->print_dates();  ?>
+               >
         <?php bfc_event_form_help('submission_dates_once') ?>
       </div><!-- .new-event-controls -->
 
     </div><!-- #occurs-once -->
 
     <div id='occurs-multiple'>
-      <h4>Dates</h4>
+      <h3>Dates</h3>
       <div class='new-event-controls'>
-        <input type="text"
-               id="submission_dates_multiple"
-               name="submission_dates_multiple"
+        <input type='text'
+               id='submission_dates_multiple'
+               name='submission_dates_multiple'
+               class='narrower'               
                <?php if ($event_submission->event_occurs('multiple')) $event_submission->print_dates(); ?>
                >
         <input type='button' id='submission_dates_show' value='Show Dates'>
@@ -402,7 +474,7 @@ function bfc_print_event_submission_form($event_submission) {
       </div><!-- new-event-controls -->
     </div><!-- occurs-multiple -->
 
-    <h4>Start time</h4>
+    <h3>Start time</h3>
     <div class="new-event-controls">
 	<select name="event_eventtime" id="event_eventtime">         
 	  <option value="">Choose a time</option>
@@ -411,7 +483,7 @@ function bfc_print_event_submission_form($event_submission) {
         <?php bfc_event_form_help('event_eventtime') ?>
     </div>
     
-    <h4>End time</h4>
+    <h3>End time</h3>
     <div class="new-event-controls">
       <select name="event_eventduration" id="event_eventduration">
         <option value="0" <?php $event_submission->print_selected_for_duration("0") ?> >Unspecified</option>
@@ -432,31 +504,31 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_eventduration') ?>
     </div>
 
-    <h4>Time Details</h4>
+    <h3>Time Details</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_timedetails" <?php $event_submission->print_timedetails(); ?>>
+      <input type="text" name="event_timedetails" class="narrower" <?php $event_submission->print_timedetails(); ?>>
       <?php bfc_event_form_help('event_timedetails') ?>
     </div>
     </div><!-- .new-event-category (date & time) -->
 
-    <h3>Who</h3>
+    <h2>Who</h2>
     <div class="new-event-category">
 
-    <h4>Your Name</h4>
+    <h3>Your Name</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_name" required <?php $event_submission->print_name(); ?>>
+      <input type="text" name="event_name" class="narrower" required <?php $event_submission->print_name(); ?>>
       <?php bfc_event_form_help('event_name') ?>
     </div>
 
-    <h4>E-Mail</h4>
+    <h3>E-Mail</h3>
     <div class='new-event-controls'>
-      <input type="email" name="event_email" required <?php $event_submission->print_email(); ?>>
+      <input type="email" name="event_email" class="narrower" required <?php $event_submission->print_email(); ?>>
       <?php bfc_event_form_help('event_email') ?>
 
        <!-- @@@ The old code has a checkbox here about sending forum e-mails
             to this address. We can turn that on later, when we add forums. -->
 
-        <p>
+        <div id=hideemail_controls>
         <input type="checkbox" name="event_hideemail" value="Y"
                id=event_hideemail
                <?php $event_submission->print_checked_for_hideemail() ?>
@@ -464,25 +536,26 @@ function bfc_print_event_submission_form($event_submission) {
           <label for=event_hideemail>
             Don't publish my e-mail address online
           </label>
+          <br>
           <?php bfc_event_form_help('event_hideemail'); ?>
-        </p>
+        </div>
     </div>
     
-    <h4>Web Site</h4>
+    <h3>Web Site</h3>
     <div class='new-event-controls'>
-      <input type="url" name="event_weburl" <?php $event_submission->print_weburl(); ?>>
+      <input type="url" name="event_weburl" class="narrower" <?php $event_submission->print_weburl(); ?>>
       <?php bfc_event_form_help('event_weburl') ?>
     </div>
 
-    <h4>Phone Number</h4>
+    <h3>Phone Number</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_phone" <?php $event_submission->print_phone(); ?>>
+      <input type="text" name="event_phone" class="narrower" <?php $event_submission->print_phone(); ?>>
       <?php bfc_event_form_help('event_phone') ?>
     </div>
 
-    <h4>Other Info</h4>
+    <h3>Other Info</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_contact" <?php $event_submission->print_contact(); ?>>
+      <input type="text" name="event_contact" class="narrower" <?php $event_submission->print_contact(); ?>>
       <?php bfc_event_form_help('event_contact') ?>
     </div>
 
@@ -491,7 +564,7 @@ function bfc_print_event_submission_form($event_submission) {
     <?php
     if ($event_submission->has_admin_comment()) {
     ?>
-      <h3>Comments</h3>
+      <h2>Comments</h2>
       <p>Briefly tell the ride leader what you, the administrator, are changing about their event.
       <br>
       <textarea name='submission_comment'></textarea>
