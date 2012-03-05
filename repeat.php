@@ -292,16 +292,20 @@ function datealso($tokens)
 		$newlevel = $level;
 	}
 
-	# Usually the level will be the same or grow higher.  The
-	# "except" token resets it to 0.  Anything else implies as
-	# "also" token.  Consecutive months where the second month
-	# is followed by a monthday also implies an "also".
-	if ($newlevel != 0 && $newlevel < $level)
+	// Usually the level will be the same or grow higher.  The
+	// "except" token resets it to 0.  Anything else implies as
+	// "also" token.  Consecutive months where the second month
+	// is followed by a monthday also implies an "also".
+	if ($newlevel != 0 && $newlevel < $level) {
 	    $fixed[$f++] = array("token"=>"also");
-	else if ($level == 3 && $newlevel == 3 && is_numeric($tokens[$i + 1]))
+        }
+	else if ($level == 3 && $newlevel == 3 &&
+                 isset($tokens[$i + 1]) && 
+                 is_numeric($tokens[$i + 1])) {
 	    $fixed[$f++] = array("token"=>"also");
+        }
 
-	# Copy this token
+	// Copy this token
 	if ($newlevel == 4 && $tokens[$i]["token"] == 'week') {
 	    # convert week to monthday (e.g., "1st" to "1")
 	    $fixed[$f++] = array("token"=>"monthday","bit"=>$tokens[$i]["bit"]);
@@ -385,42 +389,45 @@ function daterulehelp($str, $rules, $name, $limit)
     return $str;
 }
 
-# check whether a given date meets a given set of rules
+// check whether a given date meets a given set of rules
 function dateinstance($rules, $timestamp)
 {
-    # break the date down into week, weekday, month, and monthday
+    // break the date down into week, weekday, month, and monthday
     $tm = getdate($timestamp);
     $tm["wd"] = $tm["wday"] + 1;
     $tm["wk"] = floor(($tm["mday"] - 1) / 7) + 1;
 
-    # reject if no "also" clause matches */
+    // reject if no "also" clause matches */
     if (!dateinstancehelp($rules, $tm))
 	return 0;
 
-    # reject if any "except" clause matches */
+    // reject if any "except" clause matches */
     if (isset($rules["except"]) && dateinstancehelp($rules["except"], $tm))
 	return 0;
 
-    # it looks good
+    // it looks good
     return 1;
 }
+
 function dateinstancehelp($rules, $tm)
 {
-    # if there are any "also" clauses and any of them match, then
-    # that's all we care about.  We can skip testing the first clause.
+    // if there are any "also" clauses and any of them match, then
+    // that's all we care about.  We can skip testing the first clause.
     if (isset($rules["also"]) &&
         dateinstancehelp($rules["also"], $tm)) {
 
 	return 1;
     }
 
-    # look for any field that clashes with a rule in this clause
+    // look for any field that clashes with a rule in this clause
     if (isset($rules["week"])) {
-	# "last" week requires extra logic
+	// "last" week requires extra logic
 	$dim = datedaysinmonth($tm["mon"], $tm["year"]);
-	if (!$rules["week"][$tm["wk"]]
-	 && (!$rules["week"][6] || $tm["mday"] < $dim - 6))
-	   return 0;
+	if (!isset($rules["week"][$tm["wk"]])
+            && (!isset($rules["week"][6]) || $tm["mday"] < $dim - 6)) {
+            
+            return 0;
+        }
     }
     if (isset($rules["weekday"]) && !isset($rules["weekday"][$tm["wd"]]))
 	return 0;
@@ -429,12 +436,12 @@ function dateinstancehelp($rules, $tm)
     if (isset($rules["monthday"]) && !isset($rules["monthday"][$tm["mday"]]))
 	return 0;
 
-    # looks good
+    // looks good
     return 1;
 }
 
 
-# Return the number of days in a given month
+// Return the number of days in a given month
 function datedaysinmonth($month,$year = null)
 {
     # year is optional.  If omitted, guess it
@@ -461,32 +468,32 @@ function datedaysinmonth($month,$year = null)
 }
 
 
-# Return a string composed of elements of $names[] where $rules[] is 1.
-# If there's a span use a hyphen, otherwise insert "and" before the last
+// Return a string composed of elements of $names[] where $rules[] is 1.
+// If there's a span use a hyphen, otherwise insert "and" before the last
 function repeatcanonhelp($rule, $names)
 {
-    # if no rule, return ""
+    // if no rule, return ""
     if (!$rule)
 	return "";
 
-    # build the string
+    // build the string
     $list = "";
     $last = "";
     for ($i = 1; isset($names[$i]); $i++) {
 	if (isset($rule[$i])) {
-	    # Add previous item to the list, if any
+	    // Add previous item to the list, if any
 	    if ($last)
 		$list = $last . " ";
 
-	    # is this the start of a span of at least 3 elements?
+	    // is this the start of a span of at least 3 elements?
 	    if (isset($names[$i + 2]) && isset($rule[$i + 1]) && isset($rule[$i + 2])) {
-		# yes -- combine the span's endpoints
-		for ($j = $i + 2; $rule[$j + 1] && $names[$j + 1]; $j++) {
+		// yes -- combine the span's endpoints
+		for ($j = $i + 2; isset($rule[$j + 1]) && isset($names[$j + 1]); $j++) {
 		}
 		$last = $names[$i] . " - " . $names[$j];
 		$i = $j;
 	    } else {
-		# single item
+		// single item
 		$last = $names[$i];
 	    }
 	}
@@ -626,11 +633,11 @@ function canonical_date_description($daylist, $d, $rules)
 # Return a list of days matching a given date string
 function repeatdates($str)
 {
-    # Create an empty array
+    // Create an empty array
     $daylist = array();
     $d = 1;
     
-    # Parse the dates
+    // Parse the dates
     $tokens1 = datetokens($str);
     $tokens = datealso($tokens1);
     $rules = daterules($tokens);
@@ -640,15 +647,15 @@ function repeatdates($str)
         return $dayinfo;
     }
 
-    # Scan actual dates, starting with today and going forward 364 days
-    # or until a 180 gap is detected, looking for days that meet the
-    # parsed requirements.
+    // Scan actual dates, starting with today and going forward 364 days
+    // or until a 180 gap is detected, looking for days that meet the
+    // parsed requirements.
     $date = time();
     $tm = getdate($date);
-    $date += (12 - $tm["hours"]) * 3600; # Roughly noon today
+    $date += (12 - $tm["hours"]) * 3600; // Roughly noon today
     for ($gap=-999, $i = 0; $gap < 180 && $i < 365; $i++) {
         if (dateinstance($rules, $date)) {
-            # Found one!  Append it to the list.
+            // Found one!  Append it to the list.
             $daylist[$d++] = array("timestamp"=>$date,
                                    "eventdate"=>date("Y-m-d", $date),
                                    "sqldate"=>date("Y-m-d", $date),
