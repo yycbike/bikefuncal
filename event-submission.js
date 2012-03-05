@@ -356,7 +356,9 @@ function save_durations() {
 // Update the list of durations to reflect the chosen eventtime.
 function tweakdurations() {
     var durations = jQuery('#event_eventduration');
-    var startTime = jQuery('#event_eventtime').val();
+    var times     = jQuery('#event_eventtime');
+    var startTime = times.val();
+
     durations.find('option').each(function(idx, domElement) {
         var option = jQuery(domElement);
         var text;
@@ -376,6 +378,10 @@ function tweakdurations() {
             option.text(text);
         }
     });
+
+    // Set the widths of the two controls to be identical, 
+    // to make them look nicer.
+    durations.width(times.width());
 }
 
 function display_preview(preview_content)
@@ -563,12 +569,9 @@ jQuery(document).ready(function() {
     // not specified.
     verifydates(false);
 
-    // If a time has been specified, run tweakdurations() now.
+    // Adjust durations to include end times (if start time is specified)
     save_durations();
-    var time = jQuery('#event_eventtime').val();
-    if (time != "") {
-        tweakdurations();
-    }
+    tweakdurations();
 
     jQuery('#event_eventtime').focus(tweaktime);
     jQuery('#event_eventtime').change(tweakdurations);
