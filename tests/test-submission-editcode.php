@@ -13,13 +13,13 @@ class TestSubmissionEditcode extends BfcTestCase {
 
         // Make sure we have the db_editcode. (This peers into the internals of
         // the class.)
-        $this->assertType('string', $event->db_editcode());
+        $this->assertInternalType('string', $event->db_editcode());
         $this->assertNotEquals(NULL, $event->db_editcode());
         $this->assertGreaterThan(0, strlen($event->db_editcode()));
 
         // Make sure we have the user_editcode. (This peers into the internals of
         // the class.)
-        $this->assertType('string', $event->user_editcode());
+        $this->assertInternalType('string', $event->user_editcode());
         $this->assertNotEquals(NULL, $event->user_editcode());
         $this->assertGreaterThan(0, strlen($event->user_editcode()));
 
@@ -27,7 +27,7 @@ class TestSubmissionEditcode extends BfcTestCase {
         //var_dump($event);
         //var_dump($event->is_editcode_valid());
         $this->assertTrue($event->is_editcode_valid(), 'is_editcode_valid() should be true');
-        $this->assertType('string', $event->editcode());
+        $this->assertInternalType('string', $event->editcode());
         $this->assertNotEquals(NULL, $event->editcode());
         $this->assertGreaterThan(0, strlen($event->editcode()));
 
@@ -59,13 +59,13 @@ class TestSubmissionEditcode extends BfcTestCase {
 
         // Make sure we have the db_editcode. (This peers into the internals of
         // the class.)
-        $this->assertType('string', $edit_event->db_editcode());
+        $this->assertInternalType('string', $edit_event->db_editcode());
         $this->assertNotEquals(NULL, $edit_event->db_editcode());
         $this->assertGreaterThan(0, strlen($edit_event->db_editcode()));
 
         // Make sure we have the user_editcode. (This peers into the internals of
         // the class.)
-        $this->assertType('string', $edit_event->user_editcode());
+        $this->assertInternalType('string', $edit_event->user_editcode());
         $this->assertNotEquals(NULL, $edit_event->user_editcode());
         $this->assertGreaterThan(0, strlen($edit_event->user_editcode()));
 
@@ -73,7 +73,7 @@ class TestSubmissionEditcode extends BfcTestCase {
         //var_dump($edit_event);
         //var_dump($edit_event->is_editcode_valid());
         $this->assertTrue($edit_event->is_editcode_valid(), 'is_editcode_valid() should be true');
-        $this->assertType('string', $edit_event->editcode());
+        $this->assertInternalType('string', $edit_event->editcode());
         $this->assertNotEquals(NULL, $edit_event->editcode());
         $this->assertGreaterThan(0, strlen($edit_event->editcode()));
     }

@@ -339,8 +339,13 @@ class BfcEventSubmission {
                 $this->action = "edit";
             }
         }
-        else if ($this->action == 'new' || $this->action == 'edit') {
-            // No actions to do; these just show a form.
+        else if ($this->action == 'new') {
+            // No actions to do; just show the form.
+        }
+        else if($this->action == 'edit') {
+            // Need to find out the dates type (once/repeating/etc.)
+            // which is a side effect of check_validity().
+            $this->check_validity();
         }
         else {
             die("Bad action");
@@ -949,6 +954,10 @@ class BfcEventSubmission {
         if ($this->event_args['descr'] == '') {
             $this->errors[] = "You must provide a description";
         }
+
+        if ($this->event_args['address'] == '') {
+            $this->errors[] = "You must provide an address (or cross-streets) for the meeting point";
+        }
         
         if ($this->event_args['weburl'] !== '') {
             $scheme = parse_url($this->event_args['weburl'], PHP_URL_SCHEME);
@@ -1183,6 +1192,73 @@ class BfcEventSubmission {
             $this->event_args['hideemail']) {
 
             print "checked";
+        }
+    }
+
+    // Returns how often an event occurs. Used by the event form to show
+    // controls for picking one date or multiple days.
+    // 
+    // $what = 'once' or 'multiple'
+    // Only valid when action is 'new' or 'edit'
+    public function event_occurs($what) {
+        if ($this->action === 'new') {
+            // Default for new actions is that they occur once
+            return $what === 'once';
+        }
+        else if ($this->action === 'edit') {
+            // Possible values of datestype: 'one', 'consecutive', 'scattered', 'error'
+            if ($what === 'once' && $this->dayinfo['datestype'] === 'one') {
+                return true;
+            }
+            else if ($what === 'multiple' && $this->dayinfo['datestype'] !== 'one') {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            die("Shouldn't be called here!\n");
+        }
+    }
+
+    // $what: 'once' or 'multiple'
+    public function print_checked_for_event_occurs($what) {
+        if ($this->event_occurs($what)) {
+            print 'checked';
+        }
+    }
+
+    public function event_during_festival() {
+        if (!isset($this->dayinfo['daylist'])) {
+            // We haven't parsed the dates yet (i.e.,
+            // the user hasn't set them). So default to
+            // checked.
+            return true;
+        }
+        else if (count($this->dayinfo['daylist']) === 1) {
+            // This checkbox only applies to events that occur once.
+
+            // First entry in daylist has index 1.
+            $event_date = $this->dayinfo['daylist'][1]['sqldate'];
+            $start_date = get_option('bfc_festival_start_date');
+            $end_date = get_option('bfc_festival_end_date');
+
+            $event_date = strtotime($event_date);
+            $start_date = strtotime($start_date);
+            $end_date = strtotime($end_date);
+
+            if ($event_date >= $start_date && $event_date <= $end_date) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function print_checked_for_event_during_festival() {
+        if ($this->event_during_festival()) {
+            print 'checked';
         }
     }
 

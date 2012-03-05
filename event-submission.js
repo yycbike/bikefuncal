@@ -51,6 +51,8 @@ function vfydatesoption(select, option_value, current_value)
 
 function display_dates(xmlDom)
 {
+    jQuery('#submission_dates_spinner').hide();
+
     var mydatelist = document.getElementById("datelist");
     
     tmp = xmlDom.getElementsByTagName("error");
@@ -73,8 +75,7 @@ function display_dates(xmlDom)
                 ? tmp[0].firstChild.nodeValue
                 : "";
 
-            //$('#event_dates').value = olddates;
-            datesfield = document.getElementById('event_dates');
+            datesfield = document.getElementById('submission_dates_multiple');
             datesfield.value = olddates;
         }
     }
@@ -260,8 +261,10 @@ function display_dates(xmlDom)
 // each day, and show this in the "datelist" div.
 var olddatestype;
 var olddates;
-function verifydates(value, reload)
+function verifydates(reload)
 {
+    var value = jQuery('#submission_dates_multiple').val();
+    
     // Guard against superfluous calls
     if (value == olddates && !reload) {
 	return;
@@ -292,12 +295,14 @@ function verifydates(value, reload)
         ajax_params['reload'] = 'y';
     }
 
-     jQuery.post(
-         BikeFunAjax.ajaxurl,
-         ajax_params,
-         display_dates,
-         'xml'
-         );
+    jQuery.post(
+        BikeFunAjax.ajaxurl,
+        ajax_params,
+        display_dates,
+        'xml'
+    );
+
+    jQuery('#submission_dates_spinner').show();
 }
 
 // Compute a 12-hour time from a 24-hour time and an offset number of minutes
@@ -338,27 +343,45 @@ function tweaktime()
     }
 }
 
+// In the duration/end-time drop-down, save the textual
+// descriptions of the durations, so we can use them later.
+function save_durations() {
+    var durations = jQuery('#event_eventduration');
+    durations.find('option').each(function(idx, domElement) {
+        var option = jQuery(domElement);
+        option.attr('data-duration-text', option.text());
+    });
+}
 
 // Update the list of durations to reflect the chosen eventtime.
-function tweakdurations()
-{
-    var sel = document.getElementById('event_eventduration');
-    var eventtime = document.getElementById('event_eventtime').value;
-    
-    var i;
-    var when;
+function tweakdurations() {
+    var durations = jQuery('#event_eventduration');
+    var times     = jQuery('#event_eventtime');
+    var startTime = times.val();
 
-    // Adjust the descriptions of all items except first ("unspecified")
-    for (i = 1; i < sel.length; i++) {
-	// Replace the old ending time, if any, with the new one, if any
-	label = sel.options[i].text.split(",");
-	if (eventtime == "") {
-	    sel.options[i].text = label[0];
-	} else {
-	    when = twelvehour(eventtime, sel.options[i].value);
-	    sel.options[i].text = label[0] + ", ending " + when;
-	}
-    }
+    durations.find('option').each(function(idx, domElement) {
+        var option = jQuery(domElement);
+        var text;
+        
+        // Don't adjust the text for "unspecified" (val = 0)
+        if (option.val() != 0) {
+            if (startTime === "") {
+                // No start time, just show durations
+                text = option.attr('data-duration-text');
+            }
+            else {
+                // Show end time + duration
+                when = twelvehour(startTime, option.val());
+                text = when + " [" + option.attr('data-duration-text') + "]";
+            }
+
+            option.text(text);
+        }
+    });
+
+    // Set the widths of the two controls to be identical, 
+    // to make them look nicer.
+    durations.width(times.width());
 }
 
 function display_preview(preview_content)
@@ -459,14 +482,73 @@ function autocomplete_address(event, ui) {
     }
 }
 
+function toggle_occurs_once_multiple() {
+    if (jQuery('#submission_event_occurs_once').attr('checked')) {
+        jQuery('#occurs-multiple').hide();
+        jQuery('#occurs-once').show();
+
+        jQuery('#submission_dates_once').attr('required', true);
+        jQuery('#submission_dates_multiple').attr('required', false);
+    }
+    else {
+        jQuery('#occurs-once').hide();
+        jQuery('#occurs-multiple').show();
+
+        jQuery('#submission_dates_once').attr('required', false);
+        jQuery('#submission_dates_multiple').attr('required', true);
+    }
+}
+
+function toggle_event_during_festival() {
+    var chkDuringFestival = jQuery('#submission_event_during_festival');
+    if (chkDuringFestival.attr('checked')) {
+        // Show one or two months, depending on whether the start & end dates have
+        // the same month.
+        var isSingleMonth = (BikeFunAjax.festivalStartMonth == BikeFunAjax.festivalEndMonth);
+        var numberOfMonths = isSingleMonth ? 1 : 2;
+
+        // Limit the calendar to dates during the festival
+        jQuery('#submission_dates_once').
+            datepicker('option', 'minDate', BikeFunAjax.festivalStartDate).
+            datepicker('option', 'maxDate', BikeFunAjax.festivalEndDate). 
+            datepicker('option', 'numberOfMonths', numberOfMonths);
+
+    }
+    else {
+        // Limit the calendar to today - +364 days
+        jQuery('#submission_dates_once').
+            datepicker('option', 'minDate', '0D').
+            datepicker('option', 'maxDate', '364D'). // +1 year
+            datepicker('option', 'numberOfMonths', 1);
+    }
+}
+
+function make_toggleable_tips(text, button) {
+    button.click(function () {
+        text.slideToggle('fast', function() {
+            if (text.css('display') === 'none') {
+                button.text('More tips');
+            }
+            else {
+                button.text('Hide tips');
+            }
+        });
+    });
+}
+
+
 // Initialize event handlers
 //
 // Have to use jQuery(), not $(), because WordPress loads jQuery
 // in "no-conflicts" mode, where $() isn't defined.
 jQuery(document).ready(function() {
-    // When the event date changes, look up the recurring dates
-    jQuery('#event_dates').blur(function() {
-        verifydates(this.value, false);
+    // When the multiple date text input changes, look up the recurring dates
+    jQuery('#submission_dates_multiple').blur(function() {
+        verifydates(false);
+        return false;
+    });
+    jQuery('#submission_dates_show').blur(function() {
+        verifydates(false);
         return false;
     });
 
@@ -483,17 +565,13 @@ jQuery(document).ready(function() {
         update_preview();
     }
 
-    // If an event date has been specified, run verifydates() now.
-    var dates = jQuery('#event_dates').val();
-    if (dates != "") {
-        verifydates(dates, false);
-    }
+    // Update list of multiple dates. No-op if single date, or dates
+    // not specified.
+    verifydates(false);
 
-    // If a time has been specified, run tweakdurations() now.
-    var time = jQuery('#event_eventtime').val();
-    if (time != "") {
-        tweakdurations();
-    }
+    // Adjust durations to include end times (if start time is specified)
+    save_durations();
+    tweakdurations();
 
     jQuery('#event_eventtime').focus(tweaktime);
     jQuery('#event_eventtime').change(tweakdurations);
@@ -535,6 +613,46 @@ jQuery(document).ready(function() {
             // http://jqueryui.com/demos/autocomplete/#event-change
             close: autocomplete_address,
         });
+
+    // Configure calendar for "occurs once"
+    jQuery('#submission_dates_once').datepicker({
+        'showOn': 'both',
+        'buttonText': 'Choose',
+
+        'dateFormat': 'DD, MM d', // e.g. Monday, October 8
+
+        'hideIfNoPrevNext': true,
+
+        'minDate': '0D', // today
+        'maxDate': '364D', // +1 year
+    });
+
+
+    // Toggle the visibility of once/multiple
+    jQuery('#submission_event_occurs_once').change(toggle_occurs_once_multiple);
+    jQuery('#submission_event_occurs_multiple').change(toggle_occurs_once_multiple);
+    toggle_occurs_once_multiple();
+
+    jQuery('#submission_event_during_festival').change(toggle_event_during_festival);
+    toggle_event_during_festival();
+
+    // Code to run on submit
+    jQuery('#event-submission-form').submit(function() {
+        var dates_val;
+
+        if (jQuery('#submission_event_occurs_once').attr('checked')) {
+            dates_val = jQuery('#submission_dates_once').val();
+        }
+        else {
+            dates_val = jQuery('#submission_dates_multiple').val();
+        }
+
+        jQuery('#event_dates').val(dates_val);
+    });
+
+    // Show/hide tips for event description
+    make_toggleable_tips(jQuery('#event_descr_more'), jQuery('#event_descr_show_more'));
+    make_toggleable_tips(jQuery('#dates_multiple_more'), jQuery('#dates_multiple_show_more'));
 });
 
 

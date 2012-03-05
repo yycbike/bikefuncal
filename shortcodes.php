@@ -156,13 +156,17 @@ function bfc_cal_date_navigation_shortcode($atts) {
             $prev_month_name = date("F", $startdate);
             $next_month_name = date("F", $enddate);
 
-            return "<div class=cal-link>
+            return "<div class='cal-links'>
+                    <div class='cal-link previous'>
                     <a href='${prev_url}'>&lt;-- All of ${prev_month_name}</a>
                     </div>
 
-                    <div class=cal-link>
+                    <div class='cal-link next'>
                     <a href='${next_url}'>All of ${next_month_name} --&gt;</a>
-                    </div>";
+                    </div>
+
+                    </div>
+                    ";
         }
         else {
             # Start and end dates are on the same month
@@ -182,17 +186,22 @@ function bfc_cal_date_navigation_shortcode($atts) {
             $next_month_name = date("F", $next_month);
             $curr_month_name = date("F", $startdate);
 
-            return "<div class=cal-link>
+            return "<div class='cal-links'>
+
+                    <div class='cal-link previous'>
                     <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
                     </div>
-                    
-                    <div class=cal-link>
+
+                    <div class='cal-link next'>
+                    <a href='${next_url}'>${next_month_name} --&gt;</a>
+                    </div>
+
+                    <div class='cal-link current'>
                     <a href='${curr_url}'>All of ${curr_month_name}</a>
                     </div>
 
-                    <div class=cal-link>
-                    <a href='${next_url}'>${next_month_name} --&gt;</a>
-                    </div>";
+                    </div>
+                    ";
         }
     }
     else if ($atts['for'] == 'month') {
@@ -216,13 +225,18 @@ function bfc_cal_date_navigation_shortcode($atts) {
         $prev_month_name = date("F", $prev_month);
         $next_month_name = date("F", $next_month);
 
-        return "<div class=cal-link>
+        return "<div class='cal-links'>
+
+                <div class='cal-link previous'>
                 <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
                 </div>
 
-                <div class=cal-link>
+                <div class='cal-link next'>
                 <a href='${next_url}'>${next_month_name} --&gt;</a>
-                </div>";
+                </div>
+
+                </div>
+                ";
     }
     else {
         die("Can't have a previous date for: " . $atts['for']);

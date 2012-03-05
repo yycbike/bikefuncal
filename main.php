@@ -325,7 +325,13 @@ function bfc_options_admin_page() {
 
             <h3>Festival</h3>
             <p>This plugin assumes you have a Pedalpalooza-type festival. Enter the dates of the next festival here.</p>
-        
+
+            <p>
+            Festival name:
+            <input type='text' name='bfc_festival_name' value='<?php echo esc_attr(get_option('bfc_festival_name')); ?>'>
+            <em>e.g., Pedalpalooza</em>
+            </p>
+         
             <p>
             Festival Start Date:
             <input type='text' name='bfc_festival_start_date' value='<?php echo esc_attr(get_option('bfc_festival_start_date')); ?>'>
@@ -519,6 +525,7 @@ END_QUERY;
 
 add_action('admin_init', 'bfc_admin_init_action');
 function bfc_admin_init_action() {
+    register_setting('bikefuncal-options', 'bfc_festival_name');
     register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_drinking_age');
@@ -547,7 +554,7 @@ function bfc_sanitize_festival_date($input) {
 add_filter('rewrite_rules_array', 'bfc_rewrite_rules_array_filter');
 function bfc_rewrite_rules_array_filter($rules) {
     $newrules = array();
-    $newrules['edit/(\d+)/(\w+)$'] = 'index.php?pagename=event&submission_action=edit&submission_event_id=$matches[1]&event_editcode=$matches[2]';
+    $newrules['edit/(\d+)/(\w+)$'] = 'index.php?pagename=add-event&submission_action=edit&submission_event_id=$matches[1]&event_editcode=$matches[2]';
     return $newrules + $rules;
 }
 
@@ -599,12 +606,12 @@ function bfc_register_javascript() {
     // Once upon a time, WordPress' version of jQuery-UI was super-old, so this plugin
     // bundled its own. @@@ Perhaps WP has gotten a newer version? We should check.
     $jquery_js_url = 
-        plugins_url('bikefuncal/js-contrib/jquery-ui/js/jquery-ui-1.8.11.custom.min.js');
+        plugins_url('bikefuncal/js-contrib/jquery-ui/js/jquery-ui-1.8.17.custom.min.js');
     wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
 
     // CSS that goes with the plugin-specific jQuery UI.
     $jquery_css_url =
-        plugins_url('bikefuncal/jquery-ui/css/ui-lightness/jquery-ui-1.8.11.custom.css');
+        plugins_url('bikefuncal/js-contrib/jquery-ui/css/smoothness/jquery-ui-1.8.17.custom.css');
     wp_register_style('bfc-jquery-ui-style', $jquery_css_url, null);
 
     // This plugin's JS that goes with the new event form
@@ -616,8 +623,27 @@ function bfc_register_javascript() {
 
     // Create the BikeFunAjax object in the page, to send data from
     // PHP to JavaScript.
+    $festival_start_date = strtotime(get_option('bfc_festival_start_date'));
+    $festival_end_date = strtotime(get_option('bfc_festival_end_date'));
     $submission_ajax_options = array(
         'ajaxurl' => admin_url('admin-ajax.php'),
+
+        // Pass in the start & end dates of the festival, so we can set limits on the
+        // jQuery calendar UI control. We need to pass the date in the same
+        // format that the calendar control outputs them in.
+        //
+        // jQuery calendars also have an option of setting the min/max date with a
+        // JS Date object. That wasn't working for me. The end date would get parsed
+        // as midnight, UTC; then it was converted to 5pm Pacific Time on the prior day.
+        // Result: The last day of the festival wasn't selectable in the calendar.
+        'festivalStartDate' =>  date('l, F j', $festival_start_date),
+        'festivalEndDate' =>    date('l, F j', $festival_end_date),
+
+        // Pass the start & end months. JS uses this to decide if the calendar should
+        // show one month at a time, or two.
+        'festivalStartMonth' => date('n', $festival_start_date),
+        'festivalEndMonth'   => date('n', $festival_end_date),
+
         // We have to use l10n_print_after to pass JSON-encoded data.
         // See: http://wordpress.stackexchange.com/q/8655
         'l10n_print_after' =>
@@ -626,5 +652,43 @@ function bfc_register_javascript() {
     wp_localize_script('bfc-event-submission', 'BikeFunAjax', $submission_ajax_options);
 }
 add_action('init', 'bfc_register_javascript');
+
+/**
+ * Return the page title, fudging the title if needed.
+ */
+function bfc_page_title($title) {
+    if (trim($title) == 'Add Event') {
+        $event_submission = bfc_event_submission();
+        switch ($event_submission->page_to_show()) {
+            case 'edit-event':
+                if ($event_submission->current_action() == 'edit') {
+                    $title = 'Edit Event';
+                }
+                else {
+                    $title = 'Add Event';
+                }
+                break;
+                
+            case 'event-updated':
+                $title = 'Event Updated';
+                break;
+                
+            case 'event-deleted':
+                $title = 'Event Deleted';
+                break;
+                
+            default:
+                die();
+                break;
+        }
+    }
+    else if (trim($title) == 'Monthly Calendar') {
+        list($startdate, $enddate) = bfc_get_cal_dates(array('for' => 'month'));
+        $title = sprintf('%s Bike Fun', date('F Y', $startdate));
+    }
+
+    return $title;
+}
+
 
 ?>
