@@ -391,7 +391,12 @@ function bfc_print_event_submission_form($event_submission) {
                name="submission_dates_multiple"
                <?php if ($event_submission->event_occurs('multiple')) $event_submission->print_dates(); ?>
                >
-
+        <input type='button' id='submission_dates_show' value='Show Dates'>
+        <img src='<?php print plugins_url('bikefuncal/images/ajax-loader.gif'); ?>'
+             id='submission_dates_spinner'
+             style='display: none;'
+             >
+        
         <?php bfc_event_form_help('submission_dates_multiple'); ?>
         <div id="datelist"></div>
       </div><!-- new-event-controls -->

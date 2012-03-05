@@ -51,6 +51,8 @@ function vfydatesoption(select, option_value, current_value)
 
 function display_dates(xmlDom)
 {
+    jQuery('#submission_dates_spinner').hide();
+
     var mydatelist = document.getElementById("datelist");
     
     tmp = xmlDom.getElementsByTagName("error");
@@ -259,8 +261,10 @@ function display_dates(xmlDom)
 // each day, and show this in the "datelist" div.
 var olddatestype;
 var olddates;
-function verifydates(value, reload)
+function verifydates(reload)
 {
+    var value = jQuery('#submission_dates_multiple').val();
+    
     // Guard against superfluous calls
     if (value == olddates && !reload) {
 	return;
@@ -291,12 +295,14 @@ function verifydates(value, reload)
         ajax_params['reload'] = 'y';
     }
 
-     jQuery.post(
-         BikeFunAjax.ajaxurl,
-         ajax_params,
-         display_dates,
-         'xml'
-         );
+    jQuery.post(
+        BikeFunAjax.ajaxurl,
+        ajax_params,
+        display_dates,
+        'xml'
+    );
+
+    jQuery('#submission_dates_spinner').show();
 }
 
 // Compute a 12-hour time from a 24-hour time and an offset number of minutes
@@ -532,7 +538,11 @@ function make_toggleable_tips(text, button) {
 jQuery(document).ready(function() {
     // When the multiple date text input changes, look up the recurring dates
     jQuery('#submission_dates_multiple').blur(function() {
-        verifydates(this.value, false);
+        verifydates(false);
+        return false;
+    });
+    jQuery('#submission_dates_show').blur(function() {
+        verifydates(false);
         return false;
     });
 
@@ -549,11 +559,9 @@ jQuery(document).ready(function() {
         update_preview();
     }
 
-    // If a multiple event dates have been specified, run verifydates() now.
-    var dates = jQuery('#submission_dates_multiple').val();
-    if (dates != "") {
-        verifydates(dates, false);
-    }
+    // Update list of multiple dates. No-op if single date, or dates
+    // not specified.
+    verifydates(false);
 
     // If a time has been specified, run tweakdurations() now.
     save_durations();
