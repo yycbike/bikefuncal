@@ -409,7 +409,6 @@ function fullentry($record, $for, $sqldate)
     $is_canceled = ($record['eventstatus'] == 'C');
     $cancel_class = $is_canceled ? 'cancel' : '';
     
-
     ////////////////////////
     // Audience and Fee
     if ($record['audience'] == 'A' || $record['audience'] == 'F' || strpos($record['descr'], "\$") !== false) {
@@ -439,31 +438,34 @@ function fullentry($record, $for, $sqldate)
 		print "</div>";
 	}
 	
-	
     //////////////
     // Title
+    //
+    // Don't show the title on the event page, since WordPress has
+    // already put one in.
     if ($for != 'event-page') {
-		if ($is_canceled) {
-			printf("<div class='title'><h2>CANCELED: <span class='cancel'>%s</span></h2>",
+		print '<div class=title>';
+        
+        if ($is_canceled) {
+			printf("<h2>CANCELED: <span class='cancel'>%s</span></h2>",
 				   esc_html($record['title']));
 		}
 		else {
-			printf("<div class='title'><h2>%s</h2>", esc_html($record['title']));
+			printf("<h2>%s</h2>", esc_html($record['title']));
 		}
-	}
 
-    //////////////////////////
-    // Edit link for listings
-    //
-    // Show the edit link to admin users in the listing.
-    if (current_user_can('bfc_edit_others_events') && $for == 'listing') {
-        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        printf("<span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
-               esc_url($edit_url));
+        /////////////////////////////////////////////
+        // Edit link for listings (shown w/ the title)
+        //
+        // Show the edit link to admin users in the listing.
+        if (current_user_can('bfc_edit_others_events') && $for == 'listing') {
+            $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+            printf(" <span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
+                   esc_url($edit_url));
+        }
+	
+        print '</div><!-- End title -->';
     }
-	
-	print '</div><!-- End title -->';
-	
 
     //////////////
     // Newsflash
@@ -538,9 +540,9 @@ function fullentry($record, $for, $sqldate)
         printf("<div class='time repeat %s'>Repeats: %s</div>",
                $cancel_class, esc_html($record['dates']));
     }
-	
-	print "<div class='event-details'>";
-	
+    
+    print "<div class='event-details'>";
+    
     ///////////
     // Location
     printf("<div class='location'>");
@@ -549,7 +551,7 @@ function fullentry($record, $for, $sqldate)
                             esc_html($record['address']));
     
     print '<h3>Meet At:</h3>';
-	if ($record['locname'] != '') {
+    if ($record['locname'] != '') {
         // Show both location name and address
         printf("<div class='location-name'><span class='%s'>%s</span></div>",
                $cancel_class, esc_html($record['locname']));
@@ -573,7 +575,7 @@ function fullentry($record, $for, $sqldate)
     /////////////////////////////
     // Contact info
     printf("<div class='contact-info'>");
-	print '<h3>Contact Info:</h3>';
+    print '<h3>Contact Info:</h3>';
     if ($record['email'] != '') {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
@@ -629,24 +631,27 @@ function fullentry($record, $for, $sqldate)
         printf("<div class='leader-other-contact'>%s</div>", esc_html($record['contact']));
     }
     printf("</div>"); // class='contact-info'
-	
-	print "</div><!-- End event-details -->";
-	
-	print "<div class='event-about'>";
+    
+    print "</div><!-- End event-details -->";
+    
+    print "<div class='event-about'>";
 
 
     ///////////
     // Image
-    if ($for != 'preview' && $record['image']) {
-        // The image field has the path relative to the uploads dir.
-        $upload_dirinfo = wp_upload_dir();
-        $image = $upload_dirinfo['baseurl'] . $record["image"];
-  		if ($for == 'event-page') printf("<div class=event-image><img src='%s' alt=''></div>\n", esc_attr($image));
-    	else printf("<div class=event-image><img width='180' src='%s' alt=''></div>\n", esc_attr($image));
-	} else if ($for == 'listing' && !$record['image']) {
-		$noimage_small_url = plugins_url('bikefuncal/images/') . "noimg-small.png";
-		printf("<div class=event-image><img width='180' src='%s' alt=''></div>\n", esc_attr($noimage_small_url));
-	}
+    if ($for != 'preview') {
+        if ($record['image']) {
+            // The image field has the path relative to the uploads dir.
+            $upload_dirinfo = wp_upload_dir();
+            $image = $upload_dirinfo['baseurl'] . $record["image"];
+        }
+        else {
+            $image = plugins_url('bikefuncal/images/') . "noimg-small.png";
+        }
+
+        printf("<div class=event-image><img width='180' src='%s' alt=''></div>\n",
+               esc_attr($image));
+    }
 
     ////////////////////
     // Ride leader, event description and permalink
