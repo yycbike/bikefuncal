@@ -112,7 +112,29 @@ function bfc_event_form_help($for) {
     // Set default values for the help.
     if ($for === 'event_descr') {
         $help['content'] = <<<END_HTML
-            Be sure to mention any fees, otherwise people will assume it&apos;s free.        
+            <div>
+              Be sure to mention any fees, otherwise people will assume it&apos;s free.
+            </div>
+            <div id='event_descr_more' style='display: none;'>
+                <div>
+                You may also want to mention: distance, hills, pace, if the ride is a loop.
+                </div>
+ 
+                <div>
+                Formattting:
+                </div>
+                <ul>
+                  <li>Put a blank line between paragraphs.
+                  <li>Make bold with asterisks: <span style='font-family: monospace;'>*bring a light*</span>
+                      becomes <span style='font-weight: bold'>bring a light</span>
+                  <li>Include <span style='font-family: monospace'>http://</span> in your links; this makes them clickable.
+                      Yes:&nbsp;<span style='font-family: monospace'>http://velopalooza.ca</span>.
+                      No:&nbsp;<span style='font-family: monospace'>velopalooza.ca</span>
+                </ul>
+            </div>
+            <div>
+              <a id='event_descr_show_more'>More tips</a>
+            </div>
 END_HTML;
 
     }
@@ -129,15 +151,49 @@ END_HTML;
         $help['content'] = <<<END_HTML
           Enter the dates when your ride occurs. Examples:
           <ul>
-            <li>Last Friday of every month
+            <li>First Thursdays
             <li>Mondays in June
             <li>Tuesdays and Thursdays, May to September
             <li>June 3 - 5
           </ul>
-          <a id='dates_multiple_show_more'>Show more tips</a>
+          <div id='dates_multiple_more' style='display: none;'>
+            <h3>Recurring Events</h3>
+            <p>
+              To create a recurring event, enter the days it occurs on. These examples
+              will occur year-round.
+            </p>
+            <ul>
+              <li>First Thursdays
+              <li>Last Fridays
+              <li>Every Monday
+              <li>Tuesdays and Thursdays
+            </ul>
+            <p>
+              For an event that does not go on forever, enter the start and end dates.
+            </p>
+            <ul>
+              <li>First Thursdays, May to September
+              <li>Tuesdays and Thursdays in July and August
+            </ul>
 
-          <div id='dates_multiple_more_help' style="visibility:hidden;">
-              blah blah blah blah blah.
+            <h3>Date Ranges</h3>
+            <p>
+              For an event that occurs daily, for several days in a row, enter the start and end dates:
+              <ul>
+                <li>October 8 - 10
+                <li>August 28 to September 2
+              </ul>
+            </p>
+
+            <h3>Arbitrary days</h3>
+            <p>
+              If the dates of your event don't follow any pattern, just enter the dates separated by commas.
+              For example: June 7, June 9, June 14, June 16
+            </p>
+            
+          </div>
+          <div>
+            <a id='dates_multiple_show_more'>More tips</a>
           </div>
         
 END_HTML;

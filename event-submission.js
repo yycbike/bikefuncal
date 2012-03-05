@@ -499,6 +499,20 @@ function toggle_event_during_festival() {
     }
 }
 
+function make_toggleable_tips(text, button) {
+    button.click(function () {
+        text.slideToggle('fast', function() {
+            if (text.css('display') === 'none') {
+                button.text('More tips');
+            }
+            else {
+                button.text('Hide tips');
+            }
+        });
+    });
+}
+
+
 // Initialize event handlers
 //
 // Have to use jQuery(), not $(), because WordPress loads jQuery
@@ -611,6 +625,10 @@ jQuery(document).ready(function() {
 
         jQuery('#event_dates').val(dates_val);
     });
+
+    // Show/hide tips for event description
+    make_toggleable_tips(jQuery('#event_descr_more'), jQuery('#event_descr_show_more'));
+    make_toggleable_tips(jQuery('#dates_multiple_more'), jQuery('#dates_multiple_show_more'));
 });
 
 
