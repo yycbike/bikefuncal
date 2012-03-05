@@ -452,15 +452,13 @@ function fullentry($record, $for, $sqldate)
 		}
 	}
 
-    ////////////
-    // Edit link
+    //////////////////////////
+    // Edit link for listings
     //
-    // Show the edit link to admin users.
-    // Except if this is a preview; then it's meaningless
-    // because they're already editing.
-    if (current_user_can('bfc_edit_others_events') && $for != 'preview') {
+    // Show the edit link to admin users in the listing.
+    if (current_user_can('bfc_edit_others_events') && $for == 'listing') {
         $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-        printf("<a class='admin-edit-link' href='%s'>Edit Event</a>",
+        printf("<span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
                esc_url($edit_url));
     }
 	
@@ -620,7 +618,7 @@ function fullentry($record, $for, $sqldate)
             $has_ellipsis = true;
         }
 
-        printf("<div class='leader-website'><a href='%s'>%s</a></div>",
+        printf("<div class='leader-website'><a target='_blank' href='%s'>%s</a></div>",
                esc_url($record['weburl']), esc_html($display_url));
     }
     if ($record['phone'] != '') {
@@ -675,6 +673,18 @@ function fullentry($record, $for, $sqldate)
 	print "</div>";
 	
 	print "</div><!-- End event-about -->";
+	
+	    //////////////////////////
+    // Edit link for event-page
+    //
+    // Show the edit link to admin users on the event page.
+    // (But not the preview; then it's meaningless
+    // because they're already editing.)
+    if (current_user_can('bfc_edit_others_events') && $for == 'event-page') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+        printf("<span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
+               esc_url($edit_url));
+    }
 
     /////////////////////////
     // Next & Previous events
@@ -1009,11 +1019,11 @@ END_SQL;
             }
 
             if ($sqldate != null) {
-                print "<div class='other-events'>\n";
-                printf("<p>%s</p>",
+                print "<aside class='widget other-events'>\n";
+                printf("<h3 class='widget-title'>Other events on %s</h3>",
                        esc_html(date('l, F j', strtotime($sqldate))));
                 tinyentries($sqldate, 'sidebar', $wp_query->post->ID);
-                print "</div>\n";
+                print "</aside>\n";
             }
         }
     }
