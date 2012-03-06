@@ -366,6 +366,24 @@ function event_listings($startdate,
     }
 }
 
+function bfc_entry_image($record, $for) {
+    $image = '';
+
+    if ($record['image']) {
+        // The image field has the path relative to the uploads dir.
+        $upload_dirinfo = wp_upload_dir();
+        $image = $upload_dirinfo['baseurl'] . $record["image"];
+    }
+    else if ($for == 'listing') {
+        $image = plugins_url('bikefuncal/images/') . "noimg-small.png";
+    }
+
+    if ($image != '') {
+        printf("<div class=event-image><img src='%s' alt=''></div>\n",
+               esc_attr($image));
+    }
+}
+
 // Generate the HTML entry for a single event:
 //
 // $record: The SQL record to print
@@ -637,20 +655,10 @@ function fullentry($record, $for, $sqldate)
     print "<div class='event-about'>";
 
 
-    ///////////
-    // Image
-    if ($for != 'preview') {
-        if ($record['image']) {
-            // The image field has the path relative to the uploads dir.
-            $upload_dirinfo = wp_upload_dir();
-            $image = $upload_dirinfo['baseurl'] . $record["image"];
-        }
-        else {
-            $image = plugins_url('bikefuncal/images/') . "noimg-small.png";
-        }
-
-        printf("<div class=event-image><img width='180' src='%s' alt=''></div>\n",
-               esc_attr($image));
+    ///////////////////////
+    // Image (listing only)
+    if ($for == 'listing') {
+        bfc_entry_image($record, $for);
     }
 
     ////////////////////
@@ -675,11 +683,18 @@ function fullentry($record, $for, $sqldate)
         print "</div>\n";
     }
 	
-	print "</div>";
+	print "</div><!-- End .event-description -->";
 	
+    //////////////////////////
+    // Image (event page only)
+    if ($for == 'event-page') {
+        bfc_entry_image($record, $for);
+    }
+
+
 	print "</div><!-- End event-about -->";
 	
-	    //////////////////////////
+    //////////////////////////
     // Edit link for event-page
     //
     // Show the edit link to admin users on the event page.
