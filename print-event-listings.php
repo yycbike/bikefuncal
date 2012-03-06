@@ -239,32 +239,32 @@ END_QUERY;
     $records = $wpdb->get_results($query, ARRAY_A);
 
     foreach ($records as $record) {
-	$id = $record["id"];
-	$tinytitle = $record["tinytitle"];
-	$title = $record["title"];
-        
+        $id = $record["id"];
+        $tinytitle = $record["tinytitle"];
+        $title = $record["title"];
+
         // CSS classes
         $cssclass = "event-overview ";
-        
-	if ($record["eventstatus"] == "C") {
-	    $eventtime = "Canceled";
-            $cssclass .= "canceled ";
-	}
-        else {
-	    $eventtime = hmmpm($record["eventtime"]);
-	}
 
-	if ($record["audience"] == "F") {
+        if ($record["eventstatus"] == "C") {
+            $eventtime = "Canceled";
+                $cssclass .= "canceled ";
+        }
+        else {
+            $eventtime = hmmpm($record["eventtime"]);
+        }
+
+        if ($record["audience"] == "F") {
             $cssclass .= "family-friendly ";
-	}
+        }
         elseif ($record["audience"] == "G") {
             $cssclass .= "general-audience ";
-	}
+        }
         else {
             $cssclass .= "adults-only ";
-	}
-        
-	if ($record["newsflash"] != "") {
+        }
+
+        if ($record["newsflash"] != "") {
             $cssclass .= "newsflash ";
         }
 
@@ -288,7 +288,7 @@ END_QUERY;
         if ($has_fee) {
             printf(" <span class='fee'>$$</span>");
         }
-        
+
         print "</div>";
 
         // Print the title different ways, depending on what we're printing for
@@ -331,38 +331,38 @@ function event_listings($startdate,
         
         // Use a fancy graphical devider for screen,
         // a plain HR for printer.
-	if (!$for_printer) {
-	    print "<div class=hr></div>\n";
+        if (!$for_printer) {
+            print "<div class=hr></div>\n";
         }
-	else {
-	    print "<hr>\n";
+        else {
+            print "<hr>\n";
         }
-        
-	print "<h2 class=weeks>";
+
+        print "<h2 class=weeks>";
         print "<a class=\"datehdr\" name=\"".esc_attr(date("Fj",$thisdate))."\">";
         print esc_html(date("l F j", $thisdate));
         print "</a></h2>\n";
-        
-	$ymd = date("Y-m-d", $thisdate);
-	print "<div id='div${ymd}'>\n";
+
+        $ymd = date("Y-m-d", $thisdate);
+        print "<div id='div${ymd}'>\n";
 
         // If the events for this day should be loaded
-	if ($thisdate == $today ||
-            $thisdate == $tomorrow ||
-            $for_printer ||
-            $preload_alldays) {
-	    fullentries(date("Y-m-d", $thisdate),
-                            TRUE,
-                            $for_printer,
-                            $include_images);  
+        if ($thisdate == $today ||
+                $thisdate == $tomorrow ||
+                $for_printer ||
+                $preload_alldays) {
+            fullentries(date("Y-m-d", $thisdate),
+                                TRUE,
+                                $for_printer,
+                                $include_images);  
         }
-	else {
-	    print "<span class=\"loadday\" ";
-            print "onClick=\"loadday('$ymd', true);\">";
-            print "Click here to load this day's events";
-            print "</span>\n";
+        else {
+            print "<span class=\"loadday\" ";
+                print "onClick=\"loadday('$ymd', true);\">";
+                print "Click here to load this day's events";
+                print "</span>\n";
         }
-	print "</div>\n";
+        print "</div>\n";
     }
 }
 
