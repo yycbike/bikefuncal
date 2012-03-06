@@ -765,6 +765,10 @@ END_SQL;
 			if (isset($prev_results[0])) {
 				$prev_record = $prev_results[0];
 				$prev_url = get_permalink($prev_record['wordpress_id']);
+                if ($prev_record['datestype'] != 'O') {
+                    $prev_date = date('Y-m-d', strtotime($prev_record['eventdate']));
+                    $prev_url = add_date_to_permalink($prev_url, $prev_date);
+                }
 	
 				if ($record['eventdate'] == $prev_record['eventdate']) {
 					// On the same day, show the time
@@ -786,6 +790,10 @@ END_SQL;
 			if (isset($next_results[0])) {
 				$next_record = $next_results[0];
 				$next_url = get_permalink($next_record['wordpress_id']);
+                if ($next_record['datestype'] != 'O') {
+                    $next_date = date('Y-m-d', strtotime($next_record['eventdate']));
+                    $next_url = add_date_to_permalink($next_url, $next_date);
+                }
 	
 				if ($record['eventdate'] == $next_record['eventdate']) {
 					// On the same day, show the time
