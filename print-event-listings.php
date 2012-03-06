@@ -256,7 +256,7 @@ END_QUERY;
 
         if ($record["eventstatus"] == "C") {
             $eventtime = "Canceled";
-                $cssclass .= "canceled ";
+            $cssclass .= "canceled ";
         }
         else {
             $eventtime = hmmpm($record["eventtime"]);
@@ -313,8 +313,9 @@ END_QUERY;
 
             // Link to the full URL. If JavaScript decides to turn this into
             // a pop-up link, it will use the id & date attributes.
-            printf("<a data-id='%d' data-date='%s' href='%s'>%s</a>",
+            printf("<a data-id='%d' data-date='%s' title='%s' href='%s'>%s</a>",
                    esc_attr($id), esc_attr($sqldate),
+                   esc_attr($record['newsflash']),
                    esc_url($url), esc_html($title));
         }
         print "</div>"; // .event-title
@@ -483,7 +484,8 @@ function fullentry($record, $for, $sqldate)
 
     printf("<%s class='%s'>", esc_attr($title_tag), esc_attr($title_class));
     if ($is_canceled) {
-        printf("CANCELED: <span class='cancel'>%s</span>",
+        print "<span class='title-cancel'>CANCELED: </span>";
+        printf("<span class='cancel'>%s</span>",
                esc_html($record['title']));
     }
     else {
