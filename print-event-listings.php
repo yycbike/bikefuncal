@@ -467,31 +467,40 @@ function fullentry($record, $for, $sqldate)
     //////////////
     // Title
     //
-    // Don't show the title on the event page, since WordPress has
-    // already put one in.
-    if ($for != 'event-page') {
-		print '<div class=title>';
-        
-        if ($is_canceled) {
-			printf("<h2>CANCELED: <span class='cancel'>%s</span></h2>",
-				   esc_html($record['title']));
-		}
-		else {
-			printf("<h2>%s</h2>", esc_html($record['title']));
-		}
 
-        /////////////////////////////////////////////
-        // Edit link for listings (shown w/ the title)
-        //
-        // Show the edit link to admin users in the listing.
-        if (current_user_can('bfc_edit_others_events') && $for == 'listing') {
-            $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
-            printf(" <span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
-                   esc_url($edit_url));
-        }
-	
-        print '</div><!-- End title -->';
+    // If this is an event page, put in an <h1>. The theme is counting on
+    // the plugin to provide the page title.
+    if ($for == 'event-page') {
+        $title_tag = 'h1';
+        $title_class = 'entry-title';
     }
+    else {
+        $title_tag = 'h2';
+        $title_class = '';
+    }
+
+    printf("<div class='title'>");
+
+    printf("<%s class='%s'>", esc_attr($title_tag), esc_attr($title_class));
+    if ($is_canceled) {
+        printf("CANCELED: <span class='cancel'>%s</span>",
+               esc_html($record['title']));
+    }
+    else {
+        printf("%s", esc_html($record['title']));
+    }
+    printf("</%s>", esc_attr($title_tag));
+
+    /////////////////////////////////////////////
+    // Edit link for listings (shown w/ the title)
+    //
+    // Show the edit link to admin users in the listing.
+    if (current_user_can('bfc_edit_others_events') && $for == 'listing') {
+        $edit_url = bfc_get_edit_url_for_event($id, $record['editcode']);
+        printf(" <span class='edit-link'><a class='post-edit-link' href='%s'>Edit Event</a></span>",
+               esc_url($edit_url));
+    }
+    print '</div><!-- End title -->';
 
     //////////////
     // Newsflash
