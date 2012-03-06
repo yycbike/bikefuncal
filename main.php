@@ -481,7 +481,6 @@ function bfc_the_content_filter($content) {
 END_QUERY;
             $sql = $wpdb->prepare($sql, $wp_query->query_vars['date'],
                 $wp_query->post->ID);
-            $sqldate = $wp_query->query_vars['date'];
         }
         else {
             // No date specified, get the first one.
@@ -503,12 +502,16 @@ END_QUERY;
                 ) AS count;
 END_QUERY;
             $sql = $wpdb->prepare($sql, $wp_query->post->ID);
-            $sqldate = null;
         }
         $records = $wpdb->get_results($sql, ARRAY_A);
         $num_records = count($records);
 
         if ($num_records == 1) {
+            $record = $records[0];
+
+            // Find the date
+            $sqldate = date('Y-m-d', strtotime($record['eventdate']));
+
             // WordPress wants filters to return their content as a string,
             // not output it with print statements. But all of the existing code
             // uses print statements, and changing it to use strings would be a
@@ -516,7 +519,7 @@ END_QUERY;
             // print statements into a string.
             ob_start();
             ob_implicit_flush(0);
-            fullentry($records[0], 'event-page', $sqldate);    // include images
+            fullentry($record, 'event-page', $sqldate);    // include images
             $listing = ob_get_contents();
             ob_end_clean();
 
