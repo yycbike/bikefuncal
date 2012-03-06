@@ -325,7 +325,9 @@ input.narrower {
 
     <h3>Title</h3>
     <div class="new-event-controls">
-      <input type="text" class="fullwidth" name="event_title" required <?php $event_submission->print_title(); ?> >
+      <input type="text" class="fullwidth" name="event_title" required
+        maxlength=80
+        <?php $event_submission->print_title(); ?> >
       <?php bfc_event_form_help('event_title') ?>
     </div>
                                                  
@@ -391,7 +393,7 @@ input.narrower {
     <h3>Place Name</h3>
     <div class="new-event-controls">
       <input type="text" id="event_locname" name="event_locname"
-             class="narrower"
+             class="narrower" maxlength=256
              <?php $event_submission->print_locname()?>>
       <?php bfc_event_form_help('event_locname') ?>
     </div>             
@@ -399,7 +401,7 @@ input.narrower {
     <h3>Address</h3>
     <div class="new-event-controls">
       <input type="text" id="event_address" name="event_address" required
-             class="narrower"
+             class="narrower" maxlength=256
              <?php $event_submission->print_address()?>>
       <?php bfc_event_form_help('event_address') ?>
   </div>
@@ -407,6 +409,7 @@ input.narrower {
     <h3>Details</h3>
     <div class="new-event-controls">
       <input type="text" name="event_locdetails" class="narrower"
+        maxlength=256
         <?php $event_submission->print_locdetails()?>
         >
       <?php bfc_event_form_help('event_locdetails') ?>
@@ -449,6 +452,7 @@ input.narrower {
         <input type='text'
                name='submission_dates_once'
                id='submission_dates_once'
+               maxlength=256
                <?php if ($event_submission->event_occurs('once')) $event_submission->print_dates();  ?>
                >
         <?php bfc_event_form_help('submission_dates_once') ?>
@@ -462,7 +466,8 @@ input.narrower {
         <input type='text'
                id='submission_dates_multiple'
                name='submission_dates_multiple'
-               class='narrower'               
+               class='narrower'
+               maxlength=256
                <?php if ($event_submission->event_occurs('multiple')) $event_submission->print_dates(); ?>
                >
         <input type='button' id='submission_dates_show' value='Show Dates'>
@@ -508,7 +513,8 @@ input.narrower {
 
     <h3>Time Details</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_timedetails" class="narrower" <?php $event_submission->print_timedetails(); ?>>
+      <input type="text" name="event_timedetails" class="narrower"
+        maxlength=256 <?php $event_submission->print_timedetails(); ?>>
       <?php bfc_event_form_help('event_timedetails') ?>
     </div>
     </div><!-- .new-event-category (date & time) -->
@@ -518,13 +524,15 @@ input.narrower {
 
     <h3>Your Name</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_name" class="narrower" required <?php $event_submission->print_name(); ?>>
+      <input type="text" name="event_name" class="narrower" required
+        maxlength=256 <?php $event_submission->print_name(); ?>>
       <?php bfc_event_form_help('event_name') ?>
     </div>
 
     <h3>E-Mail</h3>
     <div class='new-event-controls'>
-      <input type="email" name="event_email" class="narrower" required <?php $event_submission->print_email(); ?>>
+      <input type="email" name="event_email" class="narrower" required
+        maxlength=256 <?php $event_submission->print_email(); ?>>
       <?php bfc_event_form_help('event_email') ?>
 
        <!-- @@@ The old code has a checkbox here about sending forum e-mails
@@ -545,19 +553,22 @@ input.narrower {
     
     <h3>Web Site</h3>
     <div class='new-event-controls'>
-      <input type="url" name="event_weburl" class="narrower" <?php $event_submission->print_weburl(); ?>>
+      <input type="url" name="event_weburl" class="narrower"
+        maxlength=256 <?php $event_submission->print_weburl(); ?>>
       <?php bfc_event_form_help('event_weburl') ?>
     </div>
 
     <h3>Phone Number</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_phone" class="narrower" <?php $event_submission->print_phone(); ?>>
+      <input type="text" name="event_phone" class="narrower"
+        maxlength=256 <?php $event_submission->print_phone(); ?>>
       <?php bfc_event_form_help('event_phone') ?>
     </div>
 
     <h3>Other Info</h3>
     <div class="new-event-controls">
-      <input type="text" name="event_contact" class="narrower" <?php $event_submission->print_contact(); ?>>
+      <input type="text" name="event_contact" class="narrower"
+        maxlength=256 <?php $event_submission->print_contact(); ?>>
       <?php bfc_event_form_help('event_contact') ?>
     </div>
 
