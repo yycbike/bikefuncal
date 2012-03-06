@@ -463,12 +463,21 @@ function bfc_the_content_filter($content) {
         if (isset($wp_query->query_vars['date'])) {
             $sql = <<<END_QUERY
                 SELECT *
-                FROM ${calevent_table_name}, ${caldaily_table_name}
-                WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-                      ${caldaily_table_name}.eventdate = %s AND
-                      ${calevent_table_name}.wordpress_id = %d
-                ORDER BY ${caldaily_table_name}.eventdate
-                LIMIT 1
+                FROM (
+                    SELECT *
+                    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+                    WHERE ${caldaily_table_name}.eventdate = %s AND
+                          ${calevent_table_name}.wordpress_id = %d
+                    ORDER BY ${caldaily_table_name}.eventdate
+                    LIMIT 1
+                ) AS event
+                NATURAL JOIN (
+                    SELECT id, count(*) AS num_days
+                    FROM ${caldaily_table_name}
+                    WHERE eventstatus <> "E" AND
+                          eventstatus <> "S"
+                    GROUP BY id
+                ) AS count;
 END_QUERY;
             $sql = $wpdb->prepare($sql, $wp_query->query_vars['date'],
                 $wp_query->post->ID);
@@ -478,11 +487,20 @@ END_QUERY;
             // No date specified, get the first one.
             $sql = <<<END_QUERY
                 SELECT *
-                FROM ${calevent_table_name}, ${caldaily_table_name}
-                WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-                      ${calevent_table_name}.wordpress_id = %d
-                ORDER BY ${caldaily_table_name}.eventdate
-                LIMIT 1
+                FROM (
+                    SELECT *
+                    FROM  ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+                    WHERE ${calevent_table_name}.wordpress_id = %d
+                    ORDER BY ${caldaily_table_name}.eventdate
+                    LIMIT 1
+                ) AS event
+                NATURAL JOIN (
+                    SELECT id, count(*) AS num_days
+                    FROM ${caldaily_table_name}
+                    WHERE eventstatus <> "E" AND
+                          eventstatus <> "S"
+                    GROUP BY id
+                ) AS count;
 END_QUERY;
             $sql = $wpdb->prepare($sql, $wp_query->post->ID);
             $sqldate = null;

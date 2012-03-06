@@ -225,15 +225,23 @@ function tinyentries($sqldate, $for, $current_event_wordpress_id = null)
 
     // Find events that are not exceptions or skipped
     $query = <<<END_QUERY
-SELECT ${calevent_table_name}.id, newsflash,title, tinytitle, eventtime,
-       eventdate, datestype, audience, eventstatus, descr, review, wordpress_id
-FROM ${calevent_table_name}, ${caldaily_table_name}
-WHERE ${calevent_table_name}.id=${caldaily_table_name}.id AND
-      eventdate   =  %s   AND
-      eventstatus <> "E"  AND
-      eventstatus <> "S"     
-ORDER BY eventtime ASC, title ASC
-
+SELECT *
+FROM (
+    SELECT ${calevent_table_name}.id, newsflash,title, tinytitle, eventtime,
+           eventdate, datestype, audience, eventstatus, descr, review, wordpress_id
+    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+    WHERE eventdate   =  %s   AND
+          eventstatus <> "E"  AND
+          eventstatus <> "S"     
+) AS find_rides
+NATURAL JOIN (
+    SELECT id, count(*) AS num_days
+    FROM ${caldaily_table_name}
+    WHERE eventstatus <> "E" AND
+          eventstatus <> "S"
+    GROUP BY id
+) AS count_all
+ORDER BY eventtime ASC, title ASC;
 END_QUERY;
     $query = $wpdb->prepare($query, $sqldate);
     $records = $wpdb->get_results($query, ARRAY_A);
@@ -299,7 +307,7 @@ END_QUERY;
         }
         else {
             $url = get_permalink($record['wordpress_id']);
-            if ($record['datestype'] != 'O') {
+            if ($record['num_days'] > 1) {
                 $url = add_date_to_permalink($url, $sqldate);
             }
 
@@ -406,7 +414,7 @@ function fullentry($record, $for, $sqldate)
     if ($for != 'preview') {
         $id = $record["id"];
         $permalink_url = get_permalink($record['wordpress_id']);
-        if ($record['datestype'] != 'O') {
+        if ($record['num_days'] > 1) {
             $permalink_url = add_date_to_permalink($permalink_url, $sqldate);
         }
     }
@@ -714,37 +722,60 @@ function fullentry($record, $for, $sqldate)
         global $caldaily_table_name;
         
         $prev_sql = <<<END_SQL
-            -- Find the previous event
+            -- Find the previous event. Also, count the number of times
+            -- that event occurs.
+
             SELECT *
-            FROM ${calevent_table_name}, ${caldaily_table_name}
-            WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-                  eventstatus <> "E" AND
-                  eventstatus <> "S" AND
-                  (
-                      -- Find an earlier event
+            FROM
+            (
+                SELECT id, title, eventdate, eventtime, wordpress_id
+                FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+                WHERE eventstatus <> "E" AND
+                      eventstatus <> "S" AND
+                     (
                       eventdate < %s OR
                      (eventdate = %s AND eventtime < %s) OR
-                      -- More than one event has the same time as this one,
-                      -- so sort by title.
                      (eventdate = %s AND eventtime = %s AND title < %s)
-                  )
-            ORDER by eventdate DESC, eventtime DESC, title DESC
-            LIMIT 1;
+                     )
+                ORDER BY eventdate DESC, eventtime DESC, title DESC
+                LIMIT 1
+            ) AS find_previous
+            NATURAL JOIN
+            (
+                SELECT id, count(*) AS num_days
+                FROM w_bfc_calevent NATURAL JOIN w_bfc_caldaily
+                WHERE eventstatus <> "E" AND
+                      eventstatus <> "S"
+                GROUP BY id
+            ) AS count_all;
+
 END_SQL;
 $next_sql = <<<END_SQL
             -- Find the next event
+
             SELECT *
-            FROM ${calevent_table_name}, ${caldaily_table_name}
-            WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-                  eventstatus <> "E" AND
-                  eventstatus <> "S" AND
-                  (
+            FROM
+            (
+                SELECT id, title, eventdate, eventtime, wordpress_id
+                FROM w_bfc_calevent NATURAL JOIN w_bfc_caldaily
+                WHERE eventstatus <> "E" AND
+                      eventstatus <> "S" AND
+                     (
                       eventdate > %s OR
                      (eventdate = %s AND eventtime > %s) OR
                      (eventdate = %s AND eventtime = %s AND title > %s)
-                  )
-            ORDER by eventdate ASC, eventtime ASC, title ASC
-            LIMIT 1;
+                     )
+                ORDER BY eventdate ASC, eventtime ASC, title ASC
+                LIMIT 1
+            ) AS find_next
+            NATURAL JOIN
+            (
+                SELECT id, count(*) AS num_days
+                FROM w_bfc_calevent NATURAL JOIN w_bfc_caldaily
+                WHERE eventstatus <> "E" AND
+                      eventstatus <> "S"
+                GROUP BY id
+            ) AS count_all;
 END_SQL;
 
         $prev_sql = $wpdb->prepare($prev_sql,
@@ -765,7 +796,7 @@ END_SQL;
 			if (isset($prev_results[0])) {
 				$prev_record = $prev_results[0];
 				$prev_url = get_permalink($prev_record['wordpress_id']);
-                if ($prev_record['datestype'] != 'O') {
+                if ($prev_record['num_days'] > 1) {
                     $prev_date = date('Y-m-d', strtotime($prev_record['eventdate']));
                     $prev_url = add_date_to_permalink($prev_url, $prev_date);
                 }
@@ -790,7 +821,7 @@ END_SQL;
 			if (isset($next_results[0])) {
 				$next_record = $next_results[0];
 				$next_url = get_permalink($next_record['wordpress_id']);
-                if ($next_record['datestype'] != 'O') {
+                if ($next_record['num_days'] > 1) {
                     $next_date = date('Y-m-d', strtotime($next_record['eventdate']));
                     $next_url = add_date_to_permalink($next_url, $next_date);
                 }
@@ -837,12 +868,22 @@ function fullentries($day, $exclude = FALSE)
     // Find events that are not exceptions or skipped.
     $query = <<<END_QUERY
 SELECT *
-FROM ${calevent_table_name}, ${caldaily_table_name}
-WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-      eventdate = %s AND
-      eventstatus <> "E" AND
-      eventstatus <> "S"
-ORDER BY eventtime ASC, title ASC
+FROM (
+    SELECT *
+    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+    WHERE eventdate = %s AND
+          eventstatus <> "E" AND
+          eventstatus <> "S"
+) AS find_rides
+NATURAL JOIN (
+    SELECT id, count(*) AS num_days
+    FROM ${caldaily_table_name}
+    WHERE eventstatus <> "E" AND
+          eventstatus <> "S"
+    GROUP BY id
+) AS count_all
+ORDER BY eventtime ASC, title ASC;
+
 END_QUERY;
     $query = $wpdb->prepare($query, $day);
     $records = $wpdb->get_results($query, ARRAY_A);
@@ -950,6 +991,7 @@ function bfc_preview_event_submission() {
     $record['newsflash'] = '';
     $record["eventstatus"] = "A";
     $record["datestype"] = "O"; // one-time
+    $record['num_days'] = 1;
 
     // Keep the code from barfing because wordpress_id
     // is undefined. It also supresses the link to the
@@ -979,12 +1021,21 @@ function bfc_event_popup() {
 
     $query = <<<END_QUERY
 SELECT *
-FROM ${calevent_table_name}, ${caldaily_table_name}
-WHERE ${calevent_table_name}.id = ${caldaily_table_name}.id AND
-      ${calevent_table_name}.id = %d AND
-      eventdate = %s AND
-      eventstatus <> "E" AND
-      eventstatus <> "S"
+FROM (
+    SELECT *
+    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+    WHERE ${calevent_table_name}.id = %d AND
+          eventdate = %s AND
+          eventstatus <> "E" AND
+          eventstatus <> "S"
+) AS find_rides
+NATURAL JOIN (
+    SELECT id, count(*) AS num_days
+    FROM ${caldaily_table_name}
+    WHERE eventstatus <> "E" AND
+          eventstatus <> "S"
+    GROUP BY id
+) AS count_all
 ORDER BY eventtime ASC, title ASC
 END_QUERY;
     $query = $wpdb->prepare($query, $id, $sqldate);
