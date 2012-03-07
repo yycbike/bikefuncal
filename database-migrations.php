@@ -5,9 +5,19 @@
 global $calevent_table_name;
 $calevent_table_name =
     $wpdb->prefix . "bfc_calevent";
+
 global $caldaily_table_name;
 $caldaily_table_name =
     $wpdb->prefix . "bfc_caldaily";
+
+global $caldaily_for_listings_table_name;
+$caldaily_for_listings_table_name =
+    $wpdb->prefix . "bfc_caldaily_for_listings";
+
+global $caldaily_num_days_for_listings_table_name;
+$caldaily_num_days_for_listings_table_name =
+    $wpdb->prefix . "bfc_caldaily_num_days_for_listings";
+
 global $caladdress_table_name;
 $caladdress_table_name =
     $wpdb->prefix . "bfc_caladdress";
@@ -147,9 +157,9 @@ function bfc_install_db_4() {
     global $calevent_table_name;
     global $wpdb;
 
-    # This column associates a cal event with a WordPress post.
-    # The post type is bfc-event (the custom type that this 
-    # plugin adds).
+    // This column associates a cal event with a WordPress post.
+    // The post type is bfc-event (the custom type that this 
+    // plugin adds).
     $sql = "ALTER TABLE ${calevent_table_name} ADD wordpress_id INT;";
     $result = $wpdb->query($sql);
     if ($result === false) {
@@ -159,6 +169,57 @@ function bfc_install_db_4() {
 
     return true;
 }
+
+function bfc_install_db_5() {
+    global $calevent_table_name;
+    global $caldaily_table_name;
+    global $caldaily_for_listings_table_name;
+    global $caldaily_num_days_for_listings_table_name;
+    global $wpdb;
+
+    // A view to retrieve the instances of events that should be
+    // shown in the calendar. Making a view does two things:
+    // 1) Cuts down on the number of times we have to put these
+    //    WHERE clauses into queries.
+    // 2) Specifically does not query the 'modified' column.
+    //    Omitting 'modified' makes it possible to use this
+    //    view in a sub-query where it is joined with
+    //    caldaily, since the two 'modified' columns will not
+    //    clash.
+    $sql = <<<END_SQL
+        CREATE VIEW ${caldaily_for_listings_table_name}
+        AS SELECT id, newsflash, eventdate, eventstatus, exceptionid
+        FROM ${caldaily_table_name}
+        WHERE eventstatus <> "E" AND
+              eventstatus <> "S";
+END_SQL;
+
+    $result = $wpdb->query($sql);
+    if ($result === false) {
+        $wpdb->print_error();
+        die("Couldn't create view ${caldaily_for_listings_table_name}");
+    }
+    
+    // A view to count the number of listable instances of an event.
+    // We do this in many places, so we make a view to cut down on
+    // verbosity.
+    $sql = <<<END_SQL
+        CREATE VIEW ${caldaily_num_days_for_listings_table_name}
+        AS SELECT id, count(*) as num_days
+        FROM ${caldaily_for_listings_table_name}
+        GROUP BY id;
+
+END_SQL;
+
+    $result = $wpdb->query($sql);
+    if ($result === false) {
+        $wpdb->print_error();
+        die("Couldn't create view ${caldaily_num_days_for_listings_table_name}");
+    }
+
+    return true;
+}
+
 
 function bfc_install() {
     $db_version = get_option('bfc_db_version');
@@ -175,6 +236,7 @@ function bfc_install() {
                                'bfc_install_db_2',
                                'bfc_install_db_3',
                                'bfc_install_db_4',
+                               'bfc_install_db_5',
                                );
 
     for ($db_level = $db_version;

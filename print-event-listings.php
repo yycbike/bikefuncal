@@ -220,27 +220,20 @@ function overview_calendar(
 function tinyentries($sqldate, $for, $current_event_wordpress_id = null)
 {
     global $calevent_table_name;
-    global $caldaily_table_name;
+    global $caldaily_for_listings_table_name;
+    global $caldaily_num_days_for_listings_table_name;
     global $wpdb;
 
     // Find events that are not exceptions or skipped
     $query = <<<END_QUERY
 SELECT *
 FROM (
-    SELECT ${calevent_table_name}.id, newsflash,title, tinytitle, eventtime,
+    SELECT ${calevent_table_name}.id, newsflash, title, tinytitle, eventtime,
            eventdate, datestype, audience, eventstatus, descr, review, wordpress_id
-    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
-    WHERE eventdate   =  %s   AND
-          eventstatus <> "E"  AND
-          eventstatus <> "S"     
+    FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING(id)
+    WHERE eventdate   =  %s      
 ) AS find_rides
-NATURAL JOIN (
-    SELECT id, count(*) AS num_days
-    FROM ${caldaily_table_name}
-    WHERE eventstatus <> "E" AND
-          eventstatus <> "S"
-    GROUP BY id
-) AS count_all
+JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
 ORDER BY eventtime ASC, title ASC;
 END_QUERY;
     $query = $wpdb->prepare($query, $sqldate);
@@ -730,63 +723,40 @@ function fullentry($record, $for, $sqldate)
     if ($for != 'preview') {
         global $wpdb;
         global $calevent_table_name;
-        global $caldaily_table_name;
+        global $caldaily_for_listings_table_name;
+        global $caldaily_num_days_for_listings_table_name;
         
         $prev_sql = <<<END_SQL
             -- Find the previous event. Also, count the number of times
             -- that event occurs.
 
             SELECT *
-            FROM
-            (
+            FROM (
                 SELECT id, title, eventdate, eventtime, wordpress_id
-                FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
-                WHERE eventstatus <> "E" AND
-                      eventstatus <> "S" AND
-                     (
-                      eventdate < %s OR
-                     (eventdate = %s AND eventtime < %s) OR
-                     (eventdate = %s AND eventtime = %s AND title < %s)
-                     )
+                FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+                WHERE eventdate < %s OR
+                      (eventdate = %s AND eventtime < %s) OR
+                      (eventdate = %s AND eventtime = %s AND title < %s)
                 ORDER BY eventdate DESC, eventtime DESC, title DESC
                 LIMIT 1
             ) AS find_previous
-            NATURAL JOIN
-            (
-                SELECT id, count(*) AS num_days
-                FROM w_bfc_calevent NATURAL JOIN w_bfc_caldaily
-                WHERE eventstatus <> "E" AND
-                      eventstatus <> "S"
-                GROUP BY id
-            ) AS count_all;
+            JOIN ${caldaily_num_days_for_listings_table_name} USING (id);
 
 END_SQL;
 $next_sql = <<<END_SQL
             -- Find the next event
 
             SELECT *
-            FROM
-            (
+            FROM (
                 SELECT id, title, eventdate, eventtime, wordpress_id
-                FROM w_bfc_calevent NATURAL JOIN w_bfc_caldaily
-                WHERE eventstatus <> "E" AND
-                      eventstatus <> "S" AND
-                     (
-                      eventdate > %s OR
-                     (eventdate = %s AND eventtime > %s) OR
-                     (eventdate = %s AND eventtime = %s AND title > %s)
-                     )
+                FROM w_bfc_calevent JOIN ${caldaily_for_listings_table_name} USING (id)
+                WHERE eventdate > %s OR
+                      (eventdate = %s AND eventtime > %s) OR
+                      (eventdate = %s AND eventtime = %s AND title > %s)
                 ORDER BY eventdate ASC, eventtime ASC, title ASC
                 LIMIT 1
             ) AS find_next
-            NATURAL JOIN
-            (
-                SELECT id, count(*) AS num_days
-                FROM w_bfc_calevent NATURAL JOIN w_bfc_caldaily
-                WHERE eventstatus <> "E" AND
-                      eventstatus <> "S"
-                GROUP BY id
-            ) AS count_all;
+            JOIN ${caldaily_num_days_for_listings_table_name} USING (id);
 END_SQL;
 
         $prev_sql = $wpdb->prepare($prev_sql,
@@ -865,7 +835,8 @@ END_SQL;
 function fullentries($day, $exclude = FALSE)
 {
     global $calevent_table_name;
-    global $caldaily_table_name;
+    global $caldaily_for_listings_table_name;
+    global $caldaily_num_days_for_listings_table_name;
     global $wpdb;
     
     global $imageover;
@@ -881,18 +852,10 @@ function fullentries($day, $exclude = FALSE)
 SELECT *
 FROM (
     SELECT *
-    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
-    WHERE eventdate = %s AND
-          eventstatus <> "E" AND
-          eventstatus <> "S"
+    FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+    WHERE eventdate = %s 
 ) AS find_rides
-NATURAL JOIN (
-    SELECT id, count(*) AS num_days
-    FROM ${caldaily_table_name}
-    WHERE eventstatus <> "E" AND
-          eventstatus <> "S"
-    GROUP BY id
-) AS count_all
+JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
 ORDER BY eventtime ASC, title ASC;
 
 END_QUERY;
@@ -1024,7 +987,8 @@ function bfc_event_popup() {
     // This sends a plain-text response, so no
     // header is needed.
     global $calevent_table_name;
-    global $caldaily_table_name;
+    global $caldaily_for_listings_table_name;
+    global $caldaily_num_days_for_listings_table_name;
     global $wpdb;
 
     $id = $_POST['id'];
@@ -1034,19 +998,11 @@ function bfc_event_popup() {
 SELECT *
 FROM (
     SELECT *
-    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
+    FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
     WHERE ${calevent_table_name}.id = %d AND
-          eventdate = %s AND
-          eventstatus <> "E" AND
-          eventstatus <> "S"
+          eventdate = %s
 ) AS find_rides
-NATURAL JOIN (
-    SELECT id, count(*) AS num_days
-    FROM ${caldaily_table_name}
-    WHERE eventstatus <> "E" AND
-          eventstatus <> "S"
-    GROUP BY id
-) AS count_all
+JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
 ORDER BY eventtime ASC, title ASC
 END_QUERY;
     $query = $wpdb->prepare($query, $id, $sqldate);
@@ -1087,13 +1043,12 @@ class BFC_OtherEvents_Widget extends WP_Widget {
                 // have to look it up in the database
                 global $wpdb;
                 global $calevent_table_name;
-                global $caldaily_table_name;
+                global $caldaily_for_listings_table_name;
+                global $caldaily_num_days_for_listings_table_name;
                 $sql = <<<END_SQL
                     SELECT *
-                    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
-                    WHERE wordpress_id = %d AND
-                          eventstatus <> "E" AND
-                          eventstatus <> "S";
+                    FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+                    WHERE wordpress_id = %d;
 END_SQL;
                 $sql = $wpdb->prepare($sql, $wp_query->post->ID);
                 $records = $wpdb->get_results($sql, ARRAY_A);

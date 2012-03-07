@@ -455,7 +455,8 @@ function bfc_the_content_filter($content) {
         // Show the event listing in the body.
 
         global $calevent_table_name;
-        global $caldaily_table_name;
+        global $caldaily_for_listings_table_name;
+        global $caldaily_num_days_for_listings_table_name;
         global $wpdb;
         global $wp_query;
 
@@ -465,19 +466,13 @@ function bfc_the_content_filter($content) {
                 SELECT *
                 FROM (
                     SELECT *
-                    FROM ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
-                    WHERE ${caldaily_table_name}.eventdate = %s AND
-                          ${calevent_table_name}.wordpress_id = %d
-                    ORDER BY ${caldaily_table_name}.eventdate
+                    FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+                    WHERE eventdate = %s AND
+                          wordpress_id = %d
+                    ORDER BY eventdate
                     LIMIT 1
                 ) AS event
-                NATURAL JOIN (
-                    SELECT id, count(*) AS num_days
-                    FROM ${caldaily_table_name}
-                    WHERE eventstatus <> "E" AND
-                          eventstatus <> "S"
-                    GROUP BY id
-                ) AS count;
+                JOIN ${caldaily_num_days_for_listings_table_name} USING (id);
 END_QUERY;
             $sql = $wpdb->prepare($sql, $wp_query->query_vars['date'],
                 $wp_query->post->ID);
@@ -488,18 +483,12 @@ END_QUERY;
                 SELECT *
                 FROM (
                     SELECT *
-                    FROM  ${calevent_table_name} NATURAL JOIN ${caldaily_table_name}
-                    WHERE ${calevent_table_name}.wordpress_id = %d
-                    ORDER BY ${caldaily_table_name}.eventdate
+                    FROM  ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING(id)
+                    WHERE wordpress_id = %d
+                    ORDER BY eventdate
                     LIMIT 1
                 ) AS event
-                NATURAL JOIN (
-                    SELECT id, count(*) AS num_days
-                    FROM ${caldaily_table_name}
-                    WHERE eventstatus <> "E" AND
-                          eventstatus <> "S"
-                    GROUP BY id
-                ) AS count;
+                JOIN ${caldaily_num_days_for_listings_table_name} USING (id);
 END_QUERY;
             $sql = $wpdb->prepare($sql, $wp_query->post->ID);
         }
