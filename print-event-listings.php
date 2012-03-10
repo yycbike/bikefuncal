@@ -412,12 +412,12 @@ function bfc_entry_previous_next_link($this_record, $other_record, $direction) {
         $when = date('l', strtotime($other_record['eventdate']));
     }
 
-    $text = ($direction === 'previous') ? '&lt; Previous' : 'Next $gt;';
+    $text = ($direction === 'previous') ? '&lt; Previous' : 'Next &gt;';
 
     printf("<div class='%s'>", esc_attr($direction));
     printf("<div><a data-id='%d' data-date='%s' href='%s'>%s</a></div>",
            esc_attr($other_record['id']), esc_attr($other_record['eventdate']),
-           esc_attr($other_url), $text);
+           esc_attr($url), $text);
     printf("<p>%s</p><p>%s</p>", esc_html($when), esc_html($other_record['title']));
     printf("</div>");
 }
@@ -785,7 +785,7 @@ $next_sql = <<<END_SQL
             SELECT *
             FROM (
                 SELECT id, title, eventdate, eventtime, wordpress_id
-                FROM w_bfc_calevent JOIN ${caldaily_for_listings_table_name} USING (id)
+                FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
                 WHERE eventdate > %s OR
                       (eventdate = %s AND eventtime > %s) OR
                       (eventdate = %s AND eventtime = %s AND title > %s)
