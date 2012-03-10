@@ -377,3 +377,23 @@ function bfc_festival_count_days_shortcode($atts) {
 
     return $interval->d;
 }
+
+global $overview_cal_padding_before;
+global $overview_cal_padding_after;
+$overview_cal_padding_before = '';
+$overview_cal_padding_after = '';
+add_shortcode('bfc_overview_cal_padding', 'bfc_overview_cal_padding_shortcode');
+function bfc_overview_cal_padding_shortcode($atts, $content) {
+    global $overview_cal_padding_before;
+    global $overview_cal_padding_after;
+
+    if ($atts['for'] == 'before') {
+        $overview_cal_padding_before = $content;
+    }
+    else if ($atts['for'] == 'after') {
+        $overview_cal_padding_after = $content;
+    }
+    else {
+        die();
+    }
+}

@@ -147,8 +147,14 @@ function overview_calendar(
             // Is this appearing before the start of the events, or after the end of the
             // events?
             'location' => 'before',
-             );
-        $output = apply_filters('bfc-overview-cal-padding', '', $filter_args);
+
+            // Start & end dates of the calendar
+            'startdate' => $startdate,
+            'enddate' => $enddate,
+            );
+        global $overview_cal_padding_before;
+        $output = apply_filters('bfc-overview-cal-padding',
+            $overview_cal_padding_before, $filter_args);
         printf("<td colspan='%d'>", $filter_args['cols']);
         print $output;
         print '</td>';
@@ -185,7 +191,6 @@ function overview_calendar(
     } while ( ($thisdate <= $enddate) &&
               (date('Y-m-d', $thisdate) != date('Y-m-d', $enddate)) );
 
-
     $last_day = date('w', $enddate);
     // If the calendar doesn't end on Saturday
     if ($last_day !== 6) { 
@@ -195,9 +200,13 @@ function overview_calendar(
             'for' => $for,
             'cols' => 6 - $last_day,
             'location' => 'after',
+            'startdate' => $startdate,
+            'enddate' => $enddate,
              );
 
-        $output = apply_filters('bfc-overview-cal-padding', '', $filter_args);
+        global $overview_cal_padding_after;
+        $output = apply_filters('bfc-overview-cal-padding',
+            $overview_cal_padding_after, $filter_args);
         printf("<td colspan='%d'>", $filter_args['cols']);
         print $output;
         print '</td>';
