@@ -155,6 +155,7 @@ function overview_calendar(
         global $overview_cal_padding_before;
         $output = apply_filters('bfc-overview-cal-padding',
             $overview_cal_padding_before, $filter_args);
+        $output = do_shortcode($output);
         printf("<td colspan='%d'>", $filter_args['cols']);
         print $output;
         print '</td>';
@@ -207,6 +208,7 @@ function overview_calendar(
         global $overview_cal_padding_after;
         $output = apply_filters('bfc-overview-cal-padding',
             $overview_cal_padding_after, $filter_args);
+        $output = do_shortcode($output);
         printf("<td colspan='%d'>", $filter_args['cols']);
         print $output;
         print '</td>';
