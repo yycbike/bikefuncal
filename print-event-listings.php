@@ -397,6 +397,33 @@ function bfc_entry_image($record, $for) {
     }
 }
 
+// $direction -- 'previous' or 'next'
+function bfc_entry_previous_next_link($this_record, $other_record, $direction) {
+    $url = get_permalink($other_record['wordpress_id']);
+    if ($other_record['num_days'] > 1) {
+        $date = date('Y-m-d', strtotime($other_record['eventdate']));
+        $url = add_date_to_permalink($url, $date);
+    }
+
+    if ($this_record['eventdate'] == $other_record['eventdate']) {
+        // On the same day, show the time
+        $when = hmmpm($other_record['eventtime']);
+    }
+    else {
+        // On another day, show the weekday (e.g., Thursday)
+        $when = date('l', strtotime($other_record['eventdate']));
+    }
+
+    $text = ($direction === 'previous') ? '&lt; Previous' : 'Next &gt;';
+
+    printf("<div class='%s'>", esc_attr($direction));
+    printf("<div><a data-id='%d' data-date='%s' href='%s'>%s</a></div>",
+           esc_attr($other_record['id']), esc_attr($other_record['eventdate']),
+           esc_attr($url), $text);
+    printf("<p>%s</p><p>%s</p>", esc_html($when), esc_html($other_record['title']));
+    printf("</div>");
+}
+
 // Generate the HTML entry for a single event:
 //
 // $record: The SQL record to print
@@ -442,7 +469,9 @@ function fullentry($record, $for, $sqldate)
     
     ////////////////////////
     // Audience and Fee
-    if ($record['audience'] == 'A' || $record['audience'] == 'F' || strpos($record['descr'], "\$") !== false) {
+    if ($record['audience'] == 'A' ||
+        $record['audience'] == 'F' ||
+        strpos($record['descr'], "\$") !== false) {
         
 		print "<div class=audience>";
 		
@@ -587,7 +616,7 @@ function fullentry($record, $for, $sqldate)
     ///////////
     // Location
     printf("<div class='location'>");
-    $address_html = sprintf("<a href=%s>%s</a>",
+    $address_html = sprintf("<a href='%s'>%s</a>",
                             esc_url(address_link($record['address'])),
                             esc_html($record['address']));
     
@@ -677,7 +706,6 @@ function fullentry($record, $for, $sqldate)
     
     print "<div class='event-about'>";
 
-
     ///////////////////////
     // Image (listing only)
     if ($for == 'listing') {
@@ -713,7 +741,6 @@ function fullentry($record, $for, $sqldate)
     if ($for == 'event-page') {
         bfc_entry_image($record, $for);
     }
-
 
 	print "</div><!-- End event-about -->";
 	
@@ -760,7 +787,7 @@ $next_sql = <<<END_SQL
             SELECT *
             FROM (
                 SELECT id, title, eventdate, eventtime, wordpress_id
-                FROM w_bfc_calevent JOIN ${caldaily_for_listings_table_name} USING (id)
+                FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
                 WHERE eventdate > %s OR
                       (eventdate = %s AND eventtime > %s) OR
                       (eventdate = %s AND eventtime = %s AND title > %s)
@@ -786,59 +813,19 @@ END_SQL;
 			print "<div class='event-navigation'>"; 
 		
 			if (isset($prev_results[0])) {
-				$prev_record = $prev_results[0];
-				$prev_url = get_permalink($prev_record['wordpress_id']);
-                if ($prev_record['num_days'] > 1) {
-                    $prev_date = date('Y-m-d', strtotime($prev_record['eventdate']));
-                    $prev_url = add_date_to_permalink($prev_url, $prev_date);
-                }
-	
-				if ($record['eventdate'] == $prev_record['eventdate']) {
-					// On the same day, show the time
-					$when = hmmpm($prev_record['eventtime']);
-				}
-				else {
-					// On another day, show the weekday (e.g., Thursday)
-					$when = date('l', strtotime($prev_record['eventdate']));
-				}
-				
-				print "<div class='previous'>";
-				printf("<div><a data-id='%d' data-date='%s' href='%s'>&lt; Previous</a></div>",
-					   esc_attr($prev_record['id']), esc_attr($prev_record['eventdate']),
-					   esc_attr($prev_url));
-				printf("<p>%s</p><p>%s</p>", esc_html($when), esc_html($prev_record['title']));
-				printf("</div>");
+                bfc_entry_previous_next_link($record, $prev_results[0], 'previous');
 			}
-	
+            
 			if (isset($next_results[0])) {
-				$next_record = $next_results[0];
-				$next_url = get_permalink($next_record['wordpress_id']);
-                if ($next_record['num_days'] > 1) {
-                    $next_date = date('Y-m-d', strtotime($next_record['eventdate']));
-                    $next_url = add_date_to_permalink($next_url, $next_date);
-                }
-	
-				if ($record['eventdate'] == $next_record['eventdate']) {
-					// On the same day, show the time
-					$when = hmmpm($next_record['eventtime']);
-				}
-				else {
-					// On another day, show the weekday (e.g., Thursday)
-					$when = date('l', strtotime($next_record['eventdate']));
-				}
-	
-				print "<div class='next'>";
-				printf("<div><a data-id='%d' data-date='%s' href='%s'>Next &gt;</a></div>",
-					   esc_attr($next_record['id']), esc_attr($next_record['eventdate']),
-					   esc_attr($next_url));
-				printf("<p>%s</p><p>%s</p>", esc_html($when), esc_html($next_record['title']));
-				printf("</div>");
+                bfc_entry_previous_next_link($record, $next_results[0], 'next');
 			}
 			
-			print "</div>";
-			print "</div>";
+			print "</div>"; // .event-navigation
 		}
     }        
+
+    print "</div>"; // .event-info
+    print "</div>"; // id=$for
 }
 
 // Generate the HTML for all entries in a given day, in the full format
