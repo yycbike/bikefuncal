@@ -173,7 +173,6 @@ END_HTML;
 
                 <tr>
                   <td rowspan=2>
-                    For an event that starts and ends, 
                     For an event that does not go on forever, enter the start and end dates.
                   </td>
 
@@ -300,6 +299,18 @@ input.narrower {
 
 #hideemail_controls {
     margin-top: 5px;
+}
+
+#datelist-container {
+    max-height: 300px;
+    padding-right: 20px;
+    overflow-y: auto;
+
+    border: 1px solid;
+}
+
+.dates-table-tip td {
+    border-top: none;
 }
 
 </style>
@@ -477,9 +488,11 @@ input.narrower {
              >
         
         <?php bfc_event_form_help('submission_dates_multiple'); ?>
-        <div id="datelist"></div>
       </div><!-- new-event-controls -->
     </div><!-- occurs-multiple -->
+
+    <div id="datelist"></div> 
+
 
     <h3>Start time</h3>
     <div class="new-event-controls">

@@ -646,7 +646,7 @@ function fullentry($record, $for, $sqldate)
     // Contact info
     printf("<div class='contact-info'>");
     print '<h3>Contact Info:</h3>';
-    if ($record['email'] != '') {
+    if (isset($record['email']) && $record['email'] != '') {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
         
@@ -656,7 +656,7 @@ function fullentry($record, $for, $sqldate)
         printf("<div class=leader-email><a class='scrambled-email' data-aa='%s' href='#' data-ba='%s'>e-mail</a></div>",
                str_rot13($parts[1]), str_rot13($parts[0]));
     }
-    if ($record['weburl'] != '') {
+    if (isset($record['weburl']) && $record['weburl'] != '') {
         // Create a shortened version of the URL for display
         $url_parts = parse_url($record['weburl']);
         $display_url = $url_parts['host'];

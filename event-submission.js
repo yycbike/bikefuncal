@@ -26,7 +26,8 @@ function vfydatesnewsflash(value, suffix)
         return;
     }
     
-    if (value == "Added" || value == "Skipped" || value == "Deleted") {
+    if (value == "Added" || value == "Skipped" 
+        || value == "Deleted" || value == "Exception") {
 	fields[0].style.display = "none";
     }
     else {
@@ -34,12 +35,65 @@ function vfydatesnewsflash(value, suffix)
     }
 }
 
+function add_remove_tip_row(value, controls_row) 
+{
+    var hint = null;
+    switch (value) {
+    case 'Canceled':
+        hint = 'Use the newsflash to explain why the event is canceled';
+        break;
+    case 'Exception':
+        hint = 'An exception lets you change change things other than ' +
+            'the date (e.g. start time, location, etc.). After you update ' +
+            'this event, you\'ll be given a link where you can edit the exception.';
+        break;
+    default:
+        hint = null;
+        break;
+    }
+
+    if (hint == null) {
+        // If the following row is a hint row, remove it.
+        var next_row = controls_row.next();
+        if (next_row.hasClass('dates-table-tip')) {
+            next_row.remove();
+        }
+    }
+    else {
+        var next_row = controls_row.next();
+        var tip_row;
+        if (next_row.hasClass('dates-table-tip')) {
+            tip_row = next_row;
+        }
+        else {
+            tip_row = jQuery('<tr class=dates-table-tip></tr>');
+            controls_row.after(tip_row);
+        }
+
+        var td = jQuery('<td colspan=3></td>');
+        td.text(hint);
+
+        tip_row.empty();
+        tip_row.append(td);
+    }
+}
+
 // Generate an option for a daily status field
 function vfydatesoption(select, option_value, current_value)
 {
+    var titles = {
+        'Added': 'Occurs normally',
+        'Skipped': 'No listing for this date',
+        'As Scheduled': 'Occurs normally',
+        'Canceled': 'Marked as canceled on calendar',
+        'Deleted': 'Removed from calendar',
+        'Exception': 'Occurs at different time, location, etc.'
+    };
+
     var option = jQuery('<option></option>');
     option.val(option_value);
     option.text(option_value);
+    option.attr('title', titles[option_value]);
     select.append(option);
 
     // Mark this option as selected in the SELECT
@@ -98,14 +152,6 @@ function display_dates(xmlDom)
         mydatelist.style.display = "none";
     }
     else {
-        // The message that appears above the table
-        var message_text = "In this table, you can adjust the status";
-        if (is_existing_event()) {
-            message_text += " and newsflash";
-        }
-        message_text += " of each date.\n";
-        var message = jQuery("<p>" + message_text + "</p>");
-
         // The table of dates & statuses (and possibly newsflashes)
         var table = jQuery("<table class=datelist></table>");
         var header_row = jQuery("<tr></tr>");
@@ -176,11 +222,12 @@ function display_dates(xmlDom)
                 // suffix variable. Otherwise all the status selectors
                 // will have the same value of suffix.
                 // See http://stackoverflow.com/q/1779847
-                var on_change = (function(suffix_copy) {
+                var on_change = (function(suffix_copy, row_copy) {
                     return function() {
                         vfydatesnewsflash(this.value, suffix_copy);
+                        add_remove_tip_row(this.value, row_copy);
                     };
-                }(suffix));
+                }(suffix, row));
                 status_select.change(on_change);
 
                 if (olddate == "Y") {
@@ -238,11 +285,16 @@ function display_dates(xmlDom)
             }
             
             table.append(row);
+
+            // Append a tip row after this row, if needed
+            add_remove_tip_row(status, row);
         }
         jQuery(mydatelist).empty();
+        var table_container = jQuery('<div id=datelist-container class=new-event-controls></div>');
+        table_container.append(table);
         jQuery(mydatelist).
-            append(message).
-            append(table);
+            append('<h3>Statuses</h3>').
+            append(table_container);
         mydatelist.style.display = "block";
     }
 
@@ -263,8 +315,14 @@ var olddatestype;
 var olddates;
 function verifydates(reload)
 {
-    var value = jQuery('#submission_dates_multiple').val();
-    
+    var value;
+    if (jQuery('#submission_event_occurs_once').attr('checked')) {
+        value = jQuery('#submission_dates_once').val();
+    }
+    else {
+        value = jQuery('#submission_dates_multiple').val();
+    }
+
     // Guard against superfluous calls
     if (value == olddates && !reload) {
 	return;
@@ -547,7 +605,11 @@ jQuery(document).ready(function() {
         verifydates(false);
         return false;
     });
-    jQuery('#submission_dates_show').blur(function() {
+    jQuery('#submission_dates_show').click(function() {
+        verifydates(false);
+        return false;
+    });
+    jQuery('#submission_dates_once').change(function() {
         verifydates(false);
         return false;
     });
