@@ -104,6 +104,16 @@
         }
     }
 
+    function show_date_error(message)
+    {
+        $('#submission_dates_spinner').hide();
+
+        var datelist = $('#datelist');
+        datelist.empty();
+        datelist.append( $('<em>').text(message) );
+        datelist.show();
+    }
+
     function display_dates(xmlDom)
     {
         $('#submission_dates_spinner').hide();
@@ -113,11 +123,7 @@
         tmp = xmlDom.getElementsByTagName("error");
         if (tmp.length != 0) {
             var error_message = tmp[0].firstChild.nodeValue;
-            $(mydatelist).empty();
-            $(mydatelist).append(
-                $('<em>').text(error_message)
-            );
-            mydatelist.style.display = "block";
+            show_date_error(error_message);
 
             return;
         }
@@ -354,12 +360,16 @@
             ajax_params['reload'] = 'y';
         }
 
-        jQuery.post(
-            BikeFunAjax.ajaxurl,
-            ajax_params,
-            display_dates,
-            'xml'
-        );
+        jQuery.ajax({
+            'type': 'POST',
+            'url': BikeFunAjax.ajaxurl,
+            'dataType': 'xml',
+            'data': ajax_params,
+
+            'success': display_dates,
+            'error': function() { show_date_error("The dates you entered weren't understood."); }
+
+        });
 
         $('#submission_dates_spinner').show();
     }
