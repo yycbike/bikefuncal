@@ -262,9 +262,9 @@ class BfcEventSubmission {
             // Process arguments for calevent
             foreach ($this->calevent_field_info as $field_name => $info) {
                 // These fields are generated internally, not passed in. Skip them.
-                if ($field_name == 'id'         || $field_name == 'wordpress_id' ||
-                    $field_name == 'editcode'   || $field_name == 'image'        ||
-                    $field_name == 'imagheight' || $field_name == 'imagewidth'   ||
+                if ($field_name == 'id'          || $field_name == 'wordpress_id' ||
+                    $field_name == 'editcode'    || $field_name == 'image'        ||
+                    $field_name == 'imageheight' || $field_name == 'imagewidth'   ||
                     $field_name == 'datestype') {
 
                     continue;
@@ -1078,11 +1078,15 @@ class BfcEventSubmission {
         $suffix = date("Mj", strtotime($date));
         $exception->daily_args[$suffix]['status'] = 'As Scheduled';
 
-        // Copy the image file.
-        $upload_dirinfo = wp_upload_dir();
-        $exception->attach_image($this->event_args['image'],
-                                 $upload_dirinfo['basedir'] . $this->event_args['image'],
-                                 'copy');
+        // Copy the image file (if it exists).
+        if (isset($this->event_args['image']) &&
+            $this->event_args['image'] !== '') {
+
+            $upload_dirinfo = wp_upload_dir();
+            $exception->attach_image($this->event_args['image'],
+                                     $upload_dirinfo['basedir'] . $this->event_args['image'],
+                                     'copy');
+        }
 
         $exception->do_action();
      

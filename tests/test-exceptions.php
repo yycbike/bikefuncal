@@ -28,6 +28,18 @@ class TestExceptions extends BfcTestCase {
         $this->assertEquals($main_event->eventduration(), $exception->eventduration());
     }
 
+    // Check for a bug where making an exception failed when the exception did not
+    // have a file associated with it.
+    function test_exceptions_works_without_files() {
+        // false = don't attach files.
+        $x = $this->make_event_and_exception(false);
+        $main_event = $x[0];
+        $exception = $x[1];
+
+        // If we got here w/o crashing, we're probably OK. Do a quick sanity check.
+        $this->assertNotEquals($main_event->id(), $exception->id());
+    }
+
     /**
      * Exception gets its own wordpress post
      */

@@ -289,7 +289,7 @@ abstract class BfcTestCase extends WPTestCase {
     /*
      * Produce an event and its exception, for use in other tests.
      */
-    function make_event_and_exception() {
+    function make_event_and_exception($has_files = true) {
         $main_event = $this->make_valid_submission(array(
             // No title -- let make_valid_submission() generate one.
             'event_dates' => 'August 5 - 10',
@@ -301,7 +301,10 @@ abstract class BfcTestCase extends WPTestCase {
             'event_eventtime'  => '07:00:00',
             'event_eventduraton' => '120',
         ));
-        $main_event = $this->update_submission($main_event, array(), $this->make_files_args());
+
+        if ($has_files) {
+            $main_event = $this->update_submission($main_event, array(), $this->make_files_args());
+        }
         
         $main_event = $this->update_submission($main_event, array(
             'event_statusAug5' => 'Exception',

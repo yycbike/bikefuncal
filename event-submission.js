@@ -44,9 +44,18 @@
             hint = 'Use the newsflash to explain why the event is canceled';
             break;
         case 'Exception':
-            hint = 'An exception lets you change change things other than ' +
-                'the date (e.g. start time, location, etc.). After you update ' +
-                'this event, you\'ll be given a link where you can edit the exception.';
+            var hint1 = 'An exception lets you change change things other than ' +
+                'the date (e.g. start time, location, etc.). ';
+
+            // Default hint, for when there's not a link to the exception.
+            var hint2 = 'After you update this event, you\'ll be given a link where ' +
+                'you can edit the exception.';
+            controls_row.find('[data-is-exception]').each(function() {
+                // If the controls row has a link to the exception, reference it in the hint
+                hint2 = 'Edit the exception with the link above.';
+            });
+
+            hint = hint1 + hint2;
             break;
         default:
             hint = null;
@@ -204,10 +213,16 @@
                         value: 'Exception',
                     });
                     statuscell.append(input);
+                    
+                    // Exceptions don't have a newsflash. Make this cell fill the next column.
+                    statuscell.attr('colspan', 2);
 
+                    statuscell.text('Exception ');
                     var editlink = $("<a></a>");
-                    editlink.text('Exception');
+                    editlink.addClass('edit-exception');
+                    editlink.text('(Edit)');
                     editlink.attr('href', exception_url);
+                    editlink.attr('data-is-exception', true);
                     editlink.click(function() {
                         var message = "You are currently editing your normal event. " +
                             "This link takes you to a page where you can edit the " +
