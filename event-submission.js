@@ -293,7 +293,7 @@ function display_dates(xmlDom)
         var table_container = jQuery('<div id=datelist-container class=new-event-controls></div>');
         table_container.append(table);
         jQuery(mydatelist).
-            append('<h3>Statuses</h3>').
+            append('<h3 class=event-submission-label>Statuses</h3>').
             append(table_container);
         mydatelist.style.display = "block";
     }

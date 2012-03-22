@@ -213,6 +213,7 @@ END_HTML;
         $help['content'] = "We'll send you a link to edit this event. We won't spam you.";
     }
     else if ($for === 'event_hideemail') {
+        $help['class'] .= ' hideemail';
         $help['content'] = "It's protected against spam-harvesting robots";
         $help['tag'] = 'span';
     }
@@ -302,7 +303,10 @@ function bfc_print_event_submission_form($event_submission) {
         <?php bfc_event_form_help('event_audience') ?>
     </div>
 
-    <h3 class='event-submission-label'>Image</h3>
+    <div class='event-submission-label'>
+      <h3>Image</h3>
+      <div class='optional'>optional</div>
+    </div>
     <div class='new-event-controls'>
         <?php if ($event_submission->has_image()) { ?>            
             <div>
@@ -332,7 +336,11 @@ function bfc_print_event_submission_form($event_submission) {
 
     <h2 class='event-submission-section'>Meeting Place</h2>
     <div class="new-event-category">
-    <h3 class='event-submission-label'>Place Name</h3>
+
+    <div class='event-submission-label'>
+      <h3>Place name</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class="new-event-controls">
       <input type="text" id="event_locname" name="event_locname"
              class="narrower" maxlength=256
@@ -348,7 +356,10 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_address') ?>
   </div>
 
-    <h3 class='event-submission-label'>Details</h3>
+    <div class='event-submission-label'>
+      <h3>Details</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class="new-event-controls">
       <input type="text" name="event_locdetails" class="narrower"
         maxlength=256
@@ -440,7 +451,10 @@ function bfc_print_event_submission_form($event_submission) {
         <?php bfc_event_form_help('event_eventtime') ?>
     </div>
     
-    <h3 class='event-submission-label'>End time</h3>
+    <div class='event-submission-label'>
+      <h3>End time</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class="new-event-controls">
       <select name="event_eventduration" id="event_eventduration">
         <option value="0" <?php $event_submission->print_selected_for_duration("0") ?> >Unspecified</option>
@@ -461,7 +475,10 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_eventduration') ?>
     </div>
 
-    <h3 class='event-submission-label'>Time Details</h3>
+    <div class='event-submission-label'>
+      <h3>Time details</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class="new-event-controls">
       <input type="text" name="event_timedetails" class="narrower"
         maxlength=256 <?php $event_submission->print_timedetails(); ?>>
@@ -472,7 +489,7 @@ function bfc_print_event_submission_form($event_submission) {
     <h2 class='event-submission-section'>Contact Info</h2>
     <div class="new-event-category">
 
-    <h3 class='event-submission-label'>Your Name</h3>
+    <h3 class='event-submission-label'>Your name</h3>
     <div class="new-event-controls">
       <input type="text" name="event_name" class="narrower" required
         maxlength=256 <?php $event_submission->print_name(); ?>>
@@ -501,21 +518,30 @@ function bfc_print_event_submission_form($event_submission) {
         </div>
     </div>
     
-    <h3 class='event-submission-label'>Web Site</h3>
+    <div class='event-submission-label'>
+      <h3>Web site</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class='new-event-controls'>
       <input type="url" name="event_weburl" class="narrower"
         maxlength=256 <?php $event_submission->print_weburl(); ?>>
       <?php bfc_event_form_help('event_weburl') ?>
     </div>
 
-    <h3 class='event-submission-label'>Phone Number</h3>
+    <div class='event-submission-label'>
+      <h3>Phone number</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class="new-event-controls">
       <input type="text" name="event_phone" class="narrower"
         maxlength=256 <?php $event_submission->print_phone(); ?>>
       <?php bfc_event_form_help('event_phone') ?>
     </div>
 
-    <h3 class='event-submission-label'>Other Info</h3>
+    <div class='event-submission-label'>
+      <h3>Other info</h3>
+      <div class=optional>optional</div>
+    </div>
     <div class="new-event-controls">
       <input type="text" name="event_contact" class="narrower"
         maxlength=256 <?php $event_submission->print_contact(); ?>>
