@@ -458,6 +458,7 @@ function display_preview(preview_content)
 
 // Update the preview
 function update_preview() {
+    set_hidden_dates_field();
 
     // Build up a list of arguments to send
     var ajax_params = {
@@ -477,6 +478,12 @@ function update_preview() {
     });
 
     jQuery('form#event-submission-form input[type=url]').
+        each(function(index, element) {
+
+        ajax_params[element.name] = element.value;
+    });
+
+    jQuery('form#event-submission-form input[type=hidden]').
         each(function(index, element) {
 
         ajax_params[element.name] = element.value;
@@ -654,6 +661,20 @@ function make_toggleable_tips(text, button) {
     });
 }
 
+function set_hidden_dates_field() {
+    var dates_val;
+
+    if (jQuery('#submission_event_occurs_once').attr('checked')) {
+        dates_val = jQuery('#submission_dates_once').val();
+    }
+    else {
+        dates_val = jQuery('#submission_dates_multiple').val();
+    }
+
+    jQuery('#event_dates').val(dates_val);
+
+}
+
 
 // Initialize event handlers
 //
@@ -759,18 +780,7 @@ jQuery(document).ready(function() {
     toggle_event_during_festival();
 
     // Code to run on submit
-    jQuery('#event-submission-form').submit(function() {
-        var dates_val;
-
-        if (jQuery('#submission_event_occurs_once').attr('checked')) {
-            dates_val = jQuery('#submission_dates_once').val();
-        }
-        else {
-            dates_val = jQuery('#submission_dates_multiple').val();
-        }
-
-        jQuery('#event_dates').val(dates_val);
-    });
+    jQuery('#event-submission-form').submit(set_hidden_dates_field);
 
     // Show/hide tips for event description
     make_toggleable_tips(jQuery('#event_descr_more'), jQuery('#event_descr_show_more'));

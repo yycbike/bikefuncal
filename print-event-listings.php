@@ -646,7 +646,7 @@ function fullentry($record, $for, $sqldate)
     // Contact info
     printf("<div class='contact-info'>");
     print '<h3>Contact Info:</h3>';
-    if (isset($record['email']) && $record['email'] != '') {
+    if ($record['hideemail'] != 1 && isset($record['email']) && $record['email'] != '') {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
         
@@ -968,22 +968,51 @@ function bfc_preview_event_submission() {
         }
     }
 
-    // These fields are not passed in, because
-    // they go along with caldaily (not calevent) and we
-    // haven't yet worked out how the preview works with
-    // repeating events.
-    $record['eventdate'] = '';
+    // Try to parse the date, so we can preview it correctly.
+    $dayinfo = repeatdates($record['dates']);
+    if ($dayinfo['datestype'] === 'error' ||
+        !isset($dayinfo['daylist'][1]) ) {
+        
+        // Badly-formed date. Don't show the date.
+        
+        $record['eventdate'] = '';
+        $record["eventstatus"] = "A";
+        $record["datestype"] = "O"; // one-time
+        $record['num_days'] = 1;
+    }
+    else {
+        // daylist array is 1-based. Get the first element.
+        $day = $dayinfo['daylist'][1];
+        
+        // Sometimes $day sets eventdate, other times sqldate...
+        if (isset($day['eventdate'])) {
+            $record['eventdate'] = $day['eventdate'];
+        }
+        else if (isset($day['sqldate'])) {
+            $record['eventdate'] = $day['sqldate'];
+        }
+
+        $record['eventstatus'] = $day['eventstatus'];
+        $record['datestype'] = strtoupper(substr($dayinfo['datestype'], 0, 1));
+
+        $record['num_days'] = count($dayinfo['daylist']);
+    }
+
     $record['newsflash'] = '';
-    $record["eventstatus"] = "A";
-    $record["datestype"] = "O"; // one-time
-    $record['num_days'] = 1;
+
+    //print "<pre>\n";
+    //var_dump($record);
+    //print "</pre>\n";
 
     // Keep the code from barfing because wordpress_id
     // is undefined. It also supresses the link to the
     // forum, which is OK in the preview.
     $record["wordpress_id"] = 0;
 
-    fullentry($record, 'preview', null);
+    fullentry($record,
+              'preview',
+              $record['eventdate'] !== '' ? $record['eventdate'] : null);
+
     exit;
 }
 

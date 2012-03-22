@@ -263,7 +263,7 @@ function bfc_print_event_submission_form($event_submission) {
           id="event-submission-form"
           >
 
-    <h2 class='event-submission-section'>Describe Your Ride</h2>
+    <h2 class='event-submission-section'>Event Description</h2>
     <div class="new-event-category">
 
     <h3 class='event-submission-label'>Title</h3>
