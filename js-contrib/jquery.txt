@@ -1,0 +1,20 @@
+Things to include when getting new jQuery-UI
+
+Theme: Smoothness
+
+UI Core:
+* Core
+* Widget
+* Mouse
+* Position
+
+Interactions: none
+
+Widgets:
+* Autocomplete
+* Dialog
+* Tabs
+* Datepicker
+
+Effects: none
+
