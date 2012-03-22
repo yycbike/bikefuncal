@@ -560,6 +560,7 @@ function fullentry($record, $for, $sqldate)
     //       - Use the format "[date], [start] - [end]"
     //     - If the date is unknown
     //       - Use the format "[start] - [end]"
+    // - If there are time details, append them to the end of the time.
     //
     // Use different formats for with/without end time, because they
     // read better.
@@ -590,6 +591,11 @@ function fullentry($record, $for, $sqldate)
     }
     else {
         $time_text = esc_html($time);
+    }
+
+    if ($record['timedetails'] != '') {
+        $time_text .= '. ';
+        $time_text .= esc_html($record['timedetails']);
     }
 
     print "<div class='time'>";
