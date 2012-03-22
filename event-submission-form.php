@@ -1,6 +1,6 @@
 <?php
 
-# Output a line for the time selector
+// Output a line for the time selector
 function bfc_generatetime($event_submission, $time, $label)
 {
     $formatted = hmmpm($time);
@@ -219,6 +219,14 @@ END_HTML;
     else if ($for === 'event_weburl') {
         $help['content'] = 'e.g., www.your-site.ca. If you made a Facebook event, put it here.';
     }
+    else if ($for === 'intro') {
+        $help['class'] = '';
+        $help['tag'] = 'p';
+        $help['content'] = <<<END_HTML
+          Still planning your ride? Get tips from the <a href='/the-ride-guide'>ride guide</a> 
+          or write to <a href='mailto:calendar@velopalooza.ca'>calendar@velopalooza.ca</a>.
+END_HTML;
+    }
 
     // Let the theme override the defaults
     $help = apply_filters('bfc_event_form_help', $help);
@@ -238,6 +246,8 @@ END_HTML;
 function bfc_print_event_submission_form($event_submission) {
 ?>
     <div class="new-event-form">
+
+    <?php bfc_event_form_help('intro'); ?>
 
     <?php if (!$event_submission->is_valid()) { ?>
     <div class="error-messages">
