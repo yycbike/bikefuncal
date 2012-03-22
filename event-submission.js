@@ -444,7 +444,7 @@ function tweakdurations() {
 
 function display_preview(preview_content)
 {
-    var preview = document.getElementById('preview');
+    var preview = document.getElementById('preview-container');
 
     preview.innerHTML = preview_content;
 
@@ -465,6 +465,18 @@ function update_preview() {
     };
     
     jQuery('form#event-submission-form input[type=text]').
+        each(function(index, element) {
+
+        ajax_params[element.name] = element.value;
+    });
+
+    jQuery('form#event-submission-form input[type=email]').
+        each(function(index, element) {
+
+        ajax_params[element.name] = element.value;
+    });
+
+    jQuery('form#event-submission-form input[type=url]').
         each(function(index, element) {
 
         ajax_params[element.name] = element.value;
@@ -616,16 +628,16 @@ jQuery(document).ready(function() {
 
     // Update the preview on changes.
     jQuery('#event-submission-form input[type=text]').blur(update_preview);
+    jQuery('#event-submission-form input[type=email]').blur(update_preview);
+    jQuery('#event-submission-form input[type=url]').blur(update_preview);
     jQuery('#event-submission-form textarea').blur(update_preview);
     jQuery('#event-submission-form select').change(update_preview);
     jQuery('#event-submission-form input[type=radio]').change(update_preview);
     jQuery('#event-submission-form input[type=checkbox]').change(update_preview);
 
-    // Update the preview now. But only if this is an existing event,
-    // otherwise there's nothing to show.
-    if (is_existing_event()) {
-        update_preview();
-    }
+    // Update the preview now. Even if the event is new and there's not content,
+    // this will draw the preview box and make it look nicer.
+    update_preview();
 
     // Update list of multiple dates. No-op if single date, or dates
     // not specified.

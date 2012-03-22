@@ -659,7 +659,15 @@ function fullentry($record, $for, $sqldate)
     if (isset($record['weburl']) && $record['weburl'] != '') {
         // Create a shortened version of the URL for display
         $url_parts = parse_url($record['weburl']);
-        $display_url = $url_parts['host'];
+
+        // Sometimes parse_url() barfs, and thinks that the host is
+        // part of the path.
+        if (isset($url_parts['host'])) {
+            $display_url = $url_parts['host'];
+        }
+        else {
+            $display_url = '';
+        }
 
         // Set to true if we put ellipsis on the end of $display_url.
         $has_ellipsis = false;
@@ -825,6 +833,11 @@ END_SQL;
     }        
 
     print "</div>"; // .event-info
+
+    // Set this to clear=both, to force the containing div to
+    // encompass the floats.
+    print "<div class=end-of-event></div>";
+
     print "</div>"; // id=$for
 }
 
