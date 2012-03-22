@@ -14,6 +14,7 @@ abstract class BfcTestCase extends WPTestCase {
                                       'post_content' => '[bfc_event_submission]',
                                       'post_status' => 'publish',
                                       'post_type'   => 'page',
+                                      'post_name' => 'add-event', // slug
                                         ));
 
         $this->insert_post_or_die(array(
@@ -118,6 +119,7 @@ abstract class BfcTestCase extends WPTestCase {
             'event_name' => 'Earl',
             'event_email' => 'hi@hello.ca',
             'event_eventtime' => '19:15:00',
+            'event_address' => '742 Evergreen Terrace',
             );
         $submission_args = array_merge($submission_args, $extra_args);
         $submission_args = array_merge(
