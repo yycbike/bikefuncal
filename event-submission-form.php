@@ -116,6 +116,9 @@ function bfc_event_form_help($for) {
             <div>
               Be sure to mention any fees, otherwise people will assume it&apos;s free.
             </div>
+            <div>
+              <a id='event_descr_show_more'>More tips</a>
+            </div>
             <div id='event_descr_more' style='display: none;'>
                 <div>
                 You may also want to mention: distance, hills, pace, if the ride is a loop.
@@ -132,9 +135,6 @@ function bfc_event_form_help($for) {
                       Yes:&nbsp;<span style='font-family: monospace'>http://velopalooza.ca</span>.
                       No:&nbsp;<span style='font-family: monospace'>velopalooza.ca</span>
                 </ul>
-            </div>
-            <div>
-              <a id='event_descr_show_more'>More tips</a>
             </div>
 END_HTML;
 
@@ -153,6 +153,9 @@ END_HTML;
           Enter the dates when your ride occurs.
           <br>
           E.g., "First Thursdays" or "Mondays, May to September"
+          <div>
+            <a id='dates_multiple_show_more'>More tips</a>
+          </div>
           <div id='dates_multiple_more' style='display: none;'>
             <table>
               <thead>
@@ -192,10 +195,6 @@ END_HTML;
                   <td>June 7, June 9, June 16</td>
               </tbody>
             </table>
-          </div>
-          
-          <div>
-            <a id='dates_multiple_show_more'>More tips</a>
           </div>
         
 END_HTML;
