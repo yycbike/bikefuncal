@@ -593,7 +593,13 @@ function bfc_print_event_submission_form($event_submission) {
 
     <input type='hidden' id='event_dates' name='event_dates'>
 
-    <h2 class=event-submission-preview>Preview</h2>
+    <h2 class=event-submission-preview>
+      Preview
+      <img src='<?php print plugins_url('bikefuncal/images/ajax-loader.gif'); ?>'
+           id='submission_preview_spinner'
+           style='display: none;'
+           >
+    </h2>
     <div id="preview-container"></div>         
 
     <div class='new-event-actions'>

@@ -445,6 +445,8 @@
 
     function display_preview(preview_content)
     {
+        $('#submission_preview_spinner').hide();
+
         var preview = document.getElementById('preview-container');
 
         preview.innerHTML = preview_content;
@@ -455,6 +457,16 @@
         });
 
         descramble_emails();
+    }
+
+    var preview_timer = null;
+    function set_preview_timer() {
+        if (preview_timer !== null) {
+            window.clearTimeout(preview_timer);
+        }
+
+        preview_timer = window.setTimeout(update_preview, 750);
+        $('#submission_preview_spinner').show();
     }
 
     // Update the preview
@@ -692,19 +704,6 @@
             return false;
         });
 
-        // Update the preview on changes.
-        $('#event-submission-form input[type=text]').blur(update_preview);
-        $('#event-submission-form input[type=email]').blur(update_preview);
-        $('#event-submission-form input[type=url]').blur(update_preview);
-        $('#event-submission-form textarea').blur(update_preview);
-        $('#event-submission-form select').change(update_preview);
-        $('#event-submission-form input[type=radio]').change(update_preview);
-        $('#event-submission-form input[type=checkbox]').change(update_preview);
-
-        // Update the preview now. Even if the event is new and there's not content,
-        // this will draw the preview box and make it look nicer.
-        update_preview();
-
         // Update list of multiple dates. No-op if single date, or dates
         // not specified.
         verifydates(false);
@@ -751,7 +750,10 @@
                 //
                 // See:
                 // http://jqueryui.com/demos/autocomplete/#event-change
-                close: autocomplete_address,
+                close: function() {
+                    autocomplete_address();
+                    set_preview_timer();
+                }
             });
 
         // Configure calendar for "occurs once"
@@ -765,6 +767,8 @@
 
             'minDate': '0D', // today
             'maxDate': '364D', // +1 year
+
+            'onClose': set_preview_timer
         });
 
         // Toggle the visibility of once/multiple
@@ -781,6 +785,24 @@
         // Show/hide tips for event description
         make_toggleable_tips($('#event_descr_more'), $('#event_descr_show_more'));
         make_toggleable_tips($('#dates_multiple_more'), $('#dates_multiple_show_more'));
+
+        // Update the preview on changes. Since the .change() event doesn't fire until blur,
+        // also set the timer on keydown().
+        $('#event-submission-form input[type=text]').
+            change(set_preview_timer).keydown(set_preview_timer);
+        $('#event-submission-form input[type=email]').
+            change(set_preview_timer).keydown(set_preview_timer);
+        $('#event-submission-form input[type=url]').
+            change(set_preview_timer).keydown(set_preview_timer);
+        $('#event-submission-form textarea').
+            change(set_preview_timer).keydown(set_preview_timer);
+        $('#event-submission-form select').change(set_preview_timer);
+        $('#event-submission-form input[type=radio]').change(set_preview_timer);
+        $('#event-submission-form input[type=checkbox]').change(set_preview_timer);
+
+        // Update the preview now. Even if the event is new and there's not content,
+        // we want to draw the preview box and make it look nicer.
+        update_preview();
     });
 
 })(jQuery);
