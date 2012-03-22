@@ -382,7 +382,7 @@ class BfcEventSubmission {
         );
 
         if (!isset($this->event_id)) {
-            die("Event ID is not set\n");
+            throw new RuntimeException("Event ID is not set");
         }
 
         $sql = $wpdb->prepare("SELECT * FROM ${calevent_table_name} " .

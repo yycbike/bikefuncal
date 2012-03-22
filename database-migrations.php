@@ -187,7 +187,7 @@ function bfc_install_db_5() {
     //    caldaily, since the two 'modified' columns will not
     //    clash.
     $sql = <<<END_SQL
-        CREATE VIEW ${caldaily_for_listings_table_name}
+        CREATE OR REPLACE VIEW ${caldaily_for_listings_table_name}
         AS SELECT id, newsflash, eventdate, eventstatus, exceptionid
         FROM ${caldaily_table_name}
         WHERE eventstatus <> "E" AND
@@ -204,7 +204,7 @@ END_SQL;
     // We do this in many places, so we make a view to cut down on
     // verbosity.
     $sql = <<<END_SQL
-        CREATE VIEW ${caldaily_num_days_for_listings_table_name}
+        CREATE OR REPLACE VIEW ${caldaily_num_days_for_listings_table_name}
         AS SELECT id, count(*) as num_days
         FROM ${caldaily_for_listings_table_name}
         GROUP BY id;
