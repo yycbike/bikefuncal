@@ -884,9 +884,7 @@ class BfcEventSubmission {
         $to = $this->event_args['email'];
         $headers = "From: " . get_option('bfc_calendar_email') . "\r\n" .
                    "CC: "   . get_option('bfc_calendar_email');
-        // Commented out because it was causing errors when Evan ran unit tests
-        // without sendmail installed.
-        //mail($to, $subject, $body, $headers);
+        mail($to, $subject, $body, $headers);
     }
     
     protected function is_editcode_valid() {
