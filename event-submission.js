@@ -552,20 +552,68 @@ function autocomplete_address(event, ui) {
     }
 }
 
+function animate_once_multiple(old_div, new_div) {
+    var speed = 400;
+    var once_multiple_container = jQuery('#once-multiple-container');
+
+    var old_height = old_div.height();
+    var new_height = new_div.height();
+
+    if (old_height > new_height) {
+        // Lock in the larger size for now, animate the shrinking later.
+        once_multiple_container.height( once_multiple_container.height() );
+    }
+    else {
+        // Before showing the larger size, animate the growth of the
+        // space.
+        once_multiple_container.animate(
+            {height: new_height}, 
+            speed,
+            function () {
+                // Change height back to auto, so the div can grow & shrink
+                once_multiple_container.height('auto');
+            });
+    }
+
+    old_div.fadeOut(speed, function() {
+        new_div.fadeIn(speed, function() {
+
+            if (old_height > new_height) {
+                // Animate to the height of the new div
+                once_multiple_container.animate(
+                    {height: new_height},
+                    speed,
+                    function () {
+
+                        // Change height back to auto, so the div can grow & shrink
+                        once_multiple_container.height('auto');
+                    });
+            }
+        });
+    });
+}
+
 function toggle_occurs_once_multiple() {
+    var occurs_multiple = jQuery('#occurs-multiple');
+    var occurs_once = jQuery('#occurs-once');
+
     if (jQuery('#submission_event_occurs_once').attr('checked')) {
-        jQuery('#occurs-multiple').hide();
-        jQuery('#occurs-once').show();
+        animate_once_multiple(occurs_multiple, occurs_once);
 
         jQuery('#submission_dates_once').attr('required', true);
         jQuery('#submission_dates_multiple').attr('required', false);
+
+        jQuery('#submission_event_during_festival').attr('disabled', false);
+        jQuery('label[for=submission_event_during_festival]').removeClass('disabled');
     }
     else {
-        jQuery('#occurs-once').hide();
-        jQuery('#occurs-multiple').show();
+        animate_once_multiple(occurs_once, occurs_multiple);
 
         jQuery('#submission_dates_once').attr('required', false);
         jQuery('#submission_dates_multiple').attr('required', true);
+
+        jQuery('#submission_event_during_festival').attr('disabled', true);
+        jQuery('label[for=submission_event_during_festival]').addClass('disabled');
     }
 }
 

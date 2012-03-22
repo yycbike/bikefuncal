@@ -361,6 +361,16 @@ function bfc_print_event_submission_form($event_submission) {
                 id='submission_event_occurs_once' value='once'>
             <label for='submission_event_occurs_once'>One time</label>
         </div>
+
+        <div id=event-during-festival>
+            <input type='checkbox' name='submission_event_during_festival'
+                   <?php $event_submission->print_checked_for_event_during_festival(); ?>
+                   id='submission_event_during_festival'>
+            <label for='submission_event_during_festival'>
+              During <?php print esc_html(get_option('bfc_festival_name')); ?>
+            </label>
+        </div>
+
         <div>
             <input type='radio' name='submission_event_occurs'
                 <?php $event_submission->print_checked_for_event_occurs('multiple'); ?>
@@ -369,52 +379,48 @@ function bfc_print_event_submission_form($event_submission) {
         </div>
     </div><!-- new-event-controls -->
 
-    <div id='occurs-once'>
-      <h3 class='event-submission-label'></h3>
-      <div class='new-event-controls'>
-        <input type='checkbox' name='submission_event_during_festival'
-               <?php $event_submission->print_checked_for_event_during_festival(); ?>
-               id='submission_event_during_festival'>
-        <label for='submission_event_during_festival'>
-          The event occurs during <?php print esc_html(get_option('bfc_festival_name')); ?>
-        </label>
-      </div>
+    <!-- Container div that helps animate the transition between occurs once & occurs multiple -->
+    <div id='once-multiple-container' style='clear: both;'>
 
-      <h3 class='event-submission-label'>Date</h3>
-      <div class='new-event-controls'>
-        <input type='text'
-               name='submission_dates_once'
-               id='submission_dates_once'
-               maxlength=256
-               <?php if ($event_submission->event_occurs('once')) $event_submission->print_dates();  ?>
+      <div id='occurs-once'>
+        <h3 class='event-submission-label'>Date</h3>
+        <div class='new-event-controls'>
+          <input type='text'
+                 name='submission_dates_once'
+                 id='submission_dates_once'
+                 maxlength=256
+                 <?php if ($event_submission->event_occurs('once')) $event_submission->print_dates();  ?>
+                 >
+          <?php bfc_event_form_help('submission_dates_once') ?>
+        </div><!-- .new-event-controls -->
+
+        <div style='clear: both;'></div>
+      </div><!-- #occurs-once -->
+
+      <div id='occurs-multiple'>
+        <h3 class='event-submission-label'>Dates</h3>
+        <div class='new-event-controls'>
+          <input type='text'
+                 id='submission_dates_multiple'
+                 name='submission_dates_multiple'
+                 class='narrower'
+                 maxlength=256
+                 <?php if ($event_submission->event_occurs('multiple')) $event_submission->print_dates(); ?>
+                 >
+          <input type='button' id='submission_dates_show' value='Show Dates'>
+          <img src='<?php print plugins_url('bikefuncal/images/ajax-loader.gif'); ?>'
+               id='submission_dates_spinner'
+               style='display: none;'
                >
-        <?php bfc_event_form_help('submission_dates_once') ?>
-      </div><!-- .new-event-controls -->
 
-    </div><!-- #occurs-once -->
+          <?php bfc_event_form_help('submission_dates_multiple'); ?>
+        </div><!-- new-event-controls -->
 
-    <div id='occurs-multiple'>
-      <h3 class='event-submission-label'>Dates</h3>
-      <div class='new-event-controls'>
-        <input type='text'
-               id='submission_dates_multiple'
-               name='submission_dates_multiple'
-               class='narrower'
-               maxlength=256
-               <?php if ($event_submission->event_occurs('multiple')) $event_submission->print_dates(); ?>
-               >
-        <input type='button' id='submission_dates_show' value='Show Dates'>
-        <img src='<?php print plugins_url('bikefuncal/images/ajax-loader.gif'); ?>'
-             id='submission_dates_spinner'
-             style='display: none;'
-             >
-        
-        <?php bfc_event_form_help('submission_dates_multiple'); ?>
-      </div><!-- new-event-controls -->
-    </div><!-- occurs-multiple -->
+        <div style='clear: both;'></div>
+      </div><!-- occurs-multiple -->
+    </div>
 
     <div id="datelist"></div> 
-
 
     <h3 class='event-submission-label'>Start time</h3>
     <div class="new-event-controls">
