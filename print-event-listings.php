@@ -715,6 +715,61 @@ function fullentry($record, $for, $sqldate)
         printf("<div class='leader-other-contact'>%s</div>", esc_html($record['contact']));
     }
     printf("</div>"); // class='contact-info'
+
+    ///////////////////////
+    // Social media
+    //
+    if ($for === 'event-page' || $for === 'listing') {
+        // We don't use the official Javascript-powered Facebook &
+        // Twitter links for two reasons. (1) They didn't work in the
+        // event pop-up, probably because they create multiple elements
+        // with the same id, and (2) the JavaScript has skeezy code that
+        // tracks you across the Internet. Instead, we use the approach
+        // that boingboing uses, where the user clicks a link to share.
+
+        $twitter_tweet = sprintf("%s %s #%s",
+            $record['title'],
+            $permalink_url,
+            get_option('bfc_festival_name'));
+        $twitter_url = sprintf('http://twitter.com/home?status=%s',
+            urlencode($twitter_tweet));
+
+        $facebook_url = sprintf('http://www.facebook.com/sharer.php?u=%s',
+            urlencode($permalink_url));
+
+        // Build the mailto: url by hand. If we use http_build_query() or
+        // urlencode(), it will encode spaces in the e-mail body as plus signs.
+        // Then Safari won't decode the spaces, and the user's e-mail will have pluses
+        // in it. Instead, use rawurlencode() which encodes spaces as %20
+        $email_subject = sprintf('A great %s event', get_option('bfc_festival_name'));
+        $email_body = $record['title'] . "\n\n" . $permalink_url;
+        $email_url = sprintf('mailto:?subject=%s&body=%s',
+                             rawurlencode($email_subject),
+                             rawurlencode($email_body));
+
+        $image_dir = 'bikefuncal/images/contrib/SocialMediaBookmarkIcon/32/';
+        $twitter_icon = plugins_url($image_dir . 'twitter.png');
+        $facebook_icon = plugins_url($image_dir . 'facebook.png');
+        $email_icon = plugins_url($image_dir . 'email.png');
+
+        $html = <<<END_HTML
+
+        <div class='social-media'>
+          <h3>Share:</h3>
+          <a href='$facebook_url' target='_blank'>
+            <img src='$facebook_icon' alt='Share on Facebook'>
+          </a>
+          <a href='$twitter_url' target='_blank'>
+            <img src='$twitter_icon' alt='Tweet'>
+          </a>
+          <a href='$email_url' target='_blank'>
+            <img src='$email_icon' alt='E-mail'>
+          </a>
+       </div>
+END_HTML;
+
+        print $html;
+    }
     
     print "</div><!-- End event-details -->";
     
