@@ -335,7 +335,11 @@ class BfcEventSubmission {
                 $this->mail_ride_leader();
             }
             else {
-                $this->errors[] = "You don't have permission to delete this event.";
+                $this->errors[] = array(
+                    'message' => "You don't have permission to delete this event.",
+                    'field' => null,
+                    'type' => 'format', // not really, but this is rare.
+                    );
                 $this->action = "edit";
             }
         }
@@ -880,11 +884,18 @@ class BfcEventSubmission {
         $body = wordwrap($body, $wrap_width);
         //echo '<pre>', $body, '</pre>';
         
-        // Send the e-mail
-        $to = $this->event_args['email'];
-        $headers = "From: " . get_option('bfc_calendar_email') . "\r\n" .
-                   "CC: "   . get_option('bfc_calendar_email');
-        mail($to, $subject, $body, $headers);
+        // Send the e-mail. But only if bfc_calendar_email is set.
+        // Development systems can leave the e-mail address blank, and
+        // not have to worry about sending mail.
+        $calendar_email = get_option('bfc_calendar_email', '');
+        if ($calendar_email !== '') {
+            $to = $this->event_args['email'];
+            $headers = sprintf("From: %s\r\n" .
+                               "CC: %s",
+                               $calendar_email,
+                               $calendar_email);
+            mail($to, $subject, $body, $headers);
+        }
     }
     
     protected function is_editcode_valid() {
@@ -908,53 +919,86 @@ class BfcEventSubmission {
     }
     
     protected function check_validity() {
+        // Check for errors in the order the fields appear on the form.
+        
+        if ($this->event_args['title'] == '') {
+            $this->errors[] = array(
+                'message' => "Title of the event",
+                'type'    => 'missing',
+                'field'   => 'title');
+        }
+
+        if ($this->event_args['descr'] == '') {
+            $this->errors[] = array(
+                'message' => "Description of the event",
+                'type'    => 'missing',
+                'field'   => 'descr');
+        }
+
+        if ($this->event_args['audience'] != 'G' &&
+            $this->event_args['audience'] != 'A' &&
+            $this->event_args['audience'] != 'F') {
+            $this->errors[] = array(
+                'message' => 'Audience is invalid', // lame message, but this shouldn't happen
+                'type'    => 'format',
+                'field'   => 'audience');
+        }
+
+        if ($this->event_args['address'] == '') {
+            $this->errors[] = array(
+                'message' => "Address (or cross-streets) for the meeting point",
+                'type'    => 'missing',
+                'field'   => 'address');
+        }
+
         if ($this->event_args['dates'] == '') {
-            $this->errors[] = "You must choose a date";
+            $this->errors[] = array(
+                'message' => "Date of the event",
+                'type'    => 'missing',
+                'field'   => 'dates');
         }
         else {
             // Check the date formatting. First, parse the dates.
             $this->dayinfo = repeatdates($this->event_args['dates']);
             
             if ($this->dayinfo['datestype'] === 'error') {
-                $this->errors[] =
-                    sprintf('The date, "%s", was not understood',
-                            $this->event_args['dates']);
+                $this->errors[] = array(
+                    'message' => sprintf('The date, "%s", was not understood.',
+                                         $this->event_args['dates']),
+                    'type'  => 'format',
+                    'field' => 'dates');
             }
         }
 
-        if ($this->event_args['email'] == '') {
-            $this->errors[] = 'You need to supply an e-mail address. '.
-                '(We only use this to mail you information about updating your event. We won\'t spam you.)';
-        }
-        else if (filter_var($this->event_args['email'], FILTER_VALIDATE_EMAIL) === false) {
-            $this->errors[] = 'E-mail address is invalid. '.
-                '(We only use this to mail you information about updating your event. We won\'t spam you.)';
-        }
-
-        if ($this->event_args['audience'] != 'G' &&
-            $this->event_args['audience'] != 'A' &&
-            $this->event_args['audience'] != 'F') {
-            $this->errors[] = 'Audience is invalid';
-        }
-
-        if ($this->event_args['title'] == '') {
-            $this->errors[] = "You need to supply a title";
-        }
-
         if ($this->event_args['eventtime'] == '') {
-            $this->errors[] = "You need to choose a time";
+            $this->errors[] = array(
+                'message' => "Start time for the event",
+                'type'    => 'missing',
+                'field'   => 'eventtime');
         }
 
         if ($this->event_args['name'] == '') {
-            $this->errors[] = "You need to provide a name (but a fake name will do)";
+            $this->errors[] = array(
+                'message' => "Your name (a fake name will do, if you're shy)",
+                'type'    => 'missing',
+                'field'   => 'name');
         }
 
-        if ($this->event_args['descr'] == '') {
-            $this->errors[] = "You must provide a description";
+        if ($this->event_args['email'] == '') {
+            $this->errors[] = array(
+                'message' => 'Your e-mail address. '.
+                             '(We only use this to mail you a link that lets you update ' .
+                             'your event listing. We won\'t spam you.)',
+                'type'    => 'missing',
+                'field'   => 'email');
         }
-
-        if ($this->event_args['address'] == '') {
-            $this->errors[] = "You must provide an address (or cross-streets) for the meeting point";
+        else if (filter_var($this->event_args['email'], FILTER_VALIDATE_EMAIL) === false) {
+            $this->errors[] = array(
+                'message' => 'E-mail address is invalid. '.
+                             '(We only use this to mail you a link that lets you update ' .
+                             'your event listing. We won\'t spam you.)',
+                'type'    => 'format',
+                'field'   => 'email');
         }
         
         if ($this->event_args['weburl'] !== '') {
@@ -966,21 +1010,41 @@ class BfcEventSubmission {
             }
 
             if ($scheme !== 'http' && $scheme !== 'https') {
-                $this->errors[] = 'Web site address: Only http: and https: are allowed';
+                $this->errors[] = array(
+                    'message' => 'Web site: Only http: and https: are allowed',
+                    'type'    => 'format',
+                    'field'   => 'weburl');
             }
             else if (filter_var($this->event_args['weburl'], FILTER_VALIDATE_URL) === false) {
-                $this->errors[] = 'Web site address is invalid';
+                $this->errors[] = array(
+                    'message' => 'Web site does not appear to be a URL',
+                    'type'    => 'format',
+                    'field'   => 'weburl');
             }
         }
 
         // Validate the edit code
         if (!$this->is_editcode_valid()) {
-            $this->errors[] = "You don't have authorization to edit this event";
+            $this->errors[] = array(
+                'message' => "You don't have authorization to edit this event",
+                'type'    => 'format', // not really a format problem, but this should be rare.
+                                       // don't bother making a special case.
+                'field'   => null);
         }
     }
 
     public function is_valid() {
         return count($this->errors) == 0;
+    }
+
+    /* Print 'error' if the specified field has an error */
+    public function print_error_class_for($field) {
+        foreach ($this->errors as $error) {
+            if (isset($error['field']) && $error['field'] === $field) {
+                print 'error';
+                return;
+            }
+        }
     }
     
     // Calculate the days this event occurs on, and any changes to the dates
@@ -1378,15 +1442,46 @@ class BfcEventSubmission {
 
     public function print_errors() {
         if (!$this->is_valid()) {
-            print "<ul>\n";
+            $missing_errors = array();
+            $format_errors  = array();
 
             foreach ($this->errors as $error) {
-                print "<li>";
-                print esc_html($error);
-                print "</li>";
+                if ($error['type'] === 'missing') {
+                    $missing_errors[] = $error;
+                }
+                else if ($error['type'] === 'format') {
+                    $format_errors[] = $error;
+                }
+                else {
+                    die();
+                }
             }
-            
-            print "</ul>\n";
+
+            print "<h2 class='event-submission-section'>Just a few more things...</h2>";
+
+            if (count($missing_errors) > 0) {
+                print "<p>Please fill in these fields:</p>\n";
+                print "<ul>\n";
+
+                foreach ($missing_errors as $error) {
+                    print "<li>";
+                    print esc_html($error['message']);
+                    print "</li>";
+                }
+                print "</ul>\n";
+            }
+
+            if (count($format_errors) > 0) {
+                print "<p>Please change these fields:</p>\n";
+                print "<ul>\n";
+
+                foreach ($format_errors as $error) {
+                    print "<li>";
+                    print esc_html($error['message']);
+                    print "</li>";
+                }
+                print "</ul>\n";
+            }
         }
     }
 

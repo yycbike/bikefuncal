@@ -252,21 +252,24 @@ function bfc_print_event_submission_form($event_submission) {
 
     <?php if (!$event_submission->is_valid()) { ?>
     <div class="error-messages">
-      <h2 class='event-submission-section'>Oops! Please fix these problems</h2>
       <?php $event_submission->print_errors() ?>
     </div>                                         
     <?php } # endif -- is valid ?>
 
-    <form action="<?php print esc_attr(get_permalink()); # go back to this form when submitting ?>"
+    <form action="<?php print esc_attr(get_permalink()); // go back to this form when submitting ?>"
           method="post"
           enctype="multipart/form-data"
           id="event-submission-form"
+          novalidate <?php // HTML5 browsers do undesirable validation things, like
+                           // requiring URLs to start with http:. Disable that. ?>
           >
 
     <h2 class='event-submission-section'>Event Description</h2>
     <div class="new-event-category">
 
-    <h3 class='event-submission-label'>Title</h3>
+    <h3 class='event-submission-label <?php $event_submission->print_error_class_for('title'); ?>'>
+      <span>Title</span>
+    </h3>
     <div class="new-event-controls">
       <input type="text" class="fullwidth" name="event_title" required
         maxlength=80
@@ -274,13 +277,17 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_title') ?>
     </div>
                                                  
-    <h3 class='event-submission-label'>Description</h3>
+    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('descr'); ?> '>
+      <span>Description</span>
+    </h3>
     <div class="new-event-controls">
       <textarea name="event_descr" id="event_descr" class="fullwidth" required><?php $event_submission->print_descr()?></textarea>
       <?php bfc_event_form_help('event_descr') ?>
     </div>
 
-    <h3 class='event-submission-label'>Audience</h3>
+    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('audience'); ?> '>
+      <span>Audience</span>
+    </h3>
     <div class="new-event-controls">
         <div>
           <input type="radio" name="event_audience"
@@ -348,7 +355,9 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_locname') ?>
     </div>             
 
-    <h3 class='event-submission-label'>Address</h3>
+    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('address'); ?> '>
+      <span>Address</span>
+    </h3>
     <div class="new-event-controls">
       <input type="text" id="event_address" name="event_address" required
              class="narrower" maxlength=256
@@ -403,7 +412,9 @@ function bfc_print_event_submission_form($event_submission) {
     <div id='once-multiple-container' style='clear: both;'>
 
       <div id='occurs-once'>
-        <h3 class='event-submission-label'>Date</h3>
+        <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('dates'); ?> '>
+          <span>Date</span>
+        </h3>
         <div class='new-event-controls'>
           <input type='text'
                  name='submission_dates_once'
@@ -418,7 +429,9 @@ function bfc_print_event_submission_form($event_submission) {
       </div><!-- #occurs-once -->
 
       <div id='occurs-multiple'>
-        <h3 class='event-submission-label'>Dates</h3>
+        <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('dates'); ?> '>
+          <span>Dates</span>
+        </h3>
         <div class='new-event-controls'>
           <input type='text'
                  id='submission_dates_multiple'
@@ -442,7 +455,9 @@ function bfc_print_event_submission_form($event_submission) {
 
     <div id="datelist"></div> 
 
-    <h3 class='event-submission-label'>Start time</h3>
+    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('eventtime'); ?> '>
+      <span>Start time</span>
+    </h3>
     <div class="new-event-controls">
 	<select name="event_eventtime" id="event_eventtime">         
 	  <option value="">Choose a time</option>
@@ -489,14 +504,18 @@ function bfc_print_event_submission_form($event_submission) {
     <h2 class='event-submission-section'>Contact Info</h2>
     <div class="new-event-category">
 
-    <h3 class='event-submission-label'>Your name</h3>
+    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('name'); ?> '>
+      <span>Your name</span>
+    </h3>
     <div class="new-event-controls">
       <input type="text" name="event_name" class="narrower" required
         maxlength=256 <?php $event_submission->print_name(); ?>>
       <?php bfc_event_form_help('event_name') ?>
     </div>
 
-    <h3 class='event-submission-label'>E-Mail</h3>
+    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('email'); ?> '>
+      <span>E-Mail</span>
+    </h3>
     <div class='new-event-controls'>
       <input type="email" name="event_email" class="narrower" required
         maxlength=256 <?php $event_submission->print_email(); ?>>
@@ -518,8 +537,8 @@ function bfc_print_event_submission_form($event_submission) {
         </div>
     </div>
     
-    <div class='event-submission-label'>
-      <h3>Web site</h3>
+    <div class='event-submission-label   <?php $event_submission->print_error_class_for('weburl'); ?> '>
+      <h3><span>Web site</span></h3>
       <div class=optional>optional</div>
     </div>
     <div class='new-event-controls'>

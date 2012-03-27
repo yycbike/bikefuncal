@@ -30,7 +30,7 @@ abstract class BfcTestCase extends WPTestCase {
         update_option('bfc_drinking_age', '19');
         update_option('bfc_city', 'Vancouver');
         update_option('bfc_province', 'BC');
-        update_option('bfc_calendar_email', 'test-velolove-calendar@bogushost.ca');
+        update_option('bfc_calendar_email', '');
     }
 
     function tearDown() {
