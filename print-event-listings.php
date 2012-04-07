@@ -1186,32 +1186,9 @@ function bfc_register_other_events_widget() {
 }
 add_action('widgets_init', 'bfc_register_other_events_widget');
 
-function bfc_date_selector_calendar_day($thisdate, $count, $stats) {
-    $num_count_categories = 35;
-
-    // As stddev increases, use up more of the available range. When
-    // stddev hits 3.5, use the entire range. Evan picked 3.5 somewhat
-    // arbitrarily.
-    $category_range_factor = $stats['stddev'] / 3.5;
-    if ($category_range_factor > 1.0) {
-        // Cap at 100%
-        $category_range_factor = 1.0;
-    }
-
-    // Compute by starting at the middle and working up and down
-    $mid_category = $num_count_categories / 2.0;
-    $min_category = floor($mid_category - ($category_range_factor * $mid_category));
-    $max_category = ceil($mid_category  + ($category_range_factor * $mid_category));
-
-    // Compute by starting at the minimum and working up
-    //$min_category = 0;
-    //$max_category = ceil($min_category + ($category_range_factor * $num_count_categories));
-
-    $category_range = $max_category - $min_category;
-
+function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
     $day_of_month = date("j",$thisdate);
     $sqldate = date('Y-m-d', $thisdate);
-
 
     // If today is special...
     $class = class_for_special_day($thisdate);
@@ -1223,23 +1200,19 @@ function bfc_date_selector_calendar_day($thisdate, $count, $stats) {
 
     // Add a category class
     if ($count > 0) {
-        // Find, in percent, how close this day's count is to the maximum count.
-        // 0% means count = minimum; 100% means count = maximum.
-        $shifted_count = $count - $stats['min'];
-        $shifted_max   = $stats['max'] - $stats['min'];
-        if ($shifted_max == 0) {
-            $percent_of_shifted_max = 1.0;
+        $num_count_categories = 10;
+
+        // If all the counts are small, don't take up the whole box.
+        if ($max_count < 12) {
+            $max_count = 12;
         }
-        else {
-            $percent_of_shifted_max = $shifted_count / $shifted_max;
-        }
-        
-        $count_category = ceil($min_category + ($percent_of_shifted_max * $category_range));
+        $percent_of_max = $count / ($max_count * 1.0);
+        $count_category = ceil($percent_of_max * $num_count_categories);
 
         $class .= sprintf(" count-category-%d", $count_category);
     }
 
-    printf("<td data-absolute-count='%d' class='%s'>\n", esc_attr($count), esc_attr($class));
+    printf("<td class='%s'>\n", esc_attr($class));
     print "<div class='date'>";
     if ($count > 0) {
         printf("<a href='%s'>%d</a>",
@@ -1261,13 +1234,19 @@ function bfc_date_selector_calendar($startdate, $enddate) {
     global $caldaily_for_listings_table_name;
     global $caldaily_num_days_for_listings_table_name;
 
+    // Count the number of events per date. Give one-time events more weight than
+    // repeating events.
     $sql = <<<END_SQL
-        SELECT eventdate, count(eventdate) AS count
-        FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
-        WHERE eventdate >= %s AND
-              eventdate <= %s                                                                                 
-        GROUP BY eventdate
-        ORDER BY eventdate ASC;
+SELECT SUM(weighted_count) AS count, eventdate
+FROM (
+    SELECT IF(num_days > 1, 1, 4) AS weighted_count, eventdate
+    FROM ${caldaily_num_days_for_listings_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+    WHERE eventdate >= %s AND
+          eventdate <= %s
+) AS counts
+GROUP BY eventdate
+ORDER BY eventdate ASC;
+
 END_SQL;
 
     $sqldate_start = date('Y-m-d', $startdate);
@@ -1276,27 +1255,17 @@ END_SQL;
     $sql = $wpdb->prepare($sql, $sqldate_start, $sqldate_end);
     $day_records = $wpdb->get_results($sql, ARRAY_A);
 
-    // Convert the counts to a hash
     $count_for_day = array();
+    $max_count = -1;
     foreach ($day_records as $day_record) {
+        // Convert the counts to a hash
         $count_for_day[ $day_record['eventdate'] ] = $day_record['count'];
-    }
 
-    // Get stats about the number of events per days.
-    // Could do this in PHP, but it's easy to do in mysql.
-    // Note that days without events are omitted from the stats.
-    $sql = <<<END_SQL
-        SELECT STDDEV_POP(count) as stddev, AVG(count) AS mean, MIN(count) AS min, MAX(count) as max
-        FROM (
-            SELECT count(eventdate) AS count
-            FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
-            WHERE eventdate >= %s AND
-                  eventdate <= %s                                                                                 
-            GROUP BY eventdate
-        ) as counts;
-END_SQL;
-    $sql = $wpdb->prepare($sql, $sqldate_start, $sqldate_end);
-    $stats = $wpdb->get_row($sql, ARRAY_A);
+        // Find the max count
+        if ($day_record['count'] > $max_count) {
+            $max_count = $day_record['count'];
+        }
+    }
 
     ?>
     <table class='date-selector-calendar'>
@@ -1352,7 +1321,7 @@ END_SQL;
 	    print "</tr><tr>\n";
         }
 
-        bfc_date_selector_calendar_day($thisdate, $count, $stats);
+        bfc_date_selector_calendar_day($thisdate, $count, $max_count);
 
         $day_of_month++;
 
