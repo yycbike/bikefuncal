@@ -60,13 +60,13 @@ function bfc_get_cal_dates($atts) {
     return array($startdate, $enddate);
 }
 
-# Print either an overview calendar or event listings.
-# (The code for either is largely the same, so there's
-# one function for both.)
-#
-# Parameters:
-# $type -- What to print. Either 'overview' or 'listings'
-# $atts -- The attributes passed in to the shortcode handler.
+// Print either an overview calendar or event listings.
+// (The code for either is largely the same, so there's
+// one function for both.)
+//
+// Parameters:
+// $type -- What to print. Either 'overview' or 'listings'
+// $atts -- The attributes passed in to the shortcode handler.
 function bfc_overview_or_event_listings($type, $atts) {
     if (!isset($atts['for'])) {
         die("Did an overview calendar or event listing without specifying 'for'");
@@ -87,11 +87,11 @@ function bfc_overview_or_event_listings($type, $atts) {
 
     list($startdate, $enddate) = bfc_get_cal_dates($atts);
 
-    # WordPress wants shortcodes to return their content as a string,
-    # not output it with print statements. But all of the existing code
-    # uses print statements, and changing it to use strings would be a
-    # hassle. Fortunately, PHP's output buffering (OB) functions can capture
-    # print statements into a string.
+    // WordPress wants shortcodes to return their content as a string,
+    // not output it with print statements. But all of the existing code
+    // uses print statements, and changing it to use strings would be a
+    // hassle. Fortunately, PHP's output buffering (OB) functions can capture
+    // print statements into a string.
     ob_start();
     ob_implicit_flush(0);
     
@@ -99,16 +99,20 @@ function bfc_overview_or_event_listings($type, $atts) {
         overview_calendar($startdate,
                           $enddate,
                           $caltype,
-                          TRUE); # preload all days
+                          TRUE); // preload all days
                           
         add_action('wp_footer', 'load_overview_calendar_javascript');                                         
     }
     else if ($type == 'listings') {
         event_listings($startdate,
                        $enddate,
-                       TRUE, #preload
-                       FALSE,   # For printer?
-                       TRUE);  # Include images?
+                       TRUE, //preload
+                       FALSE,   // For printer?
+                       TRUE);  // Include images?
+    }
+    else if ($type == 'date-selector') {
+        bfc_date_selector_calendar($startdate, $enddate);
+        bfc_date_selector_listings($startdate, $enddate);
     }
     else {
         die("Bad value of type: " . $type);
@@ -135,6 +139,12 @@ add_shortcode('bfc_event_listings', 'bfc_event_listings_shortcode');
 function bfc_event_listings_shortcode($atts) {
     return bfc_overview_or_event_listings('listings', $atts);
 }
+
+add_shortcode('bfc_date_selector', 'bfc_date_selector_shortcode');
+function bfc_date_selector_shortcode($atts) {
+    return bfc_overview_or_event_listings('date-selector', $atts);
+}
+
 
 #
 # Print the button to navigate to the previous set of dates
