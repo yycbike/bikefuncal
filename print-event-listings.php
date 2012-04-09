@@ -1376,7 +1376,7 @@ END_SQL;
             // It's a new day. Print a header.
             $last_date = $record['eventdate'];
 
-            printf("<h2><a name='%s'></a>%s</h2>",
+            printf("<h2><a id='%s'></a>%s</h2>",
                    esc_attr('day-' . $record['eventdate']),
                    esc_html(date('l, F j', strtotime($last_date))));
         }

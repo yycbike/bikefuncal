@@ -111,8 +111,12 @@ function bfc_overview_or_event_listings($type, $atts) {
                        TRUE);  // Include images?
     }
     else if ($type == 'date-selector') {
+        print "<div id=date-selector>";
         bfc_date_selector_calendar($startdate, $enddate);
         bfc_date_selector_listings($startdate, $enddate);
+        print "</div>";
+
+        add_action('wp_footer', 'load_date_selector_javascript');
     }
     else {
         die("Bad value of type: " . $type);
@@ -343,6 +347,10 @@ function load_event_submission_form_javascript() {
 
 function load_overview_calendar_javascript() {
     wp_print_scripts('bfc-overview-calendar');
+}
+
+function load_date_selector_javascript() {
+    wp_print_scripts('bfc-date-selector');
 }
 
 /**

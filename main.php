@@ -593,7 +593,7 @@ function bfc_register_javascript() {
     //////////////////////
     // Overview calendar pop-ups
     //
-    // Goes on pages with the [bfc_overview_cal] shorttag
+    // Goes on pages with the [bfc_overview_cal] or [bfc_date_selector] shorttag
     
     // simplemodal is the library for the pop-up window the calendar events appear in
     $simplemodal_js_url = plugins_url('bikefuncal/js-contrib/jquery.simplemodal.js');
@@ -609,6 +609,23 @@ function bfc_register_javascript() {
         'spinnerURL' => plugins_url('bikefuncal/images/ajax-loader.gif'),
     );
     wp_localize_script('bfc-overview-calendar', 'BikeFunAjax', $overview_ajax_options);
+
+    //////////////////////
+    // Date selector
+    //
+    // Goes on pages with the [bfc_date_selector] shorttag
+    $wayport_js_url = plugins_url('/bikefuncal/js-contrib/jquery-waypoints/waypoints.js');
+    wp_register_script('bfc-jquery-waypoints', $wayport_js_url, array('jquery'));
+
+    $scrollto_js_url = plugins_url('/bikefuncal/js-contrib/jquery-scrollto/jquery.scrollTo-min.js');
+    wp_register_script('bfc-jquery-scrollto', $scrollto_js_url, array('jquery'));
+
+    $localscroll_js_url = plugins_url('/bikefuncal/js-contrib/jquery-localscroll/jquery.localscroll-min.js');
+    wp_register_script('bfc-jquery-localscroll', $localscroll_js_url, array('bfc-jquery-scrollto'));
+
+    $date_selector_js_url = plugins_url('/bikefuncal/date-selector.js');
+    wp_register_script('bfc-date-selector', $date_selector_js_url,
+                       array('bfc-jquery-waypoints', 'bfc-jquery-localscroll'));
 
     //////////////////////
     // Event editing form
