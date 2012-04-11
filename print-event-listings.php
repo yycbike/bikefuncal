@@ -1213,6 +1213,7 @@ function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
     }
 
     printf("<td class='%s'>\n", esc_attr($class));
+    print "<div class='container'>";
     print "<div class='date'>";
     if ($count > 0) {
         printf("<a href='%s'>%d</a>",
@@ -1224,7 +1225,8 @@ function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
     }
     print "</div>";
 
-    printf("<div class='radius'></div>");
+    print "<div class='radius'></div>";
+    print "</div>"; // .container
     print "</td>";
 }
 

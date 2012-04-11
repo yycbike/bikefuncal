@@ -351,6 +351,7 @@ function load_overview_calendar_javascript() {
 
 function load_date_selector_javascript() {
     wp_print_scripts('bfc-date-selector');
+    wp_print_scripts('bfc-overview-calendar');    
 }
 
 /**
