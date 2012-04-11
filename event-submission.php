@@ -367,10 +367,6 @@ class BfcEventSubmission {
         // database to set.'
         $do_not_load = array(
             'modified',
-            'external',
-            'source',
-            'nestid',
-            'nestflag',
             'review',
 
             // Obsolete fields we haven't yet removed from the database.
