@@ -39,7 +39,7 @@ if you're not sure.
 
 // The folder on the new server where the events from the old calendar lives.
 // Must end with a slash.
-define('BFC_IMPORT_IMAGE_SRC', '/home/evand/Desktop/eventimages/');
+define('BFC_IMPORT_IMAGE_SRC', '/home/velo/public_html/eventimages/');
 
 function bfc_import_event($event) {
     global $wpdb;
@@ -48,6 +48,11 @@ function bfc_import_event($event) {
     $old_event_id = $event['id'];
     unset($event['id']);
     unset($event['modified']);
+    unset($event['external']);
+    unset($event['source']);
+    unset($event['nestid']);
+    unset($event['nestflag']);
+    unset($event['review']);
     $event['editcode'] = uniqid();
 
 //        print("<pre>\n");
