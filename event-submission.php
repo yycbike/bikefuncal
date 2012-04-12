@@ -1491,28 +1491,39 @@ class BfcEventSubmission {
         
         $human_readable_name_for = array(
             'address'       => 'Address',
-            'audience'  => 'Audience',
+            'audience'      => 'Audience',
             'contact'       => 'Other contact info',
-            'dates'      => 'Dates',
-            'descr'     => 'Description',
+            'dates'         => 'Dates',
+            'descr'         => 'Description',
             'email'         => 'Email',
             'hideemail'     => 'Don\'t publish my email address online',
-            'eventduration' => 'Duration',
-            'eventtime'  => 'Time',
+            'eventduration' => 'End Time',
+            'eventtime'     => 'Start Time',
             'locdetails'    => 'Location details',
             'locname'       => 'Venue',
-            'name'          => 'Organizer name',
+            'name'          => 'Your name',
             'phone'         => 'Phone number',
             'timedetails'   => 'Time details',
-            'title'     => 'Title',
-            'webname'       => 'Web site name',
-            'weburl'        => 'Web site URL',
+            'title'         => 'Title',
+            'weburl'        => 'Web site',
+
+            // Don't tell the user about these fields
+            'datestype'       => false,
+            'addressverified' => false,
+            'review'          => false,
+            'image'           => false, // handle image w/ special case
+            'imagewidth'      => false,
+            'imageheight'     => false,
+            'editcode'        => false,
+            'wordpress_id'    => false,
 
             // Fields we're no longer using:
-            //'tinytitle' => 'Tiny Title',
-            //'printdescr' => 'Print description',
-            //'hidecontact'   => 'Don\'t publish my other contact info online',
-            //'hidephone'     => 'Don\'t publish my phone number online',
+            'tinytitle'       => false,
+            'printdescr'      => false,
+            'hidecontact'     => false,
+            'hidephone'       => false,
+            'webname'         => false,
+
         );
 
         foreach ($this->event_args_changes as $fieldname) {
@@ -1568,9 +1579,11 @@ class BfcEventSubmission {
             if (!isset($human_readable_name_for[$fieldname])) {
                 die($fieldname);
             }
-            $changes[] = sprintf($message_format,
-                                 $human_readable_name_for[$fieldname],
-                                 $value);
+            else if ($human_readable_name_for[$fieldname] !== false) {
+                $changes[] = sprintf($message_format,
+                                     $human_readable_name_for[$fieldname],
+                                     $value);
+            }
         }
 
         // Changes to images
