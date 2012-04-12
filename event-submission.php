@@ -1516,6 +1516,8 @@ class BfcEventSubmission {
             'imageheight'     => false,
             'editcode'        => false,
             'wordpress_id'    => false,
+            'emailforum'      => false,
+
 
             // Fields we're no longer using:
             'tinytitle'       => false,
@@ -1523,7 +1525,6 @@ class BfcEventSubmission {
             'hidecontact'     => false,
             'hidephone'       => false,
             'webname'         => false,
-
         );
 
         foreach ($this->event_args_changes as $fieldname) {
