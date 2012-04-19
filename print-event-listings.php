@@ -1207,14 +1207,18 @@ function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
             $max_count = 12;
         }
         $percent_of_max = $count / ($max_count * 1.0);
-        $count_category = ceil($percent_of_max * $num_count_categories);
 
-        $class .= sprintf(" count-category-%d", $count_category);
+        // Scale radius to start at 25%. Avoid showing a tiny
+        // sliver.
+        $radius = ($percent_of_max * 0.75) + 0.25;
+        // Convert radius to percentage string
+        $radius = sprintf('%d%%', $radius * 100);
     }
 
     printf("<td class='%s'>\n", esc_attr($class));
     print "<div class='container'>";
     print "<div class='date'>";
+    print "<div class='text-align'>";
     if ($count > 0) {
         printf("<a href='%s'>%d</a>",
                esc_attr('#day-' . $sqldate),
@@ -1223,9 +1227,16 @@ function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
     else {
         printf("%d", $day_of_month);
     }
-    print "</div>";
+    print "</div>"; // .text-align
+    print "</div>"; // .date
 
-    print "<div class='radius'></div>";
+    //print "<div class='radius'></div>";
+    if ($count > 0) {
+        printf("<svg xmlns='http://www.w3.org/2000/svg'>
+                <circle cx='0' cy='100%%' r='%s' />
+                </svg>", esc_attr($radius));
+    }
+
     print "</div>"; // .container
     print "</td>";
 }

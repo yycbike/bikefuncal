@@ -112,8 +112,12 @@ function bfc_overview_or_event_listings($type, $atts) {
     }
     else if ($type == 'date-selector') {
         print "<div id=date-selector>";
+        print "<div id=date-selector-calendar-container>";
         bfc_date_selector_calendar($startdate, $enddate);
+        print "</div>";
         bfc_date_selector_listings($startdate, $enddate);
+
+        print "<div class=clear></div>";
         print "</div>";
 
         add_action('wp_footer', 'load_date_selector_javascript');
