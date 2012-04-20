@@ -87,7 +87,7 @@ jQuery(document).ready(function() {
  */
 (function($) {
     $(document).ready(function() {
-        var calendar = $('#date-selector .date-selector-calendar');
+        var calendar = $('#date-selector-calendar');
 
         // Waypoint at the top of the event listings
         var topOptions = {

@@ -1186,7 +1186,7 @@ function bfc_register_other_events_widget() {
 }
 add_action('widgets_init', 'bfc_register_other_events_widget');
 
-function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
+function bfc_date_selector_calendar_day($thisdate, $is_new_month, $count, $max_count) {
     $day_of_month = date("j",$thisdate);
     $sqldate = date('Y-m-d', $thisdate);
 
@@ -1217,8 +1217,16 @@ function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
 
     printf("<td class='%s'>\n", esc_attr($class));
     print "<div class='container'>";
+    print "<div class='text'>";
+
+    if ($is_new_month) {
+        // Jan, Feb, Mar, etc. Short abbreviation.
+        $month = date('M', $thisdate);
+        printf("<div class='month-name'>%s</div>",
+               esc_html($month));
+    }
+
     print "<div class='date'>";
-    print "<div class='text-align'>";
     if ($count > 0) {
         printf("<a href='%s'>%d</a>",
                esc_attr('#day-' . $sqldate),
@@ -1232,8 +1240,12 @@ function bfc_date_selector_calendar_day($thisdate, $count, $max_count) {
 
     //print "<div class='radius'></div>";
     if ($count > 0) {
+        // Draw a whole circle, but only 1/4 of it will be inside
+        // the container. The user sees a slice.
+        //
+        // set cx and/or cy to 0 to move the pie to the left/top.
         printf("<svg xmlns='http://www.w3.org/2000/svg'>
-                <circle cx='0' cy='100%%' r='%s' />
+                <circle cx='100%%' cy='100%%' r='%s' />
                 </svg>", esc_attr($radius));
     }
 
@@ -1281,7 +1293,7 @@ END_SQL;
     }
 
     ?>
-    <table class='date-selector-calendar'>
+    <table>
       <thead>
         <tr>
           <th>S</th>
@@ -1310,6 +1322,7 @@ END_SQL;
     // daylight savings time (but I'm not sure why...).
     // So we we increment $day_of_month.
     $day_of_month = date('d', $startdate);
+    $prior_month = null;
     do {
         // It's OK to call this with, for example,
         // the 32nd of July; PHP turns that into
@@ -1334,7 +1347,13 @@ END_SQL;
 	    print "</tr><tr>\n";
         }
 
-        bfc_date_selector_calendar_day($thisdate, $count, $max_count);
+        // See if this is a new month (or the first day in the calendar)
+        $this_month = date('m', $thisdate);
+        $is_new_month = ($this_month !== $prior_month);
+        $prior_month = $this_month;
+
+        bfc_date_selector_calendar_day($thisdate, $is_new_month,
+                                       $count, $max_count);
 
         $day_of_month++;
 
