@@ -1372,7 +1372,6 @@ function bfc_date_selector_listings($startdate, $enddate) {
         ) AS find_rides
         JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
         ORDER BY eventdate ASC, eventtime ASC, title ASC;
-
 END_SQL;
     $sqldate_start = date('Y-m-d', $startdate);
     $sqldate_end   = date('Y-m-d', $enddate);
@@ -1382,6 +1381,9 @@ END_SQL;
     $records = $wpdb->get_results($sql, ARRAY_A);
 
     print "<div class='date-selector-listings'>";
+
+    // A waypoint to attach to
+    print "<div class='top-of-listings'></div>";
 
     $last_date = null;
     foreach ($records as $record) {
@@ -1397,6 +1399,8 @@ END_SQL;
         tinyentry($record, $record['eventdate'], 'date-selector');
     }
 
+    // A waypoint to attach to
+    print "<div class='bottom-of-listings'></div>";
     print "</div>"; // .date-selector-listings
 }
 
