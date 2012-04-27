@@ -520,20 +520,25 @@ function bfc_print_event_submission_form($event_submission) {
       <input type="email" name="event_email" class="narrower" required
         maxlength=256 <?php $event_submission->print_email(); ?>>
       <?php bfc_event_form_help('event_email') ?>
-
-       <!-- @@@ The old code has a checkbox here about sending forum e-mails
-            to this address. We can turn that on later, when we add forums. -->
-
-        <div id=hideemail_controls>
-        <input type="checkbox" name="event_hideemail" value="Y"
-               id=event_hideemail
-               <?php $event_submission->print_checked_for_hideemail() ?>
-               >
-          <label for=event_hideemail>
-            Don't publish my e-mail address online
-          </label>
-          <br>
-          <?php bfc_event_form_help('event_hideemail'); ?>
+        <div class='email-controls'>
+          <input type="checkbox" name="event_emailforum" value="Y"
+                 id=event_emailforum
+                 <?php $event_submission->print_checked_for_emailforum() ?>
+                 >
+            <label for=event_emailforum>
+              Mail me when people comment on this ride
+            </label>
+        </div>                                                               
+        <div>
+          <input type="checkbox" name="event_hideemail" value="Y"
+                 id=event_hideemail
+                 <?php $event_submission->print_checked_for_hideemail() ?>
+                 >
+            <label for=event_hideemail>
+              Don't publish my e-mail address online
+            </label>
+            <br>
+            <?php bfc_event_form_help('event_hideemail'); ?>
         </div>
     </div>
     

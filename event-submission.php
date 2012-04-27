@@ -420,10 +420,14 @@ class BfcEventSubmission {
         }
     
         $this->event_args['audience'] = 'G';
+
+        // set_defaults() runs after convert_data_type(). Store emailforum as
+        // 1/0, not Y/N.
+        $this->event_args['emailforum'] = 1;
     }
 
     // Some of the data we get submitted from the web form needs to be converted
-    // before storing it into the database.
+    // before storing it into $this->event_args[] (and, from there, the database).
     protected function convert_data_type($field_name, $value) {
         switch ($field_name) {
             // For these fields, convert Y/N to integer
@@ -866,7 +870,7 @@ class BfcEventSubmission {
             $edit_url = bfc_get_edit_url_for_event($this->event_id(), $this->editcode());
             $permalink_url = get_permalink($this->wordpress_id());
 
-            $body .= sprintf("To make changes to your event, go here: %s\n", $edit_url);
+            $body .= sprintf("To make changes to your event, go here: %s\n\n", $edit_url);
             $body .= sprintf("To share your event with friends, send them here: %s\n", $permalink_url);
             $body .= "\n";
         }
@@ -1257,6 +1261,15 @@ class BfcEventSubmission {
         }
     }
 
+    public function print_checked_for_emailforum() {
+        if (isset($this->event_args['emailforum']) &&
+            $this->event_args['emailforum']) {
+
+            print "checked";
+        }
+    }
+
+
     // Returns how often an event occurs. Used by the event form to show
     // controls for picking one date or multiple days.
     // 
@@ -1497,6 +1510,7 @@ class BfcEventSubmission {
             'descr'         => 'Description',
             'email'         => 'Email',
             'hideemail'     => 'Don\'t publish my email address online',
+            'emailforum'    => 'Mail me when people comment on this ride',
             'eventduration' => 'End Time',
             'eventtime'     => 'Start Time',
             'locdetails'    => 'Location details',
@@ -1516,8 +1530,6 @@ class BfcEventSubmission {
             'imageheight'     => false,
             'editcode'        => false,
             'wordpress_id'    => false,
-            'emailforum'      => false,
-
 
             // Fields we're no longer using:
             'tinytitle'       => false,
@@ -1552,6 +1564,7 @@ class BfcEventSubmission {
                 case 'hidephone':
                 case 'hideemail':
                 case 'hidecontact':
+                case 'emailforum':
                     $value = $value ? 'Yes' : 'No';
                     break;
 
