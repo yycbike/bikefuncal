@@ -290,6 +290,11 @@ class BfcEventSubmission {
                 if (isset($new_value)) {
                     $new_value = $this->convert_data_type($field_name, $new_value);
 
+                    // Trim whitespace from text values.
+                    if ($this->calevent_field_info[$field_name]['type'] === '%s') {
+                        $new_value = trim($new_value);
+                    }
+
                     if ($this->action == 'update') {
                         // @@@ Should we die if event_args[$field_name] is unset?
                         // If this is an update, then we loaded from the datbase and
