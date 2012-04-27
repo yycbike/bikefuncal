@@ -119,7 +119,7 @@ function htmldescription($descr)
     $html = str_replace("\n\n", "<p>", $html);
     $html = str_replace("\n", "<br>", $html);
     $html = preg_replace("/\*([0-9a-zA-Z][0-9a-zA-Z,.!?'\" ]*[0-9a-zA-Z,.!?'\"])\*/", "<strong>$1</strong>", $html);
-    $html = preg_replace("/(http:\/\/[^ \t\r\n\"]*[a-zA-Z0-9\/])/", "<a href=\"$1\" class=\"smallhref\">$1</a>", $html);
+    $html = preg_replace("/(https?:\/\/[^ \t\r\n\"]*[a-zA-Z0-9\/])/", "<a href=\"$1\" class=\"smallhref\">$1</a>", $html);
     $html = preg_replace("/([^\\/])(www\\.[0-9a-zA-Z-.]*[0-9a-zA-Z-])($|[^\\/])/", "$1<a href=\"http://$2/\" class=\"smallhref\">$2</a>$3", $html);
     // Needs to come after the link replacement
     $html = str_replace("@", "<img src='${image_dir}/at.gif' alt='[at]'>", $html);
