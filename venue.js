@@ -146,6 +146,12 @@ function display_known_venues(known_venues) {
         name_cell.append(address_input);
         tr.append(address_input);
 
+        var gmaps_cell = jQuery('<td></td>');
+        var gmaps_link = jQuery('<a target="_blank">Map</a>');
+        gmaps_link.attr('href', known_venues[idx].address_link);
+        gmaps_cell.append(gmaps_link);
+        tr.append(gmaps_cell);
+
         var edit_cell = jQuery('<td></td>');
         var save_button = jQuery('<input type=submit value=save>');
         edit_cell.append(save_button);
