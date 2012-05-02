@@ -396,7 +396,12 @@ function bfc_print_event_submission_form($event_submission) {
                    <?php $event_submission->print_checked_for_event_during_festival(); ?>
                    id='submission_event_during_festival'>
             <label for='submission_event_during_festival'>
-              During <?php print esc_html(get_option('bfc_festival_name')); ?>
+              <?php
+                 printf('During %s (%s - %s)',
+                        esc_html(get_option('bfc_festival_name')),
+                        date('F j', strtotime(get_option('bfc_festival_start_date'))),
+                        date('F j', strtotime(get_option('bfc_festival_end_date'))));
+               ?>
             </label>
         </div>
 
