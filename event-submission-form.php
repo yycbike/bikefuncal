@@ -150,7 +150,7 @@ END_HTML;
     }
     else if ($for === 'submission_dates_multiple') {
         $help['content'] = <<<END_HTML
-          Enter the dates when your ride occurs.
+          Enter the dates when your event occurs.
           <br>
           E.g., "First Thursdays" or "Mondays, May to September"
           <div>
@@ -526,7 +526,7 @@ function bfc_print_event_submission_form($event_submission) {
                  <?php $event_submission->print_checked_for_emailforum() ?>
                  >
             <label for=event_emailforum>
-              Mail me when people comment on this ride
+              Mail me when people comment on this event
             </label>
         </div>                                                               
         <div>
