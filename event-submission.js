@@ -40,16 +40,20 @@
     {
         var hint = null;
         switch (value) {
+        case 'Skipped':
+            hint = 'The event won\'t be listed on this date.';
+            break;
         case 'Canceled':
-            hint = 'Use the newsflash to explain why the event is canceled';
+            hint = 'Use the newsflash to explain why the event is canceled.';
             break;
         case 'Exception':
-            var hint1 = 'An exception lets you change change things other than ' +
-                'the date (e.g. start time, location, etc.). ';
+            // \u2014 = &mdash;
+            var hint1 = 'Use an exception if this date is not like the others \u2014 ' +
+                'if it has a different start time, location, etc. '
 
             // Default hint, for when there's not a link to the exception.
-            var hint2 = 'After you update this event, you\'ll be given a link where ' +
-                'you can edit the exception.';
+            var hint2 = 'To edit the exception, first update this event. Then you\'ll be ' +
+                'given a link where you can edit the exception.';
             controls_row.find('[data-is-exception]').each(function() {
                 // If the controls row has a link to the exception, reference it in the hint
                 hint2 = 'Edit the exception with the link above.';
@@ -338,7 +342,9 @@
     function verifydates(reload)
     {
         var value;
-        if ($('#submission_event_occurs_once').attr('checked')) {
+        var is_once = $('#submission_event_occurs_once_festival').attr('checked') ||
+            $('#submission_event_occurs_once_other').attr('checked');
+        if (is_once) {
             value = $('#submission_dates_once').val();
         }
         else {
@@ -800,6 +806,7 @@
         var on_change_event_occurs = function() {
             toggle_occurs_once_multiple();
             toggle_event_during_festival();
+            verifydates(false);
         }
         $('#submission_event_occurs_once_festival').change(on_change_event_occurs);
         $('#submission_event_occurs_once_other').change(on_change_event_occurs);
