@@ -1302,8 +1302,27 @@ class BfcEventSubmission {
         }
     }
 
-    // $what: 'once' or 'multiple'
+    // $what: 'once_festival', 'once_other', 'multiple'
     public function print_checked_for_event_occurs($what) {
+        if ($what === 'once_festival') {
+            if (!$this->event_during_festival()) {
+                // Looking for once_festival, but not during festival.
+                return;
+            }
+
+            $what = 'once';
+        }
+        else if ($what === 'once_other') {
+            if ($this->event_during_festival()) {
+                // Looking for once_other, but this is during the festival
+                return;
+            }
+
+            $what = 'once';
+        }
+
+        // Here $what is 'once' or 'multiple', which is the
+        // arguments that event_occurs() looks for.
         if ($this->event_occurs($what)) {
             print 'checked';
         }

@@ -16,7 +16,7 @@ class TestRepeat extends BfcTestCase {
         // Should produce events for about every month of the year. The exact number depends on
         // when this test is run, so check to make sure we're in the ballpark.
         $this->assertGreaterThanOrEqual(11, count($dayinfo['daylist']));
-        $this->assertLessThanOrEqual(12, count($dayinfo['daylist']));
+        $this->assertLessThanOrEqual(13, count($dayinfo['daylist']));
     }
 
     function test_tuedays_and_thursdays_may_to_september() {

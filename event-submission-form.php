@@ -386,25 +386,25 @@ function bfc_print_event_submission_form($event_submission) {
     <div class='new-event-controls'>
         <div>
             <input type='radio' name='submission_event_occurs'
-                <?php $event_submission->print_checked_for_event_occurs('once'); ?>
-                id='submission_event_occurs_once' value='once'>
-            <label for='submission_event_occurs_once'>One time</label>
-        </div>
-
-        <div id=event-during-festival>
-            <input type='checkbox' name='submission_event_during_festival'
-                   <?php $event_submission->print_checked_for_event_during_festival(); ?>
-                   id='submission_event_during_festival'>
-            <label for='submission_event_during_festival'>
+                <?php $event_submission->print_checked_for_event_occurs('once_festival'); ?>
+                id='submission_event_occurs_once_festival' value='once_festival'>
+            <label for='submission_event_occurs_once_festival'>
               <?php
-                 printf('During %s (%s - %s)',
+                 printf('Once, during %s (%s - %s)',
                         esc_html(get_option('bfc_festival_name')),
                         date('F j', strtotime(get_option('bfc_festival_start_date'))),
                         date('F j', strtotime(get_option('bfc_festival_end_date'))));
                ?>
             </label>
         </div>
-
+        <div>
+            <input type='radio' name='submission_event_occurs'
+                <?php $event_submission->print_checked_for_event_occurs('once_other'); ?>
+                id='submission_event_occurs_once_other' value='once_other'>
+            <label for='submission_event_occurs_once_other'>
+              Once, on another date
+            </label>
+        </div>
         <div>
             <input type='radio' name='submission_event_occurs'
                 <?php $event_submission->print_checked_for_event_occurs('multiple'); ?>
