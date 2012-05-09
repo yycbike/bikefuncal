@@ -717,5 +717,113 @@ function bfc_page_title($title) {
     return $title;
 }
 
+/*
+ * E-mail the ride leader when someone comments on their ride.
+ */
+
+// This action runs when a comment is posted via the form.
+// Scenario:
+// - Returning commenter submits a comment. It gets posted straight away,
+//   since they've had approved comments before.
+add_action('comment_post', 'bfc_comment_post_action', 10, 2);
+function bfc_comment_post_action($comment_id, $approved) {
+    if ($approved === 1) {
+        bfc_mail_ride_leader($comment_id);
+    }
+}
+
+// This action runs when a comment is approved via the admin panel.
+// Scenario:
+// - New user submits a comment. It gets held for moderation.
+// - Admin approves the comment; this runs.
+add_action('wp_set_comment_status', 'bfc_set_comment_status_action',
+           10, 2); // 10 = default priority; 2= pass in 2 arguments.
+function bfc_set_comment_status_action($comment_id, $status) {
+    if ($status === 'approve') {
+        bfc_mail_ride_leader($comment_id);
+    }
+}
+
+function bfc_mail_ride_leader($comment_id) {
+    $comment = get_comment($comment_id);
+    $post_id = $comment->comment_post_ID;
+    $post    = get_post($post_id);
+    if (get_post_type($post) !== 'bfc-event') {
+        return;
+    }
+
+    global $wpdb;
+    global $calevent_table_name;
+    $sql = <<<END_SQL
+        SELECT *
+        FROM ${calevent_table_name}
+        WHERE wordpress_id = %d AND
+              emailforum   = 1
+END_SQL;
+    $sql = $wpdb->prepare($sql, $post_id);
+    $records = $wpdb->get_results($sql, ARRAY_A);
+
+    // Probaly happened because the ride leader
+    // turned off the emailforum flag.
+    if (count($records) !== 1) {
+        return;
+    }
+
+    $record = $records[0];
+
+    if (filter_var($record['email'], FILTER_VALIDATE_EMAIL) === false) {
+        // They gave an invalid e-mail address
+        return;
+    }
+
+    $calendar_email = get_option('bfc_calendar_email', '');
+    $edit_url = bfc_get_edit_url_for_event($record['id'], $record['editcode']);
+    $view_url = get_permalink($wordpress_id);
+
+    $festival_name = get_option('bfc_festival_name');
+
+    $body = <<<END_EMAIL
+Hello there
+
+Someone commented on your $festival_name event, ${record['title']}.
+
+Commenter name: $comment->comment_author
+
+Comment:
+$comment->comment_content
+
+To reply to the comment, go to your event's page: ${view_url}
+
+If you don't want to get mailed about comments, update the e-mail preferences for your ride: ${edit_url}.
+
+Thanks for listing your event with ${festival_name}.
+END_EMAIL;
+
+    $mailinfo = array(
+        'edit_url' => $edit_url,
+        'view_url' => $view_url,
+        'event_record' => $record,
+        'comment'      => $comment,
+        'email_subject' => sprintf('New comment on %s', $record['title']),
+        'email_body' => $body,
+        'email_from' => $calendar_email,
+        'email_cc'   => $calendar_email,
+    );
+
+    $mailinfo = apply_filters('bfc_comment_notification_email', $mailinfo);
+
+    // Development systems can leave the e-mail address blank, and
+    // not have to worry about sending mail.
+    if ($calendar_email === '') {
+        return;
+    }
+
+    $to = $record['email'];
+    $headers = sprintf("From: %s\r\n" .
+                       "CC: %s",
+                       $mailinfo['email_from'],
+                       $mailinfo['email_cc']);
+    $status = mail($to, $mailinfo['email_subject'], $mailinfo['email_body'], $headers);
+}
 
 ?>

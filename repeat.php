@@ -592,7 +592,7 @@ function repeatcanonical($rules)
 # type of day (one, scattered, error, consecutive).
 #
 # $d = 1 more than the number of days.
-function canonical_date_description($daylist, $d, $rules)
+function canonical_date_description($daylist, $d, $rules, $str)
 {
     # derive a canonical string
     if ($d == 1) {
@@ -669,7 +669,7 @@ function repeatdates($str)
         $date += 86400;
     }
 
-    $dayinfo = canonical_date_description($daylist, $d, $rules);
+    $dayinfo = canonical_date_description($daylist, $d, $rules, $str);
     $dayinfo["daylist"] = $daylist;
 
     return $dayinfo;

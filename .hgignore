@@ -10,6 +10,7 @@ syntax: glob
 
 # Ignore Mac volumes
 .DS_Store
+._*
 
 syntax: regexp
 /RCS/

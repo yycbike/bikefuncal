@@ -25,12 +25,20 @@ When people are adding a ride to the calendar, the venue name (and address) can 
 database knows about that venue. Add known venues here.
 </p>
 
+<p>
+The address alone (without city or province) is usually enough. If the venue is outside of
+<?php print get_option('bfc_city'); ?>, you can include the city name but that's more to help
+the people who read the listings than to help Google Maps find the address. When an address is linked to Google Maps,
+we tell Google to search around <?php print get_option('bfc_city'); ?> -- it can usually find the
+address even if you leave out the city and province. If you're not sure, test with the map link.
+</p>
 
 <table id='known-venues'>
 <thead>
 <tr>
 <th>Name of Business or Park</th>
 <th>Address</th>
+<th>Map</th>
 <th>Edit</th>
 <th><!-- results of save go here --></th>
 </tr>
@@ -42,7 +50,7 @@ database knows about that venue. Add known venues here.
 
 <tfoot>
 <tr>
-<td colspan=2>
+<td colspan=3>
 <strong>Add a new venue:</strong>
 </td>
 </tr>
@@ -54,6 +62,9 @@ database knows about that venue. Add known venues here.
 
 <td>
 <input type=text id=venue_address>
+</td>
+
+<td><!-- empty col, for maps link -->
 </td>
 
 <td>
@@ -82,6 +93,10 @@ function bfc_get_known_venues_ajax_action() {
 
     $sql = "select * from ${caladdress_table_name} order by locname ASC";
     $venues = $wpdb->get_results($sql, ARRAY_A);
+
+    foreach ($venues as &$venue) {
+        $venue['address_link'] = address_link($venue['address']);
+    }
     
     $json = json_encode($venues);
 

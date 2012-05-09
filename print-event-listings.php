@@ -153,8 +153,13 @@ function overview_calendar(
             'enddate' => $enddate,
             );
         global $overview_cal_padding_before;
+        $output = '';
         $output = apply_filters('bfc-overview-cal-padding',
             $overview_cal_padding_before, $filter_args);
+        // Compatability: We released the plugin where the filter was named with dashes,
+        // even though WordPress style is to use underscores. So check both...
+        $output = apply_filters('bfc_overview_cal_padding',
+                                $output, $filter_args);
         $output = do_shortcode($output);
         printf("<td colspan='%d'>", $filter_args['cols']);
         print $output;
@@ -205,9 +210,14 @@ function overview_calendar(
             'enddate' => $enddate,
              );
 
+        $output = '';
         global $overview_cal_padding_after;
         $output = apply_filters('bfc-overview-cal-padding',
             $overview_cal_padding_after, $filter_args);
+        // Compatability: We released the plugin where the filter was named with dashes,
+        // even though WordPress style is to use underscores. So check both...
+        $output = apply_filters('bfc_overview_cal_padding',
+                                $output, $filter_args);
         $output = do_shortcode($output);
         printf("<td colspan='%d'>", $filter_args['cols']);
         print $output;

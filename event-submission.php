@@ -290,6 +290,11 @@ class BfcEventSubmission {
                 if (isset($new_value)) {
                     $new_value = $this->convert_data_type($field_name, $new_value);
 
+                    // Trim whitespace from text values.
+                    if ($this->calevent_field_info[$field_name]['type'] === '%s') {
+                        $new_value = trim($new_value);
+                    }
+
                     if ($this->action == 'update') {
                         // @@@ Should we die if event_args[$field_name] is unset?
                         // If this is an update, then we loaded from the datbase and
@@ -367,10 +372,6 @@ class BfcEventSubmission {
         // database to set.'
         $do_not_load = array(
             'modified',
-            'external',
-            'source',
-            'nestid',
-            'nestflag',
             'review',
 
             // Obsolete fields we haven't yet removed from the database.
@@ -424,10 +425,14 @@ class BfcEventSubmission {
         }
     
         $this->event_args['audience'] = 'G';
+
+        // set_defaults() runs after convert_data_type(). Store emailforum as
+        // 1/0, not Y/N.
+        $this->event_args['emailforum'] = 1;
     }
 
     // Some of the data we get submitted from the web form needs to be converted
-    // before storing it into the database.
+    // before storing it into $this->event_args[] (and, from there, the database).
     protected function convert_data_type($field_name, $value) {
         switch ($field_name) {
             // For these fields, convert Y/N to integer
@@ -870,7 +875,7 @@ class BfcEventSubmission {
             $edit_url = bfc_get_edit_url_for_event($this->event_id(), $this->editcode());
             $permalink_url = get_permalink($this->wordpress_id());
 
-            $body .= sprintf("To make changes to your event, go here: %s\n", $edit_url);
+            $body .= sprintf("To make changes to your event, go here: %s\n\n", $edit_url);
             $body .= sprintf("To share your event with friends, send them here: %s\n", $permalink_url);
             $body .= "\n";
         }
@@ -1261,6 +1266,15 @@ class BfcEventSubmission {
         }
     }
 
+    public function print_checked_for_emailforum() {
+        if (isset($this->event_args['emailforum']) &&
+            $this->event_args['emailforum']) {
+
+            print "checked";
+        }
+    }
+
+
     // Returns how often an event occurs. Used by the event form to show
     // controls for picking one date or multiple days.
     // 
@@ -1288,8 +1302,27 @@ class BfcEventSubmission {
         }
     }
 
-    // $what: 'once' or 'multiple'
+    // $what: 'once_festival', 'once_other', 'multiple'
     public function print_checked_for_event_occurs($what) {
+        if ($what === 'once_festival') {
+            if (!$this->event_during_festival()) {
+                // Looking for once_festival, but not during festival.
+                return;
+            }
+
+            $what = 'once';
+        }
+        else if ($what === 'once_other') {
+            if ($this->event_during_festival()) {
+                // Looking for once_other, but this is during the festival
+                return;
+            }
+
+            $what = 'once';
+        }
+
+        // Here $what is 'once' or 'multiple', which is the
+        // arguments that event_occurs() looks for.
         if ($this->event_occurs($what)) {
             print 'checked';
         }
@@ -1495,28 +1528,39 @@ class BfcEventSubmission {
         
         $human_readable_name_for = array(
             'address'       => 'Address',
-            'audience'  => 'Audience',
+            'audience'      => 'Audience',
             'contact'       => 'Other contact info',
-            'dates'      => 'Dates',
-            'descr'     => 'Description',
+            'dates'         => 'Dates',
+            'descr'         => 'Description',
             'email'         => 'Email',
             'hideemail'     => 'Don\'t publish my email address online',
-            'eventduration' => 'Duration',
-            'eventtime'  => 'Time',
+            'emailforum'    => 'Mail me when people comment on this ride',
+            'eventduration' => 'End Time',
+            'eventtime'     => 'Start Time',
             'locdetails'    => 'Location details',
             'locname'       => 'Venue',
-            'name'          => 'Organizer name',
+            'name'          => 'Your name',
             'phone'         => 'Phone number',
             'timedetails'   => 'Time details',
-            'title'     => 'Title',
-            'webname'       => 'Web site name',
-            'weburl'        => 'Web site URL',
+            'title'         => 'Title',
+            'weburl'        => 'Web site',
+
+            // Don't tell the user about these fields
+            'datestype'       => false,
+            'addressverified' => false,
+            'review'          => false,
+            'image'           => false, // handle image w/ special case
+            'imagewidth'      => false,
+            'imageheight'     => false,
+            'editcode'        => false,
+            'wordpress_id'    => false,
 
             // Fields we're no longer using:
-            //'tinytitle' => 'Tiny Title',
-            //'printdescr' => 'Print description',
-            //'hidecontact'   => 'Don\'t publish my other contact info online',
-            //'hidephone'     => 'Don\'t publish my phone number online',
+            'tinytitle'       => false,
+            'printdescr'      => false,
+            'hidecontact'     => false,
+            'hidephone'       => false,
+            'webname'         => false,
         );
 
         foreach ($this->event_args_changes as $fieldname) {
@@ -1544,6 +1588,7 @@ class BfcEventSubmission {
                 case 'hidephone':
                 case 'hideemail':
                 case 'hidecontact':
+                case 'emailforum':
                     $value = $value ? 'Yes' : 'No';
                     break;
 
@@ -1572,9 +1617,11 @@ class BfcEventSubmission {
             if (!isset($human_readable_name_for[$fieldname])) {
                 die($fieldname);
             }
-            $changes[] = sprintf($message_format,
-                                 $human_readable_name_for[$fieldname],
-                                 $value);
+            else if ($human_readable_name_for[$fieldname] !== false) {
+                $changes[] = sprintf($message_format,
+                                     $human_readable_name_for[$fieldname],
+                                     $value);
+            }
         }
 
         // Changes to images
