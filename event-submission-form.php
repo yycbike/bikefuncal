@@ -143,7 +143,7 @@ END_HTML;
         $help['content'] = 'e.g., "Science World" or "Arbutus Coffee Shop"';
     }
     else if ($for === 'event_address') {
-        $help['content'] = 'Address or cross streets';
+        $help['content'] = 'Address or cross streets.';
     }
     else if ($for === 'event_locdetails') {
         $help['content'] = 'e.g., "Meet at the gazebo" or "in the NW corner of the park"';
