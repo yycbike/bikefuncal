@@ -14,6 +14,7 @@ require_once('event-submission.php');
 require_once('event-submission-form.php');
 require_once('event-submission-result.php');
 require_once('event-delete-result.php');
+require_once('export-to-indesign.php');
 require_once('import-old-calendar.php');
 require_once('shortcodes.php');
 require_once('search.php');
@@ -293,6 +294,13 @@ function bfc_admin_menu_action() {
                      'manage_options', //capability
                      'bfc-import', // menu slug
                      'bfc_import_admin_page'); // function callback
+
+    add_submenu_page('bfc-top', //parent
+                     'Export Calendar to InDesign', // title
+                     'Export',
+                     'read', // capability. Permissive since it's non-destructive and not really secure.
+                     'bfc-export', // menu slug
+                     'bfc_export_admin_page');
 }
 
 function bfc_top_admin_page() {
