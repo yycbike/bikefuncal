@@ -343,7 +343,8 @@ function event_listings($startdate,
                         $enddate,
                         $preload_alldays,
                         $for_printer,
-                        $include_images) {
+                        $include_images,
+						$compact) {
 
     $today = strtotime(date("Y-m-d"));
     $tomorrow = $today + 86400;
@@ -374,7 +375,9 @@ function event_listings($startdate,
                 $thisdate == $tomorrow ||
                 $for_printer ||
                 $preload_alldays) {
-            fullentries(date("Y-m-d", $thisdate),
+            
+			if($compact) tinyentries(date("Y-m-d", $thisdate), 'sidebar');
+			else fullentries(date("Y-m-d", $thisdate),
                                 TRUE,
                                 $for_printer,
                                 $include_images);  

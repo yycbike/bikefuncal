@@ -53,6 +53,26 @@ function bfc_get_cal_dates($atts) {
                             0,
                             $year);
     }
+	else if ($atts['for'] == 'day') {
+		global $wp_query;
+		
+		$now = getdate(current_time('timestamp'));
+		
+		$year = isset($wp_query->query_vars['calyear']) ?
+        $wp_query->query_vars['calyear'] :
+        $now["year"];
+
+        $month = isset($wp_query->query_vars['calmonth']) ?
+        $wp_query->query_vars['calmonth'] :
+        $now["mon"];
+		
+		$date = isset($wp_query->query_vars['caldate']) ?
+		$wp_query->query_vars['caldate'] :
+		$now["mday"];
+		
+		$startdate = mktime(0, 0, 0, $month, $date, $year);
+		$enddate = $startdate;
+	}
     else {
         die("Bad value of for: " . $atts['for']);
     }
@@ -71,6 +91,8 @@ function bfc_overview_or_event_listings($type, $atts) {
     if (!isset($atts['for'])) {
         die("Did an overview calendar or event listing without specifying 'for'");
     }
+	
+	$compact = FALSE;
 
     if ($atts['for'] == 'palooza') {
         $caltype = 'palooza';
@@ -81,6 +103,10 @@ function bfc_overview_or_event_listings($type, $atts) {
     else if ($atts['for'] == 'month') {
         $caltype = 'cal';
     }
+	else if ($atts['for'] == 'day') {
+		$caltype = 'cal';
+		$compact = TRUE;
+	}
     else {
         die("Bad value of for: " . $atts['for']);
     }
@@ -108,7 +134,8 @@ function bfc_overview_or_event_listings($type, $atts) {
                        $enddate,
                        TRUE, #preload
                        FALSE,   # For printer?
-                       TRUE);  # Include images?
+                       TRUE,  # Include images?
+					   $compact); #TRUE - tiny event listing, FALSE - full event listing
     }
     else {
         die("Bad value of type: " . $type);
