@@ -8,7 +8,7 @@
 # Return the dates a calendar covers
 function bfc_get_cal_dates($atts) {
     if ($atts['for'] == 'palooza') {
-        # Start and End can be specified to show archived Paloozas
+        // Start and End can be specified to show archived Paloozas
         $start = isset($atts['start']) ? $atts['start'] : get_option('bfc_festival_start_date');
         $end   = isset($atts['end'])   ? $atts['end']   : get_option('bfc_festival_end_date');
 
@@ -16,14 +16,25 @@ function bfc_get_cal_dates($atts) {
         $enddate   = strtotime($end);
     }
     else if ($atts['for'] == 'current') {
-        # Choose the starting date.  This is always the Sunday at or before
-        # today.  We'll move forward from there.
-        $now = getdate();
-        $noon = $now[0] + (12 - $now["hours"]) * 3600; # approximately noon today
-        $startdate = $noon - 86400 * $now["wday"];
+        // Start and end can be specified for debugging.
+        if (isset($atts['start'])) {
+            $startdate = strtotime($atts['start']);
+        }
+        else {
+            // Choose the starting date.  This is always the Sunday at or before
+            // today.  We'll move forward from there.
+            $now = getdate();
+            $noon = $now[0] + (12 - $now["hours"]) * 3600; // approximately noon today
+            $startdate = $noon - 86400 * $now["wday"];
+        }
 
-        $numweeks = 3;
-        $enddate = $startdate + ($numweeks * 7 - 1) * 86400;
+        if (isset($atts['end'])) {
+            $enddate = strtotime($atts['end']);
+        }
+        else {
+            $numweeks = 3;
+            $enddate = $startdate + ($numweeks * 7 - 1) * 86400;
+        }
     }
     else if ($atts['for'] == 'month') {
         global $wp_query;
@@ -80,13 +91,13 @@ function bfc_get_cal_dates($atts) {
     return array($startdate, $enddate);
 }
 
-# Print either an overview calendar or event listings.
-# (The code for either is largely the same, so there's
-# one function for both.)
-#
-# Parameters:
-# $type -- What to print. Either 'overview' or 'listings'
-# $atts -- The attributes passed in to the shortcode handler.
+// Print either an overview calendar or event listings.
+// (The code for either is largely the same, so there's
+// one function for both.)
+//
+// Parameters:
+// $type -- What to print. Either 'overview' or 'listings'
+// $atts -- The attributes passed in to the shortcode handler.
 function bfc_overview_or_event_listings($type, $atts) {
     if (!isset($atts['for'])) {
         die("Did an overview calendar or event listing without specifying 'for'");
@@ -113,11 +124,11 @@ function bfc_overview_or_event_listings($type, $atts) {
 
     list($startdate, $enddate) = bfc_get_cal_dates($atts);
 
-    # WordPress wants shortcodes to return their content as a string,
-    # not output it with print statements. But all of the existing code
-    # uses print statements, and changing it to use strings would be a
-    # hassle. Fortunately, PHP's output buffering (OB) functions can capture
-    # print statements into a string.
+    // WordPress wants shortcodes to return their content as a string,
+    // not output it with print statements. But all of the existing code
+    // uses print statements, and changing it to use strings would be a
+    // hassle. Fortunately, PHP's output buffering (OB) functions can capture
+    // print statements into a string.
     ob_start();
     ob_implicit_flush(0);
     
@@ -125,7 +136,7 @@ function bfc_overview_or_event_listings($type, $atts) {
         overview_calendar($startdate,
                           $enddate,
                           $caltype,
-                          TRUE); # preload all days
+                          TRUE); // preload all days
                           
         add_action('wp_footer', 'load_overview_calendar_javascript');                                         
     }
@@ -136,6 +147,26 @@ function bfc_overview_or_event_listings($type, $atts) {
                        FALSE,   # For printer?
                        TRUE,  # Include images?
 					   $compact); #TRUE - tiny event listing, FALSE - full event listing
+    }
+    else if ($type == 'date-selector') {
+        print "<div id=date-selector>";
+        print "<div id=date-selector-calendar-container>";
+
+        print "<div id=date-selector-calendar>";
+        bfc_date_selector_calendar($startdate, $enddate);
+        if ($atts['for'] !== 'palooza') {
+            print bfc_cal_date_navigation_shortcode($atts);
+        }
+        print "</div>"; // #date-selector-calendar
+
+        print "</div>"; // #date-selector-calendar-container
+
+        bfc_date_selector_listings($startdate, $enddate);
+
+        print "<div class=clear></div>";
+        print "</div>"; // #date-selector
+
+        add_action('wp_footer', 'load_date_selector_javascript');
     }
     else {
         die("Bad value of type: " . $type);
@@ -163,6 +194,12 @@ function bfc_event_listings_shortcode($atts) {
     return bfc_overview_or_event_listings('listings', $atts);
 }
 
+add_shortcode('bfc_date_selector', 'bfc_date_selector_shortcode');
+function bfc_date_selector_shortcode($atts) {
+    return bfc_overview_or_event_listings('date-selector', $atts);
+}
+
+
 #
 # Print the button to navigate to the previous set of dates
 # in the calendar. 
@@ -172,7 +209,7 @@ function bfc_cal_date_navigation_shortcode($atts) {
         list($startdate, $enddate) = bfc_get_cal_dates($atts);
         
         if (date("F", $startdate) != date("F", $enddate)) {
-            # start & end dates are on different months
+            // start & end dates are on different months
 
             $prev_url = bfc_get_month_cal_url(date("m", $startdate), date("Y", $startdate));
             $next_url = bfc_get_month_cal_url(date("m", $enddate), date("Y", $enddate));
@@ -185,19 +222,18 @@ function bfc_cal_date_navigation_shortcode($atts) {
 
             return "<div class='cal-links'>
                     <div class='cal-link previous'>
-                    <a href='${prev_url}'>&lt;-- All of ${prev_month_name}</a>
+                    <a href='${prev_url}'>&larr; All of ${prev_month_name}</a>
                     </div>
 
                     <div class='cal-link next'>
-                    <a href='${next_url}'>All of ${next_month_name} --&gt;</a>
+                    <a href='${next_url}'>All of ${next_month_name} &rarr;</a>
                     </div>
 
                     </div>
                     ";
         }
         else {
-            # Start and end dates are on the same month
-
+            // Start and end dates are on the same month
             $prev_month = $startdate - (86400 * 28);
             $next_month = $enddate   + (86400 * 28);
 
@@ -216,11 +252,11 @@ function bfc_cal_date_navigation_shortcode($atts) {
             return "<div class='cal-links'>
 
                     <div class='cal-link previous'>
-                    <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
+                    <a href='${prev_url}'>&larr; ${prev_month_name}</a>
                     </div>
 
                     <div class='cal-link next'>
-                    <a href='${next_url}'>${next_month_name} --&gt;</a>
+                    <a href='${next_url}'>${next_month_name} &rarr;</a>
                     </div>
 
                     <div class='cal-link current'>
@@ -255,11 +291,11 @@ function bfc_cal_date_navigation_shortcode($atts) {
         return "<div class='cal-links'>
 
                 <div class='cal-link previous'>
-                <a href='${prev_url}'>&lt;-- ${prev_month_name}</a>
+                <a href='${prev_url}'>&larr; ${prev_month_name}</a>
                 </div>
 
                 <div class='cal-link next'>
-                <a href='${next_url}'>${next_month_name} --&gt;</a>
+                <a href='${next_url}'>${next_month_name} &rarr;</a>
                 </div>
 
                 </div>
@@ -360,6 +396,11 @@ function load_event_submission_form_javascript() {
 
 function load_overview_calendar_javascript() {
     wp_print_scripts('bfc-overview-calendar');
+}
+
+function load_date_selector_javascript() {
+    wp_print_scripts('bfc-date-selector');
+    wp_print_scripts('bfc-overview-calendar');    
 }
 
 /**

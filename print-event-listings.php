@@ -232,12 +232,92 @@ function overview_calendar(
 <?php    
 }
 
+function tinyentry($record, $sqldate, $for, $current_event_wordpress_id = null)
+{
+    $id = $record["id"];
+    $tinytitle = $record["tinytitle"];
+    $title = $record["title"];
+
+    // CSS classes
+    $cssclass = "event-overview ";
+
+    if ($record["eventstatus"] == "C") {
+        $eventtime = "Canceled";
+        $cssclass .= "canceled ";
+    }
+    else {
+        $eventtime = hmmpm($record["eventtime"]);
+    }
+
+    if ($record["audience"] == "F") {
+        $cssclass .= "family-friendly ";
+    }
+    elseif ($record["audience"] == "G") {
+        $cssclass .= "general-audience ";
+    }
+    else {
+        $cssclass .= "adults-only ";
+    }
+
+    if ($record["newsflash"] != "") {
+        $cssclass .= "newsflash ";
+    }
+
+    // If a fee is mentioned in the description
+    $has_fee = strpos($record['descr'], "\$") !== false;
+    if ($has_fee) {
+        $cssclass .= "fee ";
+    }
+
+    printf("<div class='%s'>", esc_attr($cssclass));
+    printf("<div class='event-time'>");
+    printf("<span class='time'>%s</span>", esc_html($eventtime));
+    if ($record['audience'] == 'A') {
+        printf(" <span class='audience adult'>%d+</span>", esc_html(get_option('bfc_drinking_age')));
+    }
+    else if ($record['audience'] == 'F') {
+        printf(" <span class='audience family'>FF</span>");
+    }
+
+    if ($has_fee) {
+        printf(" <span class='fee'>$$</span>");
+    }
+
+    print "</div>";
+
+    // Print the title different ways, depending on what we're printing for
+    print "<div class='event-title'>";
+    if ($current_event_wordpress_id == $record['wordpress_id']) {
+        // Don't link to the current event
+        printf("<span class='current-event'>%s</span>", esc_html($title));
+    }
+    else {
+        $url = get_permalink($record['wordpress_id']);
+        if ($record['num_days'] > 1) {
+            $url = add_date_to_permalink($url, $sqldate);
+        }
+
+        // Link to the full URL. If JavaScript decides to turn this into
+        // a pop-up link, it will use the id & date attributes.
+        printf("<a data-id='%d' data-date='%s' title='%s' href='%s'>%s</a>",
+               esc_attr($id), esc_attr($sqldate),
+               esc_attr($record['newsflash']),
+               esc_url($url), esc_html($title));
+    }
+    print "</div>"; // .event-title
+
+    printf("</div>");
+
+}
+
+
 // Generate the HTML for all entries in a given day, in the tiny format
 // used in the weekly grid near the top of the page.
 //
 // For:
 // - calendar
 // - sidebar
+// - date-selector
 function tinyentries($sqldate, $for, $current_event_wordpress_id = null)
 {
     global $calevent_table_name;
@@ -261,80 +341,7 @@ END_QUERY;
     $records = $wpdb->get_results($query, ARRAY_A);
 
     foreach ($records as $record) {
-        $id = $record["id"];
-        $tinytitle = $record["tinytitle"];
-        $title = $record["title"];
-
-        // CSS classes
-        $cssclass = "event-overview ";
-
-        if ($record["eventstatus"] == "C") {
-            $eventtime = "Canceled";
-            $cssclass .= "canceled ";
-        }
-        else {
-            $eventtime = hmmpm($record["eventtime"]);
-        }
-
-        if ($record["audience"] == "F") {
-            $cssclass .= "family-friendly ";
-        }
-        elseif ($record["audience"] == "G") {
-            $cssclass .= "general-audience ";
-        }
-        else {
-            $cssclass .= "adults-only ";
-        }
-
-        if ($record["newsflash"] != "") {
-            $cssclass .= "newsflash ";
-        }
-
-        // If a fee is mentioned in the description
-        $has_fee = strpos($record['descr'], "\$") !== false;
-
-        if ($has_fee) {
-            $cssclass .= "fee ";
-        }
-
-        printf("<div class='%s'>", esc_attr($cssclass));
-        printf("<div class='event-time'>");
-        printf("<span class='time'>%s</span>", esc_html($eventtime));
-        if ($record['audience'] == 'A') {
-            printf(" <span class='audience adult'>%d+</span>", esc_html(get_option('bfc_drinking_age')));
-        }
-        else if ($record['audience'] == 'F') {
-            printf(" <span class='audience family'>FF</span>");
-        }
-
-        if ($has_fee) {
-            printf(" <span class='fee'>$$</span>");
-        }
-
-        print "</div>";
-
-        // Print the title different ways, depending on what we're printing for
-        print "<div class='event-title'>";
-        if ($current_event_wordpress_id == $record['wordpress_id']) {
-            // Don't link to the current event
-            printf("<span class='current-event'>%s</span>", esc_html($title));
-        }
-        else {
-            $url = get_permalink($record['wordpress_id']);
-            if ($record['num_days'] > 1) {
-                $url = add_date_to_permalink($url, $sqldate);
-            }
-
-            // Link to the full URL. If JavaScript decides to turn this into
-            // a pop-up link, it will use the id & date attributes.
-            printf("<a data-id='%d' data-date='%s' title='%s' href='%s'>%s</a>",
-                   esc_attr($id), esc_attr($sqldate),
-                   esc_attr($record['newsflash']),
-                   esc_url($url), esc_html($title));
-        }
-        print "</div>"; // .event-title
-        
-        printf("</div>");
+        tinyentry($record, $sqldate, $for, $current_event_wordpress_id);
     }
 }
 
@@ -1191,6 +1198,244 @@ function bfc_register_other_events_widget() {
     register_widget('BFC_OtherEvents_Widget');
 }
 add_action('widgets_init', 'bfc_register_other_events_widget');
+
+function bfc_date_selector_calendar_day($thisdate, $is_new_month, $count, $max_count) {
+    $day_of_month = date("j",$thisdate);
+    $sqldate = date('Y-m-d', $thisdate);
+
+    // If today is special...
+    $class = class_for_special_day($thisdate);
+
+    // Highlight today's date.
+    if (date("Y-m-d", time()) == $sqldate) {
+        $class .= " today";
+    }
+
+    // Add a category class
+    if ($count > 0) {
+        $num_count_categories = 10;
+
+        // If all the counts are small, don't take up the whole box.
+        if ($max_count < 12) {
+            $max_count = 12;
+        }
+        $percent_of_max = $count / ($max_count * 1.0);
+
+        // Scale radius to start at 25%. Avoid showing a tiny
+        // sliver.
+        $radius = ($percent_of_max * 0.75) + 0.25;
+        // Convert radius to percentage string
+        $radius = sprintf('%d%%', $radius * 100);
+    }
+
+    printf("<td class='%s'>\n", esc_attr($class));
+    print "<div class='container'>";
+    print "<div class='text'>";
+
+    if ($is_new_month) {
+        // Jan, Feb, Mar, etc. Short abbreviation.
+        $month = date('M', $thisdate);
+        printf("<div class='month-name'>%s</div>",
+               esc_html($month));
+    }
+
+    print "<div class='date'>";
+    if ($count > 0) {
+        printf("<a href='%s'>%d</a>",
+               esc_attr('#day-' . $sqldate),
+               $day_of_month);
+    }
+    else {
+        printf("%d", $day_of_month);
+    }
+    print "</div>"; // .text-align
+    print "</div>"; // .date
+
+    //print "<div class='radius'></div>";
+    if ($count > 0) {
+        // Draw a whole circle, but only 1/4 of it will be inside
+        // the container. The user sees a slice.
+        //
+        // set cx and/or cy to 0 to move the pie to the left/top.
+        printf("<svg xmlns='http://www.w3.org/2000/svg'>
+                <circle cx='100%%' cy='100%%' r='%s' />
+                </svg>", esc_attr($radius));
+    }
+
+    print "</div>"; // .container
+    print "</td>";
+}
+
+function bfc_date_selector_calendar($startdate, $enddate) {
+    global $wpdb;
+    global $calevent_table_name;
+    global $caldaily_for_listings_table_name;
+    global $caldaily_num_days_for_listings_table_name;
+
+    // Count the number of events per date. Give one-time events more weight than
+    // repeating events.
+    $sql = <<<END_SQL
+SELECT SUM(weighted_count) AS count, eventdate
+FROM (
+    SELECT IF(num_days > 1, 1, 4) AS weighted_count, eventdate
+    FROM ${caldaily_num_days_for_listings_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+    WHERE eventdate >= %s AND
+          eventdate <= %s
+) AS counts
+GROUP BY eventdate
+ORDER BY eventdate ASC;
+
+END_SQL;
+
+    $sqldate_start = date('Y-m-d', $startdate);
+    $sqldate_end   = date('Y-m-d', $enddate);
+
+    $sql = $wpdb->prepare($sql, $sqldate_start, $sqldate_end);
+    $day_records = $wpdb->get_results($sql, ARRAY_A);
+
+    $count_for_day = array();
+    $max_count = -1;
+    foreach ($day_records as $day_record) {
+        // Convert the counts to a hash
+        $count_for_day[ $day_record['eventdate'] ] = $day_record['count'];
+
+        // Find the max count
+        if ($day_record['count'] > $max_count) {
+            $max_count = $day_record['count'];
+        }
+    }
+
+    ?>
+    <table>
+      <thead>
+        <tr>
+          <th>S</th>
+          <th>M</th>
+          <th>T</th>
+          <th>W</th>
+          <th>T</th>
+          <th>F</th>
+          <th>S</th>
+       </tr>
+      </thead>
+      <tbody>
+        <tr>
+    <?php
+
+    // If month doesn't start on Sunday, then skip earlier days
+    $weekday = getdate($startdate);
+    $weekday = $weekday["wday"];
+    if ($weekday !== 0) {
+        printf("<td colspan='%d'></td>", $weekday);
+    }
+
+    // Loop through each day between $startdate and $enddate.
+    // We can't just increment $thisdate forward by 86400
+    // (seconds per day) because that causes trouble around
+    // daylight savings time (but I'm not sure why...).
+    // So we we increment $day_of_month.
+    $day_of_month = date('d', $startdate);
+    $prior_month = null;
+    do {
+        // It's OK to call this with, for example,
+        // the 32nd of July; PHP turns that into
+        // 1st of August. Also, 32 Dec 2010 becomes
+        // 1 Jan 2011.
+        $thisdate = mktime(0, 0, 0, //hms
+                           date('m', $startdate),
+                           $day_of_month,
+                           date('Y', $startdate));
+
+
+        $thissqldate = date('Y-m-d', $thisdate);
+        if (isset($count_for_day[$thissqldate])) {
+            $count = $count_for_day[$thissqldate];
+        }
+        else {
+            $count = 0;
+        }
+        
+	// Start new row each week
+	if (date("D", $thisdate) == "Sun") {
+	    print "</tr><tr>\n";
+        }
+
+        // See if this is a new month (or the first day in the calendar)
+        $this_month = date('m', $thisdate);
+        $is_new_month = ($this_month !== $prior_month);
+        $prior_month = $this_month;
+
+        bfc_date_selector_calendar_day($thisdate, $is_new_month,
+                                       $count, $max_count);
+
+        $day_of_month++;
+
+        // Check the date 2 ways. Sometimes $thisdate has an
+        // h:m:s component, and will be greater than $enddate, even
+        // if they're on the same day.
+    } while ( ($thisdate <= $enddate) &&
+              (date('Y-m-d', $thisdate) != date('Y-m-d', $enddate)) );
+
+    $last_day = date('w', $enddate);
+    // If the calendar doesn't end on Saturday
+    if ($last_day !== '6') { 
+        printf("<td colspan='%d'></td>", 6 - $last_day);        
+    }
+
+    print "</tr>";
+    print "</tbody>";
+    print "</table>";
+
+}
+
+function bfc_date_selector_listings($startdate, $enddate) {
+    global $wpdb;
+    global $calevent_table_name;
+    global $caldaily_for_listings_table_name;
+    global $caldaily_num_days_for_listings_table_name;
+
+    $sql = <<<END_SQL
+        SELECT *
+        FROM (
+            SELECT *
+            FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
+            WHERE eventdate >= %s AND
+                  eventdate <= %s
+        ) AS find_rides
+        JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
+        ORDER BY eventdate ASC, eventtime ASC, title ASC;
+END_SQL;
+    $sqldate_start = date('Y-m-d', $startdate);
+    $sqldate_end   = date('Y-m-d', $enddate);
+
+
+    $sql = $wpdb->prepare($sql, $sqldate_start, $sqldate_end);
+    $records = $wpdb->get_results($sql, ARRAY_A);
+
+    print "<div class='date-selector-listings'>";
+
+    // A waypoint to attach to
+    print "<div class='top-of-listings'></div>";
+
+    $last_date = null;
+    foreach ($records as $record) {
+        if ($record['eventdate'] !== $last_date) {
+            // It's a new day. Print a header.
+            $last_date = $record['eventdate'];
+
+            printf("<h2><a id='%s'></a>%s</h2>",
+                   esc_attr('day-' . $record['eventdate']),
+                   esc_html(date('l, F j', strtotime($last_date))));
+        }
+
+        tinyentry($record, $record['eventdate'], 'date-selector');
+    }
+
+    // A waypoint to attach to
+    print "<div class='bottom-of-listings'></div>";
+    print "</div>"; // .date-selector-listings
+}
+
 
 //ex:set sw=4 embedlimit=60000:
 ?>

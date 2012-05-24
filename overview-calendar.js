@@ -80,3 +80,37 @@ jQuery(document).ready(function() {
         });
     });
 });
+
+
+/* Scroll the date selector calendar alongside the event listings.
+ *
+ */
+(function($) {
+    $(document).ready(function() {
+        var calendar = $('#date-selector-calendar');
+
+        // Waypoint at the top of the event listings
+        var topOptions = {
+            // none
+        };
+        var topHandler = function(event, direction) {
+            calendar.toggleClass('sticky', direction === 'down');
+            event.stopPropagation();
+        };
+        $('.date-selector-listings .top-of-listings').waypoint(topHandler, topOptions);
+
+        // Waypoint at the bottom of the event listings
+        var bottomOptions = {
+            offset: function() {
+              return calendar.outerHeight();
+            }
+        };
+        var bottomHandler = function(event, direction) {
+            calendar.toggleClass('bottom', direction === 'down');
+            event.stopPropagation();
+        };
+        $('.date-selector-listings .bottom-of-listings').waypoint(bottomHandler, bottomOptions);
+    });
+})(jQuery);
+
+
