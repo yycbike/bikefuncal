@@ -57,19 +57,19 @@ function bfc_get_cal_dates($atts) {
 		global $wp_query;
 		
 		$now = getdate(current_time('timestamp'));
-		
+				
 		$year = isset($wp_query->query_vars['calyear']) ?
         $wp_query->query_vars['calyear'] :
         $now["year"];
-
+		
         $month = isset($wp_query->query_vars['calmonth']) ?
         $wp_query->query_vars['calmonth'] :
         $now["mon"];
-		
+				
 		$date = isset($wp_query->query_vars['caldate']) ?
 		$wp_query->query_vars['caldate'] :
 		$now["mday"];
-		
+				
 		$startdate = mktime(0, 0, 0, $month, $date, $year);
 		$enddate = $startdate;
 	}

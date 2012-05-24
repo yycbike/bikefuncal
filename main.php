@@ -43,6 +43,7 @@ function bfc_query_vars_filter($qvars) {
     // Query vars for browsing the calendar.
     $qvars[] = 'calyear';
     $qvars[] = 'calmonth';
+	$qvars[] = 'caldate';
 
     // Query vars for making a new event.
     // Prefix with "event_" to avoid conflicts with
