@@ -323,15 +323,10 @@ function bfc_cal_date_navigation_shortcode($atts) {
 		$next_day_name = "Next Day";
 		
 		$now = getdate(current_time('timestamp'));
-		$now = mktime(0,0,0, (int)$now["month"],
-                             (int)$now["mday"],
-                             (int)$now["year"]);
-		$startdate = mktime(0, 0, 0,
-                             date('m', $startdate),
-                             date('j', $startdate),
-                             date('Y', $startdate));
 
-		if($now == $startdate) {
+		if(($now["year"] == date('Y', $startdate)) 
+				&& ($now["mon"] == date('m', $startdate)) 
+				&& ($now["mday"] == date('j', $startdate))) {
 			$prev_day_name = "Yesterday";
 			$next_day_name = "Tomorrow";
 		}
