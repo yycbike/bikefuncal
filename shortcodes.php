@@ -301,7 +301,58 @@ function bfc_cal_date_navigation_shortcode($atts) {
                 </div>
                 ";
     }
-    else {
+    else if ($atts['for'] == 'day') {
+		list($startdate, $enddate) = bfc_get_cal_dates($atts);
+
+        $prev_day = mktime(0, 0, 0,
+                             date('m', $startdate),
+                             date('j', $startdate) - 1,
+                             date('Y', $startdate));
+        $next_day = mktime(0, 0, 0,
+                             date('m', $startdate),
+                             date('j', $startdate) + 1,
+                             date('Y', $startdate));
+							 
+		$prev_url = bfc_get_day_cal_url(date("m", $prev_day), date("Y", $prev_day), date("j", $prev_day));
+        $next_url = bfc_get_day_cal_url(date("m", $next_day), date("Y", $next_day), date("j", $next_day));
+
+        $prev_url = esc_url($prev_url);
+        $next_url = esc_url($next_url);
+		
+		$prev_day_name = "Previous Day";
+		$next_day_name = "Next Day";
+		
+		$now = getdate(current_time('timestamp'));
+		$now = mktime(0,0,0, (int)$now["month"],
+                             (int)$now["mday"],
+                             (int)$now["year"]);
+		$startdate = mktime(0, 0, 0,
+                             date('m', $startdate),
+                             date('j', $startdate),
+                             date('Y', $startdate));
+
+		if($now == $startdate) {
+			$prev_day_name = "Yesterday";
+			$next_day_name = "Tomorrow";
+		}
+		
+		
+		
+		return "<div class='cal-links'>
+
+                <div class='cal-link previous'>
+                <a href='${prev_url}'>&larr; ${prev_day_name}</a>
+                </div>
+
+                <div class='cal-link next'>
+                <a href='${next_url}'>${next_day_name} &rarr;</a>
+                </div>
+
+                </div>
+                ";
+		
+	}
+	else {
         die("Can't have a previous date for: " . $atts['for']);
     }
 }
@@ -357,6 +408,39 @@ function bfc_get_month_cal_url($month = null, $year = null) {
                         $year);
         $has_query = true;
     }
+	
+    return $url;
+}
+
+function bfc_get_day_cal_url($month = null, $year = null, $day = null) {
+	$edit_page_title = 'Today\'s Rides';
+    $edit_page = get_page_by_title($edit_page_title);
+    $url = get_permalink($edit_page->ID); 
+
+    // If the URL already has a query string, add additional queries with
+    // '&'. Otherwise, initiate a query with '?'
+    $has_query = (parse_url($url, PHP_URL_QUERY) !== null);
+    
+    if ($month !== null) {
+        $url .= sprintf('%scalmonth=%s',
+                        $has_query ? '&' : '?',
+                        $month);
+        $has_query = true;
+    }
+
+    if ($year !== null) {
+        $url .= sprintf('%scalyear=%s',
+                        $has_query ? '&' : '?',
+                        $year);
+        $has_query = true;
+    }
+	
+	if ($day !== null) {
+		$url .= sprintf('%scaldate=%s',
+                        $has_query ? '&' : '?',
+                        $day);
+        $has_query = true;
+	}
 
     return $url;
 }
