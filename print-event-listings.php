@@ -369,10 +369,18 @@ function event_listings($startdate,
             print "<hr>\n";
         }
 
-        print "<h2 class=weeks>";
-        print "<a class=\"datehdr\" name=\"".esc_attr(date("Fj",$thisdate))."\">";
-        print esc_html(date("l F j", $thisdate));
-        print "</a></h2>\n";
+        
+		if($compact) {
+			print "<h1 class='entry-title'>";
+			print esc_html(date("l F j, Y", $thisdate));
+			print " Events</h1>";
+		
+		} else {
+			print "<h2 class=weeks>";
+        	print "<a class=\"datehdr\" name=\"".esc_attr(date("Fj",$thisdate))."\">";
+        	print esc_html(date("l F j", $thisdate));
+        	print "</a></h2>\n";
+		}
 
         $ymd = date("Y-m-d", $thisdate);
         print "<div id='div${ymd}'>\n";
