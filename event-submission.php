@@ -1117,7 +1117,11 @@ class BfcEventSubmission {
 
             if (isset($this->daily_args[$suffix]['status'])) {
                 $day['status'] = $this->daily_args[$suffix]['status'];
-                $day['eventstatus'] = statusname($day['status']);
+                $day['eventstatus'] = statusname($day);
+// Mark Leigh 2016-01-06: removed ['status'] from above line because function (statusname)
+// expects an array not a string. No idea why this worked before WP 4.4... 
+//but now it works with WP 4.4
+
             }
         }
     }
