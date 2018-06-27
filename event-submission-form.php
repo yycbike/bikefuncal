@@ -225,7 +225,7 @@ END_HTML;
         $help['tag'] = 'p';
         $help['content'] = <<<END_HTML
           Still planning your ride? Get tips from the <a href='/the-ride-guide'>ride guide</a> 
-          or write to <a href='mailto:calendar@velopalooza.ca'>calendar@velopalooza.ca</a>.
+          or write to <a href='mailto:calendar@velopalooza.ca'>calendar@cyclepalooza.ca</a>.
 END_HTML;
     }
 
