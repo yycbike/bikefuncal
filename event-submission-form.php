@@ -123,7 +123,7 @@ function bfc_event_form_help($for) {
                 <div>
                 You may also want to mention: distance, hills, pace, if the ride is a loop.
                 </div>
- 
+
                 <div>
                 Formattting:
                 </div>
@@ -132,8 +132,8 @@ function bfc_event_form_help($for) {
                   <li>Make bold with asterisks: <span style='font-family: monospace;'>*bring a light*</span>
                       becomes <span style='font-weight: bold'>bring a light</span>
                   <li>Include <span style='font-family: monospace'>http://</span> in your links; this makes them clickable.
-                      Yes:&nbsp;<span style='font-family: monospace'>http://velopalooza.ca</span>.
-                      No:&nbsp;<span style='font-family: monospace'>velopalooza.ca</span>
+                      Yes:&nbsp;<span style='font-family: monospace'>http://cyclepalooza.ca</span>.
+                      No:&nbsp;<span style='font-family: monospace'>cyclepalooza.ca</span>
                 </ul>
             </div>
 END_HTML;
@@ -196,7 +196,7 @@ END_HTML;
               </tbody>
             </table>
           </div>
-        
+
 END_HTML;
 
     }
@@ -224,8 +224,8 @@ END_HTML;
         $help['class'] = '';
         $help['tag'] = 'p';
         $help['content'] = <<<END_HTML
-          Still planning your ride? Get tips from the <a href='/the-ride-guide'>ride guide</a> 
-          or write to <a href='mailto:calendar@velopalooza.ca'>calendar@cyclepalooza.ca</a>.
+          Still planning your ride? Get tips from the <a href='/the-ride-guide'>ride guide</a>
+          or write to <a href='mailto:calendar@cyclepalooza.ca'>calendar@cyclepalooza.ca</a>.
 END_HTML;
     }
 
@@ -242,7 +242,7 @@ END_HTML;
 
 
 // Print the event submission/editing form
-// 
+//
 // $event_submission -- A BfcEventSubmission object.
 function bfc_print_event_submission_form($event_submission) {
 ?>
@@ -253,7 +253,7 @@ function bfc_print_event_submission_form($event_submission) {
     <?php if (!$event_submission->is_valid()) { ?>
     <div class="error-messages">
       <?php $event_submission->print_errors() ?>
-    </div>                                         
+    </div>
     <?php } # endif -- is valid ?>
 
     <form action="<?php print esc_attr(get_permalink()); // go back to this form when submitting ?>"
@@ -276,7 +276,7 @@ function bfc_print_event_submission_form($event_submission) {
         <?php $event_submission->print_title(); ?> >
       <?php bfc_event_form_help('event_title') ?>
     </div>
-                                                 
+
     <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('descr'); ?> '>
       <span>Description</span>
     </h3>
@@ -315,7 +315,7 @@ function bfc_print_event_submission_form($event_submission) {
       <div class='optional'>optional</div>
     </div>
     <div class='new-event-controls'>
-        <?php if ($event_submission->has_image()) { ?>            
+        <?php if ($event_submission->has_image()) { ?>
             <div>
             <input type='radio' name='submission_image_action'
                 id='submission_image_action_keep' value='keep' checked>
@@ -338,7 +338,7 @@ function bfc_print_event_submission_form($event_submission) {
             <input type="file" name="event_image">
         <?php } ?>
     </div>
-    
+
     </div><!-- .new-event-category (describe your ride) -->
 
     <h2 class='event-submission-section'>Meeting Place</h2>
@@ -353,7 +353,7 @@ function bfc_print_event_submission_form($event_submission) {
              class="narrower" maxlength=256
              <?php $event_submission->print_locname()?>>
       <?php bfc_event_form_help('event_locname') ?>
-    </div>             
+    </div>
 
     <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('address'); ?> '>
       <span>Address</span>
@@ -458,19 +458,19 @@ function bfc_print_event_submission_form($event_submission) {
       </div><!-- occurs-multiple -->
     </div>
 
-    <div id="datelist"></div> 
+    <div id="datelist"></div>
 
     <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('eventtime'); ?> '>
       <span>Start time</span>
     </h3>
     <div class="new-event-controls">
-	<select name="event_eventtime" id="event_eventtime">         
+	<select name="event_eventtime" id="event_eventtime">
 	  <option value="">Choose a time</option>
 	  <?php bfc_generate_all_times($event_submission); ?>
 	</select>
         <?php bfc_event_form_help('event_eventtime') ?>
     </div>
-    
+
     <div class='event-submission-label'>
       <h3>End time</h3>
       <div class=optional>optional</div>
@@ -491,7 +491,7 @@ function bfc_print_event_submission_form($event_submission) {
         <option value="480" <?php $event_submission->print_selected_for_duration("480") ?> >8 hours</option>
         <option value="600" <?php $event_submission->print_selected_for_duration("600") ?> >10 hours</option>
         <option value="720" <?php $event_submission->print_selected_for_duration("720") ?> >12 hours</option>
-      </select>        
+      </select>
       <?php bfc_event_form_help('event_eventduration') ?>
     </div>
 
@@ -533,7 +533,7 @@ function bfc_print_event_submission_form($event_submission) {
             <label for=event_emailforum>
               Mail me when people comment on this event
             </label>
-        </div>                                                               
+        </div>
         <div>
           <input type="checkbox" name="event_hideemail" value="Y"
                  id=event_hideemail
@@ -546,7 +546,7 @@ function bfc_print_event_submission_form($event_submission) {
             <?php bfc_event_form_help('event_hideemail'); ?>
         </div>
     </div>
-    
+
     <div class='event-submission-label   <?php $event_submission->print_error_class_for('weburl'); ?> '>
       <h3><span>Web site</span></h3>
       <div class=optional>optional</div>
@@ -600,7 +600,7 @@ function bfc_print_event_submission_form($event_submission) {
     <?php
     } // end if, has admin comment
     ?>
-          
+
 
     <?php
     if ($event_submission->has_event_id()) {
@@ -629,7 +629,7 @@ function bfc_print_event_submission_form($event_submission) {
            style='display: none;'
            >
     </h2>
-    <div id="preview-container"></div>         
+    <div id="preview-container"></div>
 
     <div class='new-event-actions'>
         <input type="submit" id="submission_action" name="submission_action"
@@ -642,12 +642,12 @@ function bfc_print_event_submission_form($event_submission) {
                 value="delete">
         <?php
         } # end if
-        ?>    
+        ?>
     </div>
 
-    </form>         
+    </form>
     </div><!-- .new-event-form -->
 
 <?php
-}         
+}
 ?>
