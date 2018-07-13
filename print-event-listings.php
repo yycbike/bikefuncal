@@ -7,7 +7,7 @@
  * Trim the words to a certain length. Use this because
  * WordPress' wp_trim_excerpt() is tightly bound with The Loop.
  * You can't use it with arbitrary text.
- * 
+ *
  * See http://wordpress.stackexchange.com/a/7400
  */
 function bfc_excerpt($text, $excerpt_more)
@@ -35,15 +35,15 @@ function bfc_excerpt($text, $excerpt_more)
 /**
  * Create a google maps link to the specified address.
  *
- * Reference: http://mapki.com/wiki/Google_Map_Parameters 
+ * Reference: http://mapki.com/wiki/Google_Map_Parameters
  */
 function address_link($address) {
     // Use country-specific google maps, if appropriate
     if (strtolower(get_option('bfc_country')) == 'canada') {
-        $site = 'http://maps.google.ca/';
+        $site = 'https://maps.google.ca/';
     }
     else {
-        $site = 'http://maps.google.com/';
+        $site = 'https://maps.google.com/';
     }
 
     // Start building arguments to pass to google maps
@@ -53,7 +53,7 @@ function address_link($address) {
         'lci' => 'bike', // Show bike tiles
         );
 
-    // Get the lat & long 
+    // Get the lat & long
     $latitude = get_option('bfc_latitude');
     $longitude = get_option('bfc_longitude');
     if (strlen($latitude) > 0 && strlen($longitude) > 0) {
@@ -91,12 +91,12 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     if (date("Y-m-d", time()) == date("Y-m-d", $thisdate)) {
         $class .= " today";
     }
-    
+
     printf("<td id=\"%s\" class=\"%s\">\n", esc_attr('cal' . $dayofmonth), esc_attr($class));
 
     // For debugging
     //print "<p>" . date("Y-m-d h:m:s", $thisdate) . "</p>";
-    
+
     // Output this day's tinytitles
     print "<div class='date'>";
     print esc_html(date("j", $thisdate));
@@ -104,7 +104,7 @@ function overview_calendar_day($thisdate, $preload_alldays) {
     $sqldate = date("Y-m-d", $thisdate);
     tinyentries($sqldate, 'calendar');
     print "</td>\n";
-}   
+}
 
 // Print an overview calendar, that lists the events in a grid.
 //
@@ -140,10 +140,10 @@ function overview_calendar(
         $filter_args = array(
             // for: 'palooza' or 'cal' -- is this a palooza or a regular calendar
             'for' => $for,
-            
+
             // Number of table columns used
             'cols' => $weekday,
-            
+
             // Is this appearing before the start of the events, or after the end of the
             // events?
             'location' => 'before',
@@ -181,7 +181,7 @@ function overview_calendar(
                            date('m', $startdate),
                            $day_of_month,
                            date('Y', $startdate));
-        
+
 	// Start new row each week
 	if (date("D", $thisdate) == "Sun") {
 	    print "</tr><tr>\n";
@@ -199,7 +199,7 @@ function overview_calendar(
 
     $last_day = date('w', $enddate);
     // If the calendar doesn't end on Saturday
-    if ($last_day !== 6) { 
+    if ($last_day !== 6) {
         // Fill the extra space with something.
         // See above for explanation of arguments.
         $filter_args = array(
@@ -228,8 +228,8 @@ function overview_calendar(
     </tbody>
   </table>
 
-    
-<?php    
+
+<?php
 }
 
 function tinyentry($record, $sqldate, $for, $current_event_wordpress_id = null)
@@ -332,7 +332,7 @@ FROM (
     SELECT ${calevent_table_name}.id, newsflash, title, tinytitle, eventtime,
            eventdate, datestype, audience, eventstatus, descr, review, wordpress_id
     FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING(id)
-    WHERE eventdate   =  %s      
+    WHERE eventdate   =  %s
 ) AS find_rides
 JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
 ORDER BY eventtime ASC, title ASC;
@@ -359,7 +359,7 @@ function event_listings($startdate,
     for ($thisdate = $startdate;
          $thisdate <= $enddate;
          $thisdate += 86400) {
-        
+
         // Use a fancy graphical devider for screen,
         // a plain HR for printer.
         if (!$for_printer) {
@@ -369,12 +369,12 @@ function event_listings($startdate,
             print "<hr>\n";
         }
 
-        
+
 		if($compact) {
 			print "<h1 class='entry-title'>";
 			print esc_html(date("l F j, Y", $thisdate));
 			print " Events</h1>";
-		
+
 		} else {
 			print "<h2 class=weeks>";
         	print "<a class=\"datehdr\" name=\"".esc_attr(date("Fj",$thisdate))."\">";
@@ -390,12 +390,12 @@ function event_listings($startdate,
                 $thisdate == $tomorrow ||
                 $for_printer ||
                 $preload_alldays) {
-            
+
 			if($compact) tinyentries(date("Y-m-d", $thisdate), 'sidebar');
 			else fullentries(date("Y-m-d", $thisdate),
                                 TRUE,
                                 $for_printer,
-                                $include_images);  
+                                $include_images);
         }
         else {
             print "<span class=\"loadday\" ";
@@ -494,15 +494,15 @@ function fullentry($record, $for, $sqldate)
 
     $is_canceled = ($record['eventstatus'] == 'C');
     $cancel_class = $is_canceled ? 'cancel' : '';
-    
+
     ////////////////////////
     // Audience and Fee
     if ($record['audience'] == 'A' ||
         $record['audience'] == 'F' ||
         strpos($record['descr'], "\$") !== false) {
-        
+
 		print "<div class=audience>";
-		
+
 		if ($record['audience'] == 'A') {
 			$badge_url = plugins_url('bikefuncal/images/') . 'adult-icon.png';
             $message = sprintf('Adults Only (%d+)', get_option('bfc_drinking_age'));
@@ -515,17 +515,17 @@ function fullentry($record, $for, $sqldate)
 			printf("<img src='%s' alt='%s' title='%s'>\n",
                esc_url($badge_url), esc_attr($message), esc_attr($message));
         }
-    
+
 		if (strpos($record['descr'], "\$") !== false) {
 			$badge_url = plugins_url('bikefuncal/images/') . 'money-icon.png';
 			$message = 'Bring Money';
 			printf("<img src='%s' alt='%s' title='%s'>\n",
                esc_url($badge_url), esc_attr($message), esc_attr($message));
     	}
-	
+
 		print "</div>";
 	}
-	
+
     //////////////
     // Title
     //
@@ -599,7 +599,7 @@ function fullentry($record, $for, $sqldate)
     // because it can come from user input.)
     $eventdate = strtotime($sqldate);
     $date = ($eventdate !== false) ? date('l, F j', $eventdate) : null;
-    
+
     if ($date === null) {
         $date_text = '';
     }
@@ -611,7 +611,7 @@ function fullentry($record, $for, $sqldate)
             $date_text = sprintf('%s at ', esc_html($date));
         }
     }
-    
+
     $time = hmmpm($record['eventtime']);
     if ($has_end_time) {
         $time_text = sprintf("%s - %s", esc_html($time),
@@ -644,16 +644,16 @@ function fullentry($record, $for, $sqldate)
         printf("<div class='time repeat %s'>Repeats: %s</div>",
                $cancel_class, esc_html($record['dates']));
     }
-    
+
     print "<div class='event-details'>";
-    
+
     ///////////
     // Location
     printf("<div class='location'>");
     $address_html = sprintf("<a href='%s'>%s</a>",
                             esc_url(address_link($record['address'])),
                             esc_html($record['address']));
-    
+
     print '<h3>Meet At:</h3>';
     if ($record['locname'] != '') {
         // Show both location name and address
@@ -670,7 +670,7 @@ function fullentry($record, $for, $sqldate)
 
     if ($record['locdetails'] != '') {
         printf("<div class='location-details %s'>Notes: %s</div>",
-               $cancel_class, 
+               $cancel_class,
                esc_html($record['locdetails']));
     }
 
@@ -683,7 +683,7 @@ function fullentry($record, $for, $sqldate)
     if ($record['hideemail'] != 1 && isset($record['email']) && $record['email'] != '') {
         // To foil spam harvesters, disassemble the email address. Some JavaScript will put it back
         // together again.
-        
+
         $parts = explode('@', $record['email'], 2);
         // data-aa = after at sign
         // data-ba = before at sign
@@ -722,7 +722,7 @@ function fullentry($record, $for, $sqldate)
 
             $display_url .= $path;
         }
-        
+
         // If there's a query or fragment on the URL, add ellipsis (unless
         // there are already ellipsis).
         if (!$has_ellipsis &&
@@ -759,10 +759,10 @@ function fullentry($record, $for, $sqldate)
             $record['title'],
             $permalink_url,
             get_option('bfc_festival_name'));
-        $twitter_url = sprintf('http://twitter.com/home?status=%s',
+        $twitter_url = sprintf('https://twitter.com/home?status=%s',
             urlencode($twitter_tweet));
 
-        $facebook_url = sprintf('http://www.facebook.com/sharer.php?u=%s',
+        $facebook_url = sprintf('https://www.facebook.com/sharer.php?u=%s',
             urlencode($permalink_url));
 
         // Build the mailto: url by hand. If we use http_build_query() or
