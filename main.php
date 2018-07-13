@@ -107,13 +107,13 @@ function bfc_query_vars_filter($qvars) {
         $thisdate = mktime(0, 0, 0, //h:m:s
                            1, // January
                            $day_of_month,
-                           $year); 
+                           $year);
         $suffix = date("Mj", $thisdate);
 
         $qvars[] = "event_newsflash" . $suffix;
         $qvars[] = "event_status" . $suffix;
     }
-    
+
     return $qvars;
 };
 
@@ -142,7 +142,7 @@ function bfc_init_action() {
         // Edit the known-venues list (add, update, delete)
         $role->add_cap('bfc_edit_known_venues');
     }
-                 
+
     register_post_type('bfc-event', array(
         'description' => 'Events in the bike fun calendar',
         'public' => true,
@@ -175,7 +175,7 @@ function bfc_init_action() {
         ));
 
     // The rest of the function customizes the appearance of the post types through the admin screens.
-        
+
     // Remove entries from the drop-down list of "bulk actions", on the
     // edit page in the admin menu.
     add_action('bulk_actions-edit-bfc-event', 'bfc_edit_bfc_event_action');
@@ -200,7 +200,7 @@ function bfc_init_action() {
             select[name=m], /* Drop-down of months. Hide it because month means month event was created, not when the
                              * event is.
                              */
-            input#post-query-submit, /* submit button for above */                             
+            input#post-query-submit, /* submit button for above */
             div.row-actions span /* Quick actions below an item in the event listing  */
                 {
                 display: none;
@@ -313,7 +313,7 @@ function bfc_options_admin_page() {
     add_action('admin_footer', 'bfc_admin_footer_action');
     function bfc_admin_footer_action() {
         // Register the google maps API.
-        wp_register_script('google-maps', 'http://maps.googleapis.com/maps/api/js?sensor=false', null);
+        wp_register_script('google-maps', 'https://maps.googleapis.com/maps/api/js?sensor=false', null);
 
         wp_register_script('bfc-options',
                            plugins_url('bikefuncal/options.js'),
@@ -326,7 +326,7 @@ function bfc_options_admin_page() {
     <div class="wrap">
         <h2>Bike Fun Calendar Options</h2>
         <p>
-        
+
         </p>
 
         <form method="post" action="options.php">
@@ -340,11 +340,11 @@ function bfc_options_admin_page() {
             <input type='text' name='bfc_festival_name' value='<?php echo esc_attr(get_option('bfc_festival_name')); ?>'>
             <em>e.g., Pedalpalooza</em>
             </p>
-         
+
             <p>
             Festival Start Date:
             <input type='text' name='bfc_festival_start_date' value='<?php echo esc_attr(get_option('bfc_festival_start_date')); ?>'>
-            <em>YYYY-MM-DD (e.g. 2011-06-02)</em>        
+            <em>YYYY-MM-DD (e.g. 2011-06-02)</em>
             </p>
 
             <p>
@@ -389,7 +389,7 @@ function bfc_options_admin_page() {
 
     <h3>Organization</h3>
             <p>Information about the people putting on the festival.</p>
-        
+
             <p>
             Calendar crew e-mail address:
             <input type='text' name='bfc_calendar_email' value='<?php echo esc_attr(get_option('bfc_calendar_email')); ?>'>
@@ -397,7 +397,7 @@ function bfc_options_admin_page() {
             e-mail from this address.
             </em>
             </p>
-        
+
             <h3>Misc.</h3>
 
             <p>
@@ -408,7 +408,7 @@ function bfc_options_admin_page() {
             <p>
             <input type='submit' value='save'>
             </p>
-        </form>                
+        </form>
     </div>
     <?php
 }
@@ -430,7 +430,7 @@ function bfc_import_admin_page() {
         }
     }
     else {
-    
+
     ?>
     <p>Use this <strong>once</strong> to import the old (Shift-style) calendar to the new site.
     This is for advanced users who have read
@@ -447,7 +447,7 @@ function bfc_import_admin_page() {
 
     <?php
     } // end if
-    
+
 }
 
 /**
@@ -603,7 +603,7 @@ function bfc_register_javascript() {
     // Overview calendar pop-ups
     //
     // Goes on pages with the [bfc_overview_cal] or [bfc_date_selector] shorttag
-    
+
     // simplemodal is the library for the pop-up window the calendar events appear in
     $simplemodal_js_url = plugins_url('bikefuncal/js-contrib/jquery.simplemodal.js');
     wp_register_script('bfc-jquery-simplemodal', $simplemodal_js_url, array('jquery'));
@@ -641,7 +641,7 @@ function bfc_register_javascript() {
 
     // Once upon a time, WordPress' version of jQuery-UI was super-old, so this plugin
     // bundled its own. @@@ Perhaps WP has gotten a newer version? We should check.
-    $jquery_js_url = 
+    $jquery_js_url =
         plugins_url('bikefuncal/js-contrib/jquery-ui/js/jquery-ui-1.8.17.custom.min.js');
     wp_register_script('bfc-jquery-ui', $jquery_js_url, array('jquery'));
 
@@ -704,15 +704,15 @@ function bfc_page_title($title) {
                     $title = 'Add Event';
                 }
                 break;
-                
+
             case 'event-updated':
                 $title = 'Event Updated';
                 break;
-                
+
             case 'event-deleted':
                 $title = 'Event Deleted';
                 break;
-                
+
             default:
                 die();
                 break;
