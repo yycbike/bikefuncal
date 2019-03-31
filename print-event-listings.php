@@ -798,9 +798,9 @@ END_HTML;
 
         print $html;
     }
-    
+
     print "</div><!-- End event-details -->";
-    
+
     print "<div class='event-about'>";
 
     ///////////////////////
@@ -819,20 +819,20 @@ END_HTML;
     }
     printf("<div class='event-description %s'>",
            $cancel_class);
-		   
+
 	printf("<div class='leader-name'>By: %s</div>", esc_html($record['name']));
-		   
+
 	printf("%s",
            $descr);
-		   
+
     if ($for != 'event-page') {
         print "<div class='permalink'>";
         printf("<a href='%s'>Read comments and more</a>", esc_url($permalink_url));
         print "</div>\n";
     }
-	
+
 	print "</div><!-- End .event-description -->";
-	
+
     //////////////////////////
     // Image (event page only)
     if ($for == 'event-page') {
@@ -840,7 +840,7 @@ END_HTML;
     }
 
 	print "</div><!-- End event-about -->";
-	
+
     //////////////////////////
     // Edit link for event-page
     //
@@ -860,7 +860,7 @@ END_HTML;
         global $calevent_table_name;
         global $caldaily_for_listings_table_name;
         global $caldaily_num_days_for_listings_table_name;
-        
+
         $prev_sql = <<<END_SQL
             -- Find the previous event. Also, count the number of times
             -- that event occurs.
@@ -904,22 +904,22 @@ END_SQL;
                                    $record['eventdate'], $record['eventtime'],
                                    $record['eventdate'], $record['eventtime'], $record['title']);
         $next_results = $wpdb->get_results($next_sql, ARRAY_A);
- 
+
         if(isset($prev_results[0]) || isset($next_results[0])) {
-			
-			print "<div class='event-navigation'>"; 
-		
+
+			print "<div class='event-navigation'>";
+
 			if (isset($prev_results[0])) {
                 bfc_entry_previous_next_link($record, $prev_results[0], 'previous');
 			}
-            
+
 			if (isset($next_results[0])) {
                 bfc_entry_previous_next_link($record, $next_results[0], 'next');
 			}
-			
+
 			print "</div>"; // .event-navigation
 		}
-    }        
+    }
 
     print "</div>"; // .event-info
 
@@ -938,7 +938,7 @@ function fullentries($day, $exclude = FALSE)
     global $caldaily_for_listings_table_name;
     global $caldaily_num_days_for_listings_table_name;
     global $wpdb;
-    
+
     global $imageover;
 
     // The day separator line is about 20 pixels high.  We can
@@ -946,14 +946,14 @@ function fullentries($day, $exclude = FALSE)
     $imageover -= 20;
 
     // for each event on this day...
-    
+
     // Find events that are not exceptions or skipped.
     $query = <<<END_QUERY
 SELECT *
 FROM (
     SELECT *
     FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING (id)
-    WHERE eventdate = %s 
+    WHERE eventdate = %s
 ) AS find_rides
 JOIN ${caldaily_num_days_for_listings_table_name} USING (id)
 ORDER BY eventtime ASC, title ASC;
@@ -962,7 +962,7 @@ END_QUERY;
     $query = $wpdb->prepare($query, $day);
     $records = $wpdb->get_results($query, ARRAY_A);
     $num_records = count($records);
-    
+
     if ($num_records > 0) {
 	print ("<dl>\n");
 
@@ -1031,7 +1031,7 @@ function bfc_get_edit_url_for_event($id, $editcode = null) {
     }
     else {
         $edit_page = get_page_by_path('add-event');
-        $base_url = get_permalink($edit_page->ID); 
+        $base_url = get_permalink($edit_page->ID);
 
         return $base_url .
             "&submission_event_id=${id}" .
@@ -1052,7 +1052,7 @@ function bfc_preview_event_submission() {
     foreach ($_POST as $query_name => $query_value) {
         if (substr($query_name, 0, 6) == "event_") {
             $arg_name = substr($query_name, 6);
-            
+
             $record[$arg_name] = stripslashes($query_value);
         }
     }
@@ -1061,9 +1061,9 @@ function bfc_preview_event_submission() {
     $dayinfo = repeatdates($record['dates']);
     if ($dayinfo['datestype'] === 'error' ||
         !isset($dayinfo['daylist'][1]) ) {
-        
+
         // Badly-formed date. Don't show the date.
-        
+
         $record['eventdate'] = '';
         $record["eventstatus"] = "A";
         $record["datestype"] = "O"; // one-time
@@ -1072,7 +1072,7 @@ function bfc_preview_event_submission() {
     else {
         // daylist array is 1-based. Get the first element.
         $day = $dayinfo['daylist'][1];
-        
+
         // Sometimes $day sets eventdate, other times sqldate...
         if (isset($day['eventdate'])) {
             $record['eventdate'] = $day['eventdate'];
@@ -1142,7 +1142,7 @@ END_QUERY;
     $record = $records[0];
 
     fullentry($record, 'listing', $sqldate);
-           
+
     exit;
 }
 
@@ -1152,7 +1152,7 @@ add_action('wp_ajax_nopriv_event-popup',
 add_action('wp_ajax_event-popup',
            'bfc_event_popup');
 
-// Make a widget to show other events that happen on the same day as the current event.           
+// Make a widget to show other events that happen on the same day as the current event.
 class BFC_OtherEvents_Widget extends WP_Widget {
     /** constructor */
     function BFC_OtherEvents_Widget() {
@@ -1193,11 +1193,13 @@ END_SQL;
             }
 
             if ($sqldate != null) {
+                print '<div class="other-events-onday">';
                 print "<aside class='widget other-events'>\n";
                 printf("<h3 class='widget-title'>Other events on %s</h3>",
                        esc_html(date('l, F j', strtotime($sqldate))));
                 tinyentries($sqldate, 'sidebar', $wp_query->post->ID);
                 print "</aside>\n";
+                print "</div>";
             }
         }
     }
@@ -1362,7 +1364,7 @@ END_SQL;
         else {
             $count = 0;
         }
-        
+
 	// Start new row each week
 	if (date("D", $thisdate) == "Sun") {
 	    print "</tr><tr>\n";
@@ -1386,8 +1388,8 @@ END_SQL;
 
     $last_day = date('w', $enddate);
     // If the calendar doesn't end on Saturday
-    if ($last_day !== '6') { 
-        printf("<td colspan='%d'></td>", 6 - $last_day);        
+    if ($last_day !== '6') {
+        printf("<td colspan='%d'></td>", 6 - $last_day);
     }
 
     print "</tr>";
