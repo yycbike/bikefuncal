@@ -70,16 +70,6 @@ function bfc_query_vars_filter($qvars) {
     $qvars[] = "event_review";
     $qvars[] = "event_editcode";
 
-    // Obsolete variables we're no longer using
-    //$qvars[] = "event_printemail";
-    //$qvars[] = "event_hidecontact";
-    //$qvars[] = "event_printcontact";
-    //$qvars[] = "event_tinytitle";
-    //$qvars[] = "event_hidephone";
-    //$qvars[] = "event_printphone";
-    //$qvars[] = "event_printweburl";
-    //$qvars[] = "event_printdescr";
-
     // Query vars for managing the form for creating
     // new events. These get a submission_ prefix because
     // they don't go into the database.
