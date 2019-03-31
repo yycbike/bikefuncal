@@ -15,7 +15,6 @@ require_once('event-submission-form.php');
 require_once('event-submission-result.php');
 require_once('event-delete-result.php');
 require_once('export-to-indesign.php');
-require_once('import-old-calendar.php');
 require_once('shortcodes.php');
 require_once('search.php');
 require_once('venue.php');
@@ -290,13 +289,6 @@ function bfc_admin_menu_action() {
                      'bfc_options_admin_page');  // function callback
 
     add_submenu_page('bfc-top', //parent
-                     'Import Database from Old Site', //title
-                     'Import',
-                     'manage_options', //capability
-                     'bfc-import', // menu slug
-                     'bfc_import_admin_page'); // function callback
-
-    add_submenu_page('bfc-top', //parent
                      'Export Calendar to InDesign', // title
                      'Export',
                      'read', // capability. Permissive since it's non-destructive and not really secure.
@@ -411,43 +403,6 @@ function bfc_options_admin_page() {
         </form>
     </div>
     <?php
-}
-
-function bfc_import_admin_page() {
-    // $wp_query isn't set here (maybe b/c this is an admin page). Have to
-    // check $_POST instead.
-
-    if (isset($_POST['bfc_import']) &&
-        $_POST['bfc_import'] == 'do-import') {
-
-        if (isset($_POST['bfc_magic_word']) &&
-            $_POST['bfc_magic_word'] != 'cheese') {
-
-            print "<p>That's not the magic word!</p>";
-        }
-        else {
-            bfc_import();
-        }
-    }
-    else {
-
-    ?>
-    <p>Use this <strong>once</strong> to import the old (Shift-style) calendar to the new site.
-    This is for advanced users who have read
-    <code>import-old-calendar.php</code> and know what they're doing.
-    </p>
-
-    <form method='post'>
-    Magic word:
-    <input type='text' name='bfc_magic_word'>
-    <input type='hidden' name='bfc_import' value='do-import'>
-    <br>
-    <input type='submit' value='Import Old Site'>
-    </form>
-
-    <?php
-    } // end if
-
 }
 
 /**
