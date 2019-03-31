@@ -3,8 +3,6 @@
 // It handles the AJAX requests used to update the form & show
 // previews. It should also do form validation, someday.
 //
-// The analagous function in the old code is calform.js.
-//
 // In the new code, we avoid putting JavaScript in the PHP or HTML
 // files. It all lives here. Instead of attaching code via the
 // onclick="..." HTML syntax, we attach it using jQuery and
@@ -576,33 +574,6 @@
             );    
     }
 
-    // Return a list of venues, for use in autocomplete
-    //
-    // The complete list of venues is passed in by the
-    // calling page, because it's small. We don't actually
-    // do an AJAX request to get the venues.
-    function venue_names() {
-        var venue_names = [];
-        for (var key in BikeFunAjax.venues) {
-            if (BikeFunAjax.venues.hasOwnProperty(key)) {
-                venue_names.push(key);
-            }
-        }
-
-        return venue_names;
-    }
-
-    // An event handler that gets called to (possibly) fill in
-    // the address based on the venue.
-    function autocomplete_address(event, ui) {
-        var locname = $('#event_locname').val();
-
-        if (BikeFunAjax.venues.hasOwnProperty(locname)) {
-            var address = BikeFunAjax.venues[locname];
-            $('#event_address').val(address);
-        }
-    }
-
     function animate_once_multiple(old_div, new_div) {
         var speed = 400;
         var once_multiple_container = $('#once-multiple-container');
@@ -762,29 +733,6 @@
                 return confirm(message);
             });
         }
-
-        // Autocomplete the location name from the known-venues list
-        var locname_field = $('#event_locname');
-        locname_field.autocomplete({
-                source: venue_names(),
-
-                // Ideally, we'd use the select event, but Evan couldn't
-                // get that to work. Close also works, but it fires when
-                // the user selects or cancels, so don't assume it's
-                // always a selection.
-                //
-                // Also, note that we're using the autocomplete widget
-                // distributed as part of jquery-ui, and not the older
-                // autocomplete plugin (which has a radically different
-                // API).
-                //
-                // See:
-                // http://jqueryui.com/demos/autocomplete/#event-change
-                close: function() {
-                    autocomplete_address();
-                    set_preview_timer();
-                }
-            });
 
         // Configure calendar for "occurs once"
         $('#submission_dates_once').datepicker({
