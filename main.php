@@ -16,7 +16,6 @@ require_once('event-submission-result.php');
 require_once('event-delete-result.php');
 require_once('shortcodes.php');
 require_once('search.php');
-require_once('venue.php');
 require_once('vfydates.php');
 
 // bfc_install() lives in database-migrations.php,
@@ -126,9 +125,6 @@ function bfc_init_action() {
 
         // Edit events without being given an editcode
         $role->add_cap('bfc_edit_others_events');
-
-        // Edit the known-venues list (add, update, delete)
-        $role->add_cap('bfc_edit_known_venues');
     }
 
     register_post_type('bfc-event', array(
@@ -259,16 +255,9 @@ add_action('admin_menu', 'bfc_admin_menu_action');
 function bfc_admin_menu_action() {
     add_menu_page('Bike Fun Cal', // Page title
                   'Bike Fun Cal', // Menu title
-                  'bfc_edit_known_venues', // capability
+                  'bfc_edit_others_events', // capability
                   'bfc-top',   // menu slug
                   'bfc_top_admin_page');
-
-    add_submenu_page('bfc-top', // parent
-                     'Edit Known Venues', // title
-                     'Venues',
-                     'bfc_edit_known_venues', // capability
-                     'bfc-venues',   // menu slug
-                     'bfc_venues_admin_page');  // function callback
 
     add_submenu_page('bfc-top', // parent
                      'Bike Fun Cal Options', // title
@@ -616,11 +605,6 @@ function bfc_register_javascript() {
         // show one month at a time, or two.
         'festivalStartMonth' => date('n', $festival_start_date),
         'festivalEndMonth'   => date('n', $festival_end_date),
-
-        // We have to use l10n_print_after to pass JSON-encoded data.
-        // See: http://wordpress.stackexchange.com/q/8655
-        'l10n_print_after' =>
-            'BikeFunAjax.venues = ' . json_encode(bfc_venue_list()) . ';',
         );
     wp_localize_script('bfc-event-submission', 'BikeFunAjax', $submission_ajax_options);
 }
