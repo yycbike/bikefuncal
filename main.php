@@ -17,6 +17,7 @@ require_once('event-delete-result.php');
 require_once('shortcodes.php');
 require_once('search.php');
 require_once('vfydates.php');
+require_once('calendar_export.php');
 
 // bfc_install() lives in database-migrations.php,
 // but __FILE__ has to be this file -- the main
@@ -77,6 +78,9 @@ function bfc_query_vars_filter($qvars) {
     $qvars[] = "submission_comment";
     $qvars[] = "submission_suppress_email";
     $qvars[] = "submission_changed_by_admin";
+
+    // Calendar event export
+    $qvars[] = "cal_export";
 
     // Tell WordPress about the query vars for an event's newsflash & status.
     // But because these variables have a suffix with the day of the event
