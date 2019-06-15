@@ -9,3 +9,6 @@
 # Ignore Mac volumes
 .DS_Store
 ._*
+
+# Ignore vendored code
+vendor
