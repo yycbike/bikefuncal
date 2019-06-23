@@ -31,9 +31,9 @@ class BfcEventSubmission {
 
     // DB id of the event. Unset when action is new.
     protected $event_id;
-    
+
     // new    = show blank form for creating a new object
-    // create = commit the results from a new 
+    // create = commit the results from a new
     // edit   = show filled-in form for editing the event
     // update = commit the results from an edit
     // delete = delete the event (with no confirmation)
@@ -41,7 +41,7 @@ class BfcEventSubmission {
 
     // Action to take on the image. This is only used
     // when $action is create or update.
-    // 
+    //
     // keep   = do nothing
     // create = create a new image for this event
     // change = change from an old image to a new image
@@ -70,7 +70,7 @@ class BfcEventSubmission {
     protected $comment;
     protected $suppress_email;
     protected $changed_by_admin;
-    
+
     // Information about the database fields we'll be populating.
     // Keys are names of the fields.
     //
@@ -83,7 +83,7 @@ class BfcEventSubmission {
     //   populate $wp_query->query_vars[] for values that are passed in
     //   from the form, but blank. (2) When a checkbox is unchecked, the
     //   web browser doesn't even send over form data. We have to notice
-    //   it's unchecked by the lack of a value. 
+    //   it's unchecked by the lack of a value.
     //
     protected $calevent_field_info = Array(
         "id"              => array("type" => "%d"),
@@ -93,7 +93,7 @@ class BfcEventSubmission {
 
         // wordpress_id is generated upon create
         "wordpress_id"    => array("type" => "%d"),
-        
+
         "name"            => array("type" => "%s", "missing_val" => ""),
         "email"           => array("type" => "%s", "missing_val" => ""),
         "hideemail"       => array("type" => "%d", "missing_val" => "N"),
@@ -140,7 +140,7 @@ class BfcEventSubmission {
         //"printphone"      => array("type" => "%d", "missing_val" => "N"),
         //"printweburl"     => array("type" => "%d", "missing_val" => "N"),
         //"tinytitle"       => array("type" => "%s", "missing_val" => ""),
-        
+
         );
 
     protected $caldaily_field_info = Array(
@@ -150,7 +150,7 @@ class BfcEventSubmission {
         "eventdate"   => array("type" => "%s"),
         "exceptionid" => array("type" => "%d"),
         );
-    
+
     public function __construct() {
 
     }
@@ -158,7 +158,7 @@ class BfcEventSubmission {
     // Provide getter methods for the event properties.
     // E.g., $event->title() returns the title, and
     // $event->has_wordpress_id reports if wordpress_id is set.
-    // 
+    //
     public function __call($name, $arguments) {
         $matches = array();
 
@@ -181,7 +181,7 @@ class BfcEventSubmission {
     // make_exception(), too.
     public function populate_from_query($query_vars, $post_files) {
         $this->post_files = $post_files;
-        
+
         if (isset($query_vars['submission_event_id'])) {
             $this->event_id = (int) $query_vars['submission_event_id'];
         }
@@ -194,7 +194,7 @@ class BfcEventSubmission {
         if (!isset($this->action)) {
             $this->action = 'new';
         }
-        
+
         // Choose an image action to take
         if (isset($query_vars['submission_image_action'])) {
             $this->image_action = $query_vars['submission_image_action'];
@@ -208,17 +208,17 @@ class BfcEventSubmission {
         }
         else {
             // keep does nothing (and is safe to use if there's no image)
-            $this->image_action = 'keep'; 
+            $this->image_action = 'keep';
         }
 
         // Grab any comments from the admin
-        $this->comment = 
+        $this->comment =
             isset($query_vars['submission_comment']) ?
             $this->comment = stripslashes($query_vars['submission_comment']) : '';
         // These values are either true or missing
         $this->suppress_email = isset($query_vars['submission_suppress_email']);
         $this->changed_by_admin = isset($query_vars['submission_changed_by_admin']);
-        
+
         if ($this->action == 'edit' || $this->action == 'update' || $this->action == 'delete') {
             // If this event already exists, grab it from the database
             //
@@ -234,7 +234,7 @@ class BfcEventSubmission {
             $this->user_editcode = $query_vars['event_editcode'];
         }
 
-        // Pull in new values for the fields. 
+        // Pull in new values for the fields.
         if ($this->action == 'create' || $this->action == 'update') {
             // Process arguments for caldaily
             foreach ($query_vars as $query_name => $query_value) {
@@ -250,7 +250,7 @@ class BfcEventSubmission {
                     $this->daily_args[$date_suffix][$type] = stripslashes($query_value);
                 }
             }
-            
+
             // Fill in missing newsflashes
             foreach ($this->daily_args as $date_suffix => $temp) {
                 if (!isset($this->daily_args[$date_suffix]['newsflash'])) {
@@ -299,7 +299,7 @@ class BfcEventSubmission {
                         // @@@ Should we die if event_args[$field_name] is unset?
                         // If this is an update, then we loaded from the datbase and
                         // thus, should have values for everything.
-                        
+
                         if (isset($this->event_args[$field_name]) &&
                             $new_value !== $this->event_args[$field_name]) {
 
@@ -316,7 +316,7 @@ class BfcEventSubmission {
             $this->set_defaults();
         }
     }
-    
+
     public function do_action() {
         if ($this->action == "update" || $this->action == "create") {
             $this->check_validity();
@@ -334,7 +334,7 @@ class BfcEventSubmission {
             }
         }
         else if ($this->action == "delete") {
-            
+
             if ($this->is_editcode_valid()) {
                 $this->delete();
                 $this->mail_ride_leader();
@@ -423,7 +423,7 @@ class BfcEventSubmission {
         if ($this->action != 'new') {
             die('Setting defaults, but not creating a new event.');
         }
-    
+
         $this->event_args['audience'] = 'G';
 
         // set_defaults() runs after convert_data_type(). Store emailforum as
@@ -492,7 +492,7 @@ class BfcEventSubmission {
             wp_update_post($post_props);
         }
     }
-    
+
     // Do an INSERT operation on the table
     protected function insert_into_table($table_name, $field_info, $args) {
         $types = Array();
@@ -529,12 +529,12 @@ class BfcEventSubmission {
                       $arg_types,
                       $where_types);
 
-        return;       
+        return;
     }
 
     protected function add_event_to_db($event_args) {
         global $calevent_table_name, $caldaily_table_name;
-        
+
         if ($this->action == "create") {
             // Create the editcode
             $event_args['editcode'] = uniqid();
@@ -688,7 +688,7 @@ class BfcEventSubmission {
                      $this->post_files['event_image']['error'] !== UPLOAD_ERR_OK) {
 
                 // This shouldn't have been called
-                die('No image to attach'); 
+                die('No image to attach');
             }
         }
 
@@ -729,7 +729,7 @@ class BfcEventSubmission {
         // first event, so the upload dir would correspond to the event date,
         // not the creation date (today's date).
         $upload_dirinfo = wp_upload_dir();
-        
+
         // This trusts that the file extension is OK on the user's machine...
         $extension = pathinfo($original_name, PATHINFO_EXTENSION);
 
@@ -757,12 +757,12 @@ class BfcEventSubmission {
         // We can use this later to construct a URL.
         $relative_filename =
             str_replace($upload_dirinfo['basedir'], '', $filename);
-        
+
         // Update the event_args
         $this->event_args['image'] = $relative_filename;
         $this->event_args['imageheight'] = $imageheight;
         $this->event_args['imagewidth'] = $imagewidth;
-        
+
         // (We could make a WordPress attachment out of this. But what would
         // the benefit be?)
     }
@@ -775,7 +775,7 @@ class BfcEventSubmission {
             $upload_dirinfo = wp_upload_dir();
             $old_filename = $upload_dirinfo['basedir'] .
                 $this->event_args['image'];
-            
+
             $success = unlink($old_filename);
             if (!$success) {
                 die("Can't delete image: $old_filename");
@@ -796,7 +796,7 @@ class BfcEventSubmission {
      */
     protected function mail_ride_leader() {
         $wrap_width = 70;
-        
+
         if ($this->suppress_email) {
             return;
         }
@@ -854,7 +854,7 @@ class BfcEventSubmission {
                     $body .= sprintf("* %s %s\n", $date, $edit_url);
                 }
             }
-            
+
             $body .= "\n\n";
         }
 
@@ -888,7 +888,7 @@ class BfcEventSubmission {
         // Do one last wordwrap, for the things we haven't wrapped yet...
         $body = wordwrap($body, $wrap_width);
         //echo '<pre>', $body, '</pre>';
-        
+
         // Send the e-mail. But only if bfc_calendar_email is set.
         // Development systems can leave the e-mail address blank, and
         // not have to worry about sending mail.
@@ -902,7 +902,7 @@ class BfcEventSubmission {
             mail($to, $subject, $body, $headers);
         }
     }
-    
+
     protected function is_editcode_valid() {
         if ($this->action == "edit"   ||
             $this->action == "update" ||
@@ -922,10 +922,10 @@ class BfcEventSubmission {
 
         return true;
     }
-    
+
     protected function check_validity() {
         // Check for errors in the order the fields appear on the form.
-        
+
         if ($this->event_args['title'] == '') {
             $this->errors[] = array(
                 'message' => "Title of the event",
@@ -965,7 +965,7 @@ class BfcEventSubmission {
         else {
             // Check the date formatting. First, parse the dates.
             $this->dayinfo = repeatdates($this->event_args['dates']);
-            
+
             if ($this->dayinfo['datestype'] === 'error') {
                 $this->errors[] = array(
                     'message' => sprintf('The date, "%s", was not understood.',
@@ -1005,7 +1005,7 @@ class BfcEventSubmission {
                 'type'    => 'format',
                 'field'   => 'email');
         }
-        
+
         if ($this->event_args['weburl'] !== '') {
             $scheme = parse_url($this->event_args['weburl'], PHP_URL_SCHEME);
             if ($scheme === NULL) {
@@ -1051,7 +1051,7 @@ class BfcEventSubmission {
             }
         }
     }
-    
+
     // Calculate the days this event occurs on, and any changes to the dates
     // that may be in this update.
     protected function calculate_days() {
@@ -1084,7 +1084,7 @@ class BfcEventSubmission {
 
                 if (isset($day['newsflash']) &&
                     $day['newsflash'] != $new_newsflash) {
-                    
+
                     $this->daily_args_changes[ $day['suffix'] ]['newsflash'] = $new_newsflash;
                 }
 
@@ -1119,7 +1119,7 @@ class BfcEventSubmission {
                 $day['status'] = $this->daily_args[$suffix]['status'];
                 $day['eventstatus'] = statusname($day);
 // Mark Leigh 2016-01-06: removed ['status'] from above line because function (statusname)
-// expects an array not a string. No idea why this worked before WP 4.4... 
+// expects an array not a string. No idea why this worked before WP 4.4...
 //but now it works with WP 4.4
 
             }
@@ -1160,7 +1160,7 @@ class BfcEventSubmission {
         }
 
         $exception->do_action();
-     
+
         return $exception;
     }
 
@@ -1215,7 +1215,7 @@ class BfcEventSubmission {
     public function print_name() {
         $this->print_value_for_text_input('name');
     }
-    
+
     public function print_phone() {
         $this->print_value_for_text_input('phone');
     }
@@ -1235,7 +1235,7 @@ class BfcEventSubmission {
     public function print_contact() {
         $this->print_value_for_text_input('contact');
     }
-    
+
     public function print_descr() {
         if (isset($this->event_args['descr'])) {
             print esc_textarea($this->event_args['descr']);
@@ -1249,7 +1249,7 @@ class BfcEventSubmission {
             print "checked";
         }
     }
-    
+
     public function print_checked_for_family_audience() {
         $this->print_checked_for_audience('F');
     }
@@ -1281,7 +1281,7 @@ class BfcEventSubmission {
 
     // Returns how often an event occurs. Used by the event form to show
     // controls for picking one date or multiple days.
-    // 
+    //
     // $what = 'once' or 'multiple'
     // Only valid when action is 'new' or 'edit'
     public function event_occurs($what) {
@@ -1306,61 +1306,11 @@ class BfcEventSubmission {
         }
     }
 
-    // $what: 'once_festival', 'once_other', 'multiple'
+    // $what: 'once', 'multiple'
     public function print_checked_for_event_occurs($what) {
-        if ($what === 'once_festival') {
-            if (!$this->event_during_festival()) {
-                // Looking for once_festival, but not during festival.
-                return;
-            }
-
-            $what = 'once';
-        }
-        else if ($what === 'once_other') {
-            if ($this->event_during_festival()) {
-                // Looking for once_other, but this is during the festival
-                return;
-            }
-
-            $what = 'once';
-        }
-
         // Here $what is 'once' or 'multiple', which is the
         // arguments that event_occurs() looks for.
         if ($this->event_occurs($what)) {
-            print 'checked';
-        }
-    }
-
-    public function event_during_festival() {
-        if (!isset($this->dayinfo['daylist'])) {
-            // We haven't parsed the dates yet (i.e.,
-            // the user hasn't set them). So default to
-            // checked.
-            return true;
-        }
-        else if (count($this->dayinfo['daylist']) === 1) {
-            // This checkbox only applies to events that occur once.
-
-            // First entry in daylist has index 1.
-            $event_date = $this->dayinfo['daylist'][1]['sqldate'];
-            $start_date = get_option('bfc_festival_start_date');
-            $end_date = get_option('bfc_festival_end_date');
-
-            $event_date = strtotime($event_date);
-            $start_date = strtotime($start_date);
-            $end_date = strtotime($end_date);
-
-            if ($event_date >= $start_date && $event_date <= $end_date) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function print_checked_for_event_during_festival() {
-        if ($this->event_during_festival()) {
             print 'checked';
         }
     }
@@ -1437,7 +1387,7 @@ class BfcEventSubmission {
             // Only show admin comment when updating
             return false;
         }
-        
+
         if (!current_user_can('bfc_edit_others_events')) {
             // Current user isn't an admin (or current user isn't logged in)
             return false;
@@ -1527,9 +1477,9 @@ class BfcEventSubmission {
         if ($this->action != 'update') {
             die("Assembling changes when not doing an update");
         }
-        
+
         $changes = array();
-        
+
         $human_readable_name_for = array(
             'address'       => 'Address',
             'audience'      => 'Audience',
@@ -1670,7 +1620,7 @@ class BfcEventSubmission {
                                      $this->daily_args_changes[$suffix]['newsflash']);
             }
         }
-        
+
         return $changes;
     }
 

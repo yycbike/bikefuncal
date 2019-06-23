@@ -340,8 +340,7 @@
     function verifydates(reload)
     {
         var value;
-        var is_once = $('#submission_event_occurs_once_festival').attr('checked') ||
-            $('#submission_event_occurs_once_other').attr('checked');
+        var is_once = $('#submission_event_occurs_once_other').attr('checked');
         if (is_once) {
             value = $('#submission_dates_once').val();
         }
@@ -578,8 +577,7 @@
         var occurs_multiple = $('#occurs-multiple');
         var occurs_once = $('#occurs-once');
 
-        var is_once = $('#submission_event_occurs_once_festival').attr('checked') ||
-            $('#submission_event_occurs_once_other').attr('checked');
+        var is_once = $('#submission_event_occurs_once_other').attr('checked');
 
         if (is_once) {
             animate_once_multiple(occurs_multiple, occurs_once);
@@ -596,27 +594,12 @@
     }
 
     function toggle_event_during_festival() {
-        var radDuringFestival = $('#submission_event_occurs_once_festival');
-        if (radDuringFestival.attr('checked')) {
-            // Show one or two months, depending on whether the start & end dates have
-            // the same month.
-            var isSingleMonth = (BikeFunAjax.festivalStartMonth == BikeFunAjax.festivalEndMonth);
-            var numberOfMonths = isSingleMonth ? 1 : 2;
-
-            // Limit the calendar to dates during the festival
-            $('#submission_dates_once').
-                datepicker('option', 'minDate', BikeFunAjax.festivalStartDate).
-                datepicker('option', 'maxDate', BikeFunAjax.festivalEndDate). 
-                datepicker('option', 'numberOfMonths', numberOfMonths);
-
-        }
-        else {
+	    // TODO - can this be removed outright?
             // Limit the calendar to today - +364 days
             $('#submission_dates_once').
                 datepicker('option', 'minDate', '0D').
                 datepicker('option', 'maxDate', '364D'). // +1 year
                 datepicker('option', 'numberOfMonths', 1);
-        }
     }
 
     function make_toggleable_tips(text, button) {
@@ -635,8 +618,7 @@
     function set_hidden_dates_field() {
         var dates_val;
 
-        var is_once = $('#submission_event_occurs_once_festival').attr('checked') ||
-            $('#submission_event_occurs_once_other').attr('checked');
+        var is_once = $('#submission_event_occurs_once_other').attr('checked');
 
         if (is_once) {
             dates_val = $('#submission_dates_once').val();
@@ -710,7 +692,6 @@
             toggle_event_during_festival();
             verifydates(false);
         }
-        $('#submission_event_occurs_once_festival').change(on_change_event_occurs);
         $('#submission_event_occurs_once_other').change(on_change_event_occurs);
         $('#submission_event_occurs_multiple').change(toggle_occurs_once_multiple);
         on_change_event_occurs();
