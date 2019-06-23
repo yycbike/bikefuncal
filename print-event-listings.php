@@ -38,13 +38,7 @@ function bfc_excerpt($text, $excerpt_more)
  * Reference: http://mapki.com/wiki/Google_Map_Parameters
  */
 function address_link($address) {
-    // Use country-specific google maps, if appropriate
-    if (strtolower(get_option('bfc_country')) == 'canada') {
-        $site = 'https://maps.google.ca/';
-    }
-    else {
-        $site = 'https://maps.google.com/';
-    }
+    $site = 'https://maps.google.ca/';
 
     // Start building arguments to pass to google maps
     $query_args = array(
