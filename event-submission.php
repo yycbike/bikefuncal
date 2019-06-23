@@ -111,7 +111,6 @@ class BfcEventSubmission {
         "datestype"       => array("type" => "%s"),
         "eventtime"       => array("type" => "%s", "missing_val" => ""),
         "timedetails"     => array("type" => "%s", "missing_val" => ""),
-        "locname"         => array("type" => "%s", "missing_val" => ""),
         "address"         => array("type" => "%s", "missing_val" => ""),
         // Unlike other booleans, addressverified has type char(1)
         "addressverified" => array("type" => "%s", "missing_val" => "N"),
@@ -1189,10 +1188,6 @@ class BfcEventSubmission {
         $this->print_value_for_text_input('title');
     }
 
-    public function print_locname() {
-        $this->print_value_for_text_input('locname');
-    }
-
     public function print_locdetails() {
         $this->print_value_for_text_input('locdetails');
     }
@@ -1472,7 +1467,6 @@ class BfcEventSubmission {
             'emailforum'    => 'Mail me when people comment on this ride',
             'eventtime'     => 'Start Time',
             'locdetails'    => 'Location details',
-            'locname'       => 'Venue',
             'name'          => 'Your name',
             'phone'         => 'Phone number',
             'timedetails'   => 'Time details',

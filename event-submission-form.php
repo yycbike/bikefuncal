@@ -139,11 +139,8 @@ function bfc_event_form_help($for) {
 END_HTML;
 
     }
-    else if ($for === 'event_locname') {
-        $help['content'] = 'e.g., "Science World" or "Arbutus Coffee Shop"';
-    }
     else if ($for === 'event_address') {
-        $help['content'] = 'Address or cross streets.';
+        $help['content'] = 'Place name and/or address';
     }
     else if ($for === 'event_locdetails') {
         $help['content'] = 'e.g., "Meet at the gazebo" or "in the NW corner of the park"';
@@ -341,19 +338,8 @@ function bfc_print_event_submission_form($event_submission) {
     <h2 class='event-submission-section'>Meeting Place</h2>
     <div class="new-event-category">
 
-    <div class='event-submission-label'>
-      <h3>Place name</h3>
-      <div class=optional>optional</div>
-    </div>
-    <div class="new-event-controls">
-      <input type="text" id="event_locname" name="event_locname"
-             class="narrower" maxlength=256
-             <?php $event_submission->print_locname()?>>
-      <?php bfc_event_form_help('event_locname') ?>
-    </div>
-
     <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('address'); ?> '>
-      <span>Address</span>
+      <span>Location</span>
     </h3>
     <div class="new-event-controls">
       <input type="text" id="event_address" name="event_address" required
