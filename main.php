@@ -60,7 +60,6 @@ function bfc_query_vars_filter($qvars) {
     $qvars[] = "event_dates";
     $qvars[] = "event_datestype";
     $qvars[] = "event_eventtime";
-    $qvars[] = "event_eventduration";
     $qvars[] = "event_timedetails";
     $qvars[] = "event_locname";
     $qvars[] = "event_address";

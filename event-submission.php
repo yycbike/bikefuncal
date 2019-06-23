@@ -110,9 +110,6 @@ class BfcEventSubmission {
         // so don't set a missing_val for it.
         "datestype"       => array("type" => "%s"),
         "eventtime"       => array("type" => "%s", "missing_val" => ""),
-        // @@@ Is there really a case where eventduration can be missing?
-        // does it need a missing_val?
-        "eventduration"   => array("type" => "%d", "missing_val" => 0),
         "timedetails"     => array("type" => "%s", "missing_val" => ""),
         "locname"         => array("type" => "%s", "missing_val" => ""),
         "address"         => array("type" => "%s", "missing_val" => ""),
@@ -1333,22 +1330,6 @@ class BfcEventSubmission {
         // Otherwise this isn't selected. Print nothing.
     }
 
-    public function print_selected_for_duration($duration) {
-        if (!isset($this->event_args['eventduration']) &&
-            $duration == "0") {
-
-            // 0 (unspecified) is selected by default
-            print "selected";
-        }
-        else if (isset($this->event_args['eventduration']) &&
-                 $this->event_args['eventduration'] == $duration) {
-
-            print "selected";
-        }
-
-        // Otherwise this isn't selected. Print nothing.
-    }
-
     public function current_action() {
         return $this->action;
     }
@@ -1489,7 +1470,6 @@ class BfcEventSubmission {
             'email'         => 'Email',
             'hideemail'     => 'Don\'t publish my email address online',
             'emailforum'    => 'Mail me when people comment on this ride',
-            'eventduration' => 'End Time',
             'eventtime'     => 'Start Time',
             'locdetails'    => 'Location details',
             'locname'       => 'Venue',
@@ -1533,10 +1513,6 @@ class BfcEventSubmission {
 
                 case 'eventtime':
                     $value = hmmpm($value);
-                    break;
-
-                case 'eventduration':
-                    $value = sprintf('%d minutes', $value);
                     break;
 
                 case 'hidephone':
