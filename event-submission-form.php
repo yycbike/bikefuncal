@@ -207,7 +207,7 @@ END_HTML;
         $help['content'] = 'e.g., "Meet at 6, ride at 7" or "Leave at 10:00 sharp!"';
     }
     else if ($for === 'event_name') {
-        $help['content'] = 'Aliases are OK';
+        $help['content'] = 'Aliases are OK, last name not required.';
     }
     else if ($for === 'event_email') {
         $help['content'] = "We'll send you a link to edit this event. We won't spam you.";
@@ -510,7 +510,7 @@ function bfc_print_event_submission_form($event_submission) {
     <div class="new-event-category">
 
     <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('name'); ?> '>
-      <span>Your name</span>
+      <span>Organizer name</span>
     </h3>
     <div class="new-event-controls">
       <input type="text" name="event_name" class="narrower" required
