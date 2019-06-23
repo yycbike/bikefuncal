@@ -43,14 +43,8 @@ END_SQL;
             $vEvent = new \Eluceo\iCal\Component\Event();
 
 			$eventstart = new \DateTime($record['eventdate'] . 'T' . $record['eventtime']);
-			//$eventstart->setTime
-			$str = 'PT' . $record['eventduration'] . 'M';
-			$duration = new \DateInterval($str);
-			$eventend = clone $eventstart ;//->add($duration);
-			//echo $record['eventduration'];
             $vEvent
                 ->setDtStart($eventstart)
-                ->setDtEnd($eventend->add($duration))
                 ->setSummary($record['title'])
             ;
 			$vEvent->setUseTimezone(true);

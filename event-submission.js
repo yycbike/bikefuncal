@@ -431,47 +431,6 @@
         }
     }
 
-    // In the duration/end-time drop-down, save the textual
-    // descriptions of the durations, so we can use them later.
-    function save_durations() {
-        var durations = $('#event_eventduration');
-        durations.find('option').each(function(idx, domElement) {
-            var option = $(domElement);
-            option.attr('data-duration-text', option.text());
-        });
-    }
-
-    // Update the list of durations to reflect the chosen eventtime.
-    function tweakdurations() {
-        var durations = $('#event_eventduration');
-        var times     = $('#event_eventtime');
-        var startTime = times.val();
-
-        durations.find('option').each(function(idx, domElement) {
-            var option = $(domElement);
-            var text;
-
-            // Don't adjust the text for "unspecified" (val = 0)
-            if (option.val() != 0) {
-                if (startTime === "") {
-                    // No start time, just show durations
-                    text = option.attr('data-duration-text');
-                }
-                else {
-                    // Show end time + duration
-                    when = twelvehour(startTime, option.val());
-                    text = when + " [" + option.attr('data-duration-text') + "]";
-                }
-
-                option.text(text);
-            }
-        });
-
-        // Set the widths of the two controls to be identical, 
-        // to make them look nicer.
-        durations.width(times.width());
-    }
-
     function display_preview(preview_content)
     {
         $('#submission_preview_spinner').hide();
@@ -709,12 +668,7 @@
         // not specified.
         verifydates(false);
 
-        // Adjust durations to include end times (if start time is specified)
-        save_durations();
-        tweakdurations();
-
         $('#event_eventtime').focus(tweaktime);
-        $('#event_eventtime').change(tweakdurations);
 
         // If we're showing the radio button for changing images,
         // select it when selecting a new file.

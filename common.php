@@ -28,52 +28,6 @@ function hmmpm($hhmmss)
     return $h.":".$m.$ampm;
 }
 
-// Return the result of adding minutes to a given time of day
-function endtime($eventtime, $eventduration)
-{
-    // parse the "h:mmpm" or "hh:mmpm" time, and convert to minutes
-    if (strlen($eventtime) == 7)
-    {
-	$h = substr($eventtime, 0, 2);
-	$m = substr($eventtime, 3, 2);
-	$ampm = substr($eventtime, 5, 2);
-    }
-    else
-    {
-	$h = substr($eventtime, 0, 1);
-	$m = substr($eventtime, 2, 2);
-	$ampm = substr($eventtime, 4, 2);
-    }
-    if ($h == 12 && $ampm == "am")
-	$h = 0;
-    else if ($h != 12 && $ampm == "pm")
-	$h += 12;
-    $m += $h * 60;
-
-    // add the duration minutes
-    $m += $eventduration;
-
-    // break it down into hours and minutes again
-    $h = floor($m / 60) % 24;
-    $m = $m % 60;
-
-    // convert it back into an "h:mmpm" or "hh:mmpm" string
-    if ($h == 0) {
-	$ampm = "am";
-	$h = 12;
-    } else if ($h < 12) {
-	$ampm = "am";
-    } else if ($h == 12) {
-	$ampm = "pm";
-    } else {
-	$ampm = "pm";
-	$h -= 12;
-    }
-    if ($m < 10)
-	$m = "0".$m;
-    return $h.":".$m.$ampm;	
-}
-
 // Mangle an email address.  The result is an HTML string that uses images
 // and superfluous tags to make the email address very hard for a spammer
 // to harvest, but it still looks fairly normal on the screen.

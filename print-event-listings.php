@@ -593,8 +593,6 @@ function fullentry($record, $for, $sqldate)
     // Use different formats for with/without end time, because they
     // read better.
 
-    $has_end_time = ($record['eventduration'] != 0);
-
     // This will fail if $sqldate is unset or invalid. (Have to check
     // because it can come from user input.)
     $eventdate = strtotime($sqldate);
@@ -604,22 +602,11 @@ function fullentry($record, $for, $sqldate)
         $date_text = '';
     }
     else {
-        if ($has_end_time) {
-            $date_text = sprintf('%s, ', esc_html($date));
-        }
-        else {
-            $date_text = sprintf('%s at ', esc_html($date));
-        }
+        $date_text = sprintf('%s at ', esc_html($date));
     }
 
     $time = hmmpm($record['eventtime']);
-    if ($has_end_time) {
-        $time_text = sprintf("%s - %s", esc_html($time),
-              esc_html(endtime($time, $record['eventduration'])));
-    }
-    else {
-        $time_text = esc_html($time);
-    }
+    $time_text = esc_html($time);
 
     if ($record['timedetails'] != '') {
         $time_text .= '. ';

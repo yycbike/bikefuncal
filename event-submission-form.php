@@ -200,9 +200,6 @@ END_HTML;
 END_HTML;
 
     }
-    else if ($for === 'event_eventduration') {
-        $help['content'] = 'Not sure? Leave it unspecified.';
-    }
     else if ($for === 'event_timedetails') {
         $help['content'] = 'e.g., "Meet at 6, ride at 7" or "Leave at 10:00 sharp!"';
     }
@@ -469,30 +466,6 @@ function bfc_print_event_submission_form($event_submission) {
 	  <?php bfc_generate_all_times($event_submission); ?>
 	</select>
         <?php bfc_event_form_help('event_eventtime') ?>
-    </div>
-
-    <div class='event-submission-label'>
-      <h3>End time</h3>
-      <div class=optional>optional</div>
-    </div>
-    <div class="new-event-controls">
-      <select name="event_eventduration" id="event_eventduration">
-        <option value="0" <?php $event_submission->print_selected_for_duration("0") ?> >Unspecified</option>
-        <option value="30" <?php $event_submission->print_selected_for_duration("30") ?> >30 minutes</option>
-        <option value="60" <?php $event_submission->print_selected_for_duration("60") ?> >60 minutes</option>
-        <option value="90" <?php $event_submission->print_selected_for_duration("90") ?> >90 minutes</option>
-        <option value="120" <?php $event_submission->print_selected_for_duration("120") ?> >2 hours</option>
-        <option value="150" <?php $event_submission->print_selected_for_duration("150") ?> >2.5 hours</option>
-        <option value="180" <?php $event_submission->print_selected_for_duration("180") ?> >3 hours</option>
-        <option value="240" <?php $event_submission->print_selected_for_duration("240") ?> >4 hours</option>
-        <option value="300" <?php $event_submission->print_selected_for_duration("300") ?> >5 hours</option>
-        <option value="360" <?php $event_submission->print_selected_for_duration("360") ?> >6 hours</option>
-        <option value="420" <?php $event_submission->print_selected_for_duration("420") ?> >7 hours</option>
-        <option value="480" <?php $event_submission->print_selected_for_duration("480") ?> >8 hours</option>
-        <option value="600" <?php $event_submission->print_selected_for_duration("600") ?> >10 hours</option>
-        <option value="720" <?php $event_submission->print_selected_for_duration("720") ?> >12 hours</option>
-      </select>
-      <?php bfc_event_form_help('event_eventduration') ?>
     </div>
 
     <div class='event-submission-label'>
