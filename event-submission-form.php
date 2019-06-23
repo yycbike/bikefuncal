@@ -557,16 +557,6 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_weburl') ?>
     </div>
 
-    <div class='event-submission-label'>
-      <h3>Other info</h3>
-      <div class=optional>optional</div>
-    </div>
-    <div class="new-event-controls">
-      <input type="text" name="event_contact" class="narrower"
-        maxlength=256 <?php $event_submission->print_contact(); ?>>
-      <?php bfc_event_form_help('event_contact') ?>
-    </div>
-
     </div><!-- .new-event-category (who) -->
 
     <?php
