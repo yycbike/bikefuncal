@@ -636,7 +636,7 @@ function fullentry($record, $for, $sqldate)
                             esc_html($record['address']));
 
     print '<h3>Meet At:</h3>';
-    if ($record['locname'] != '') {
+    if ($record['locname'] != '' && $record['locname'] != '0') {
         // Show both location name and address
         printf("<div class='location-name'><span class='%s'>%s</span></div>",
                $cancel_class, esc_html($record['locname']));
