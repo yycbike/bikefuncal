@@ -558,16 +558,6 @@ function bfc_print_event_submission_form($event_submission) {
     </div>
 
     <div class='event-submission-label'>
-      <h3>Phone number</h3>
-      <div class=optional>optional</div>
-    </div>
-    <div class="new-event-controls">
-      <input type="text" name="event_phone" class="narrower"
-        maxlength=256 <?php $event_submission->print_phone(); ?>>
-      <?php bfc_event_form_help('event_phone') ?>
-    </div>
-
-    <div class='event-submission-label'>
       <h3>Other info</h3>
       <div class=optional>optional</div>
     </div>
