@@ -125,7 +125,7 @@ function bfc_event_form_help($for) {
                 </div>
 
                 <div>
-                Formattting:
+                Formatting:
                 </div>
                 <ul>
                   <li>Put a blank line between paragraphs.
