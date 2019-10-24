@@ -361,14 +361,6 @@ function bfc_options_admin_page() {
             e-mail from this address.
             </em>
             </p>
-
-            <h3>Misc.</h3>
-
-            <p>
-            Drinking Age:
-            <input type='text' name='bfc_drinking_age' value='<?php echo esc_attr(get_option('bfc_drinking_age')); ?>'>
-            <em>People coming on adults-only rides need to be at least this old</em>
-            </p>
             <p>
             <input type='submit' value='save'>
             </p>
@@ -474,7 +466,6 @@ function bfc_admin_init_action() {
     register_setting('bikefuncal-options', 'bfc_festival_name');
     register_setting('bikefuncal-options', 'bfc_festival_start_date', 'bfc_sanitize_festival_date');
     register_setting('bikefuncal-options', 'bfc_festival_end_date',   'bfc_sanitize_festival_date');
-    register_setting('bikefuncal-options', 'bfc_drinking_age');
     register_setting('bikefuncal-options', 'bfc_city');
     register_setting('bikefuncal-options', 'bfc_province');
     register_setting('bikefuncal-options', 'bfc_country');
