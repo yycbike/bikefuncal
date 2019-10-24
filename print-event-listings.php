@@ -243,16 +243,6 @@ function tinyentry($record, $sqldate, $for, $current_event_wordpress_id = null)
         $eventtime = hmmpm($record["eventtime"]);
     }
 
-    if ($record["audience"] == "F") {
-        $cssclass .= "family-friendly ";
-    }
-    elseif ($record["audience"] == "G") {
-        $cssclass .= "general-audience ";
-    }
-    else {
-        $cssclass .= "adults-only ";
-    }
-
     if ($record["newsflash"] != "") {
         $cssclass .= "newsflash ";
     }
@@ -266,13 +256,6 @@ function tinyentry($record, $sqldate, $for, $current_event_wordpress_id = null)
     printf("<div class='%s'>", esc_attr($cssclass));
     printf("<div class='event-time'>");
     printf("<span class='time'>%s</span>", esc_html($eventtime));
-    if ($record['audience'] == 'A') {
-        printf(" <span class='audience adult'>%d+</span>", esc_html(get_option('bfc_drinking_age')));
-    }
-    else if ($record['audience'] == 'F') {
-        printf(" <span class='audience family'>FF</span>");
-    }
-
     if ($has_fee) {
         printf(" <span class='fee'>$$</span>");
     }
@@ -324,7 +307,7 @@ function tinyentries($sqldate, $for, $current_event_wordpress_id = null)
 SELECT *
 FROM (
     SELECT ${calevent_table_name}.id, newsflash, title, tinytitle, eventtime,
-           eventdate, datestype, audience, eventstatus, descr, review, wordpress_id
+           eventdate, datestype, eventstatus, descr, review, wordpress_id
     FROM ${calevent_table_name} JOIN ${caldaily_for_listings_table_name} USING(id)
     WHERE eventdate   =  %s
 ) AS find_rides
@@ -491,24 +474,9 @@ function fullentry($record, $for, $sqldate)
 
     ////////////////////////
     // Audience and Fee
-    if ($record['audience'] == 'A' ||
-        $record['audience'] == 'F' ||
-        strpos($record['descr'], "\$") !== false) {
+    if (strpos($record['descr'], "\$") !== false) {
 
 		print "<div class=audience>";
-
-		if ($record['audience'] == 'A') {
-			$badge_url = plugins_url('bikefuncal/images/') . 'adult-icon.png';
-            $message = sprintf('Adults Only (%d+)', get_option('bfc_drinking_age'));
-			printf("<img src='%s' alt='%s' title='%s'>",
-               esc_url($badge_url), esc_attr($message), esc_attr($message));
-        }
-        else if ($record['audience'] == 'F') {
-			$badge_url = plugins_url('bikefuncal/images/') . 'family-icon.png';
-            $message = 'Family Friendly';
-			printf("<img src='%s' alt='%s' title='%s'>\n",
-               esc_url($badge_url), esc_attr($message), esc_attr($message));
-        }
 
 		if (strpos($record['descr'], "\$") !== false) {
 			$badge_url = plugins_url('bikefuncal/images/') . 'money-icon.png';

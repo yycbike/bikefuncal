@@ -279,31 +279,6 @@ function bfc_print_event_submission_form($event_submission) {
       <?php bfc_event_form_help('event_descr') ?>
     </div>
 
-    <h3 class='event-submission-label  <?php $event_submission->print_error_class_for('audience'); ?> '>
-      <span>Audience</span>
-    </h3>
-    <div class="new-event-controls">
-        <div>
-          <input type="radio" name="event_audience"
-                 <?php $event_submission->print_checked_for_family_audience() ?>
-                 id="audience_family" value="F">
-          <label for="audience_family">Family-Friendly</label>
-        </div>
-        <div>
-          <input type="radio" name="event_audience"
-                 <?php $event_submission->print_checked_for_general_audience() ?>
-                 id="audience_general" value="G">
-          <label for="audience_general">General</label>
-        </div>
-        <div>
-          <input type="radio" name="event_audience"
-                 <?php $event_submission->print_checked_for_adult_audience() ?>
-                 id="audience_adult" value="A">
-                 <label for="audience_adult">Adults (<?php print esc_html(get_option('bfc_drinking_age'))  ?>+ only)</label>
-        </div>
-        <?php bfc_event_form_help('event_audience') ?>
-    </div>
-
     <div class='event-submission-label'>
       <h3>Image</h3>
       <div class='optional'>optional</div>

@@ -55,7 +55,6 @@ function bfc_query_vars_filter($qvars) {
     $qvars[] = "event_webname";
     $qvars[] = "event_contact";
     $qvars[] = "event_title";
-    $qvars[] = "event_audience";
     $qvars[] = "event_descr";
     $qvars[] = "event_dates";
     $qvars[] = "event_datestype";
