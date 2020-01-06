@@ -325,9 +325,6 @@ END_QUERY;
 // Print the event listings that go below the calendar.
 function event_listings($startdate,
                         $enddate,
-                        $preload_alldays,
-                        $for_printer,
-                        $include_images,
 						$compact) {
 
     $today = strtotime(date("Y-m-d"));
@@ -337,20 +334,13 @@ function event_listings($startdate,
          $thisdate <= $enddate;
          $thisdate += 86400) {
 
-        // Use a fancy graphical devider for screen,
-        // a plain HR for printer.
-        if (!$for_printer) {
-            print "<div class=hr></div>\n";
-        }
-        else {
-            print "<hr>\n";
-        }
+        print "<div class=hr></div>\n";
 
 
 		if($compact) {
 			print "<h1 class='entry-title'>";
 			print esc_html(date("l F j, Y", $thisdate));
-			print " Events</h1>";
+			print "</h1>";
 
 		} else {
 			print "<h2 class=weeks>";
@@ -363,23 +353,11 @@ function event_listings($startdate,
         print "<div id='div${ymd}'>\n";
 
         // If the events for this day should be loaded
-        if ($thisdate == $today ||
-                $thisdate == $tomorrow ||
-                $for_printer ||
-                $preload_alldays) {
-
-			if($compact) tinyentries(date("Y-m-d", $thisdate), 'sidebar');
-			else fullentries(date("Y-m-d", $thisdate),
-                                TRUE,
-                                $for_printer,
-                                $include_images);
-        }
-        else {
-            print "<span class=\"loadday\" ";
-                print "onClick=\"loadday('$ymd', true);\">";
-                print "Click here to load this day's events";
-                print "</span>\n";
-        }
+		if($compact) tinyentries(date("Y-m-d", $thisdate), 'sidebar');
+		else fullentries(date("Y-m-d", $thisdate),
+                            TRUE,
+                            FALSE,
+                            TRUE);
         print "</div>\n";
     }
 }

@@ -143,9 +143,6 @@ function bfc_overview_or_event_listings($type, $atts) {
     else if ($type == 'listings') {
         event_listings($startdate,
                        $enddate,
-                       TRUE, #preload
-                       FALSE,   # For printer?
-                       TRUE,  # Include images?
 					   $compact); #TRUE - tiny event listing, FALSE - full event listing
     }
     else if ($type == 'date-selector') {
