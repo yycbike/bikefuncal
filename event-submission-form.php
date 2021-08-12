@@ -345,8 +345,8 @@ function bfc_print_event_submission_form($event_submission) {
         <div>
             <input type='radio' name='submission_event_occurs'
                 <?php $event_submission->print_checked_for_event_occurs('once'); ?>
-                id='submission_event_occurs_once_other' value='once_other'>
-            <label for='submission_event_occurs_once_other'>
+                id='submission_event_occurs_once' value='once'>
+            <label for='submission_event_occurs_once'>
               Once
             </label>
         </div>

@@ -8,6 +8,46 @@
 // onclick="..." HTML syntax, we attach it using jQuery and
 // event handlers. 
 
+// There's an issue with the ancient jquery, adding this $.browser hack
+// until all this is replaced with React
+// https://stackoverflow.com/a/17495060
+// START HACK
+var matched, browser;
+
+jQuery.uaMatch = function( ua ) {
+    ua = ua.toLowerCase();
+
+    var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+        /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+        /(msie) ([\w.]+)/.exec( ua ) ||
+        ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+        [];
+
+    return {
+        browser: match[ 1 ] || "",
+        version: match[ 2 ] || "0"
+    };
+};
+
+matched = jQuery.uaMatch( navigator.userAgent );
+browser = {};
+
+if ( matched.browser ) {
+    browser[ matched.browser ] = true;
+    browser.version = matched.version;
+}
+
+// Chrome is Webkit, but Webkit is also Safari.
+if ( browser.chrome ) {
+    browser.webkit = true;
+} else if ( browser.webkit ) {
+    browser.safari = true;
+}
+
+jQuery.browser = browser;
+// END HACK
+
 (function($) {
     // Return TRUE if we are editing an existing event
     function is_existing_event() {
@@ -340,7 +380,7 @@
     function verifydates(reload)
     {
         var value;
-        var is_once = $('#submission_event_occurs_once_other').attr('checked');
+        var is_once = $('#submission_event_occurs_once').attr('checked');
         if (is_once) {
             value = $('#submission_dates_once').val();
         }
@@ -577,7 +617,7 @@
         var occurs_multiple = $('#occurs-multiple');
         var occurs_once = $('#occurs-once');
 
-        var is_once = $('#submission_event_occurs_once_other').attr('checked');
+        var is_once = $('#submission_event_occurs_once').attr('checked');
 
         if (is_once) {
             animate_once_multiple(occurs_multiple, occurs_once);
@@ -618,7 +658,7 @@
     function set_hidden_dates_field() {
         var dates_val;
 
-        var is_once = $('#submission_event_occurs_once_other').attr('checked');
+        var is_once = $('#submission_event_occurs_once').attr('checked');
 
         if (is_once) {
             dates_val = $('#submission_dates_once').val();
@@ -692,7 +732,7 @@
             toggle_event_during_festival();
             verifydates(false);
         }
-        $('#submission_event_occurs_once_other').change(on_change_event_occurs);
+        $('#submission_event_occurs_once').change(on_change_event_occurs);
         $('#submission_event_occurs_multiple').change(toggle_occurs_once_multiple);
         on_change_event_occurs();
 
