@@ -67,19 +67,11 @@ function add_date_to_permalink($permalink, $sqldate) {
     return $permalink . '?' . $query_string;
 }
 
-function class_for_special_day($thisdate) {
-    // For Pedalpalooza, the Portland calendar highlights
-    // special events, such as MCBF, Father's Day, and the Solstice.
-    // If we wanted to do that, we could do so here.
-    return "";
-}
-
 // Output the TD for one day in the overview calendar
 function overview_calendar_day($thisdate, $preload_alldays) {
     $dayofmonth = date("j",$thisdate);
 
-    // If today is special...
-    $class = class_for_special_day($thisdate);
+    $class = '';
 
     // Highlight today's date.
     if (date("Y-m-d", time()) == date("Y-m-d", $thisdate)) {
@@ -1140,8 +1132,7 @@ function bfc_date_selector_calendar_day($thisdate, $is_new_month, $count, $max_c
     $day_of_month = date("j",$thisdate);
     $sqldate = date('Y-m-d', $thisdate);
 
-    // If today is special...
-    $class = class_for_special_day($thisdate);
+    $class = '';
 
     // Highlight today's date.
     if (date("Y-m-d", time()) == $sqldate) {
